@@ -1,5 +1,4 @@
 import React from "react";
-import { Separator } from "./ui/separator";
 
 interface Props {
   children: React.ReactNode;
@@ -11,7 +10,7 @@ interface Props {
 const Wrapper = ({ children, title, description, button }: Props) => {
   return (
     <div className='py-4 px-6'>
-      <div className='flex items-center justify-between'>
+      <div className='flex items-center justify-between border-b-[0.5px] border-gray-200'>
         <div>
           {title && (
             <h1 className='text-2xl font-bold text-gray-800'>{title}</h1>
@@ -22,7 +21,6 @@ const Wrapper = ({ children, title, description, button }: Props) => {
         </div>
         {button && button}
       </div>
-      <Separator className='my-0.5' />
       {children}
     </div>
   );
