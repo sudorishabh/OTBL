@@ -7,154 +7,267 @@ import {
   text,
 } from "drizzle-orm/mysql-core";
 
-// export const userTable = mysqlTable("users", {
-//   user_id: int("user_id").autoincrement().primaryKey(),
-//   full_name: varchar("full_name", { length: 255 }).notNull(),
-//   email: varchar("email", { length: 255 }).notNull().unique(),
-//   password: varchar("password", { length: 255 }).notNull(),
-//   role: varchar("role", { length: 255 }).notNull().default("user"),
-//   created_at: timestamp("created_at").notNull().defaultNow(),
-//   updated_at: timestamp("updated_at").notNull().defaultNow(),
-// });
+export const ActivityTable = mysqlTable("activities", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull().unique(),
+  description: text("description").notNull(),
+  created_at: timestamp("created_at").notNull().defaultNow(),
+  updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+});
 
-export const officeTable = mysqlTable("offices", {
-  office_id: int("office_id").autoincrement().primaryKey(),
-  office_name: varchar("office_name", { length: 255 }).notNull(),
-  office_address: varchar("office_address", { length: 255 }).notNull(),
-  office_state: varchar("office_state", { length: 255 }).notNull(),
-  office_city: varchar("office_city", { length: 255 }).notNull(),
-  office_pincode: varchar("office_pincode", { length: 10 }).notNull(),
-  office_contact_person: varchar("office_contact_person", {
+export const BudgetCategoryTable = mysqlTable("budget_categories", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull().unique(),
+  description: text("description").notNull(),
+  created_at: timestamp("created_at").notNull().defaultNow(),
+  updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+});
+
+export const SiteTable = mysqlTable("sites", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  address: varchar("address", { length: 255 }).notNull(),
+  state: varchar("state", { length: 255 }).notNull(),
+  city: varchar("city", { length: 255 }).notNull(),
+  pincode: varchar("pincode", { length: 10 }).notNull(),
+  contact_person: varchar("contact_person", {
     length: 255,
   }).notNull(),
-  office_contact_number: varchar("office_contact_number", {
+  contact_number: varchar("contact_number", {
     length: 15,
   }).notNull(),
-  office_email: varchar("office_email", { length: 320 }).notNull().unique(),
+  email: varchar("email", { length: 320 }).notNull().unique(),
   created_at: timestamp("created_at").notNull().defaultNow(),
   updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
 });
 
-export const workOrderTable = mysqlTable("work_orders", {
-  work_order_id: int("work_order_id").autoincrement().primaryKey(),
-  work_order_number: varchar("work_order_number", { length: 255 })
-    .notNull()
-    .unique(),
-  work_order_date: timestamp("work_order_date").notNull(),
-  work_order_status: varchar("work_order_status", { length: 50 })
-    .notNull()
-    .default("pending"),
-  work_order_description: text("work_order_description").notNull(),
-  created_at: timestamp("created_at").notNull().defaultNow(),
-  updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
-});
-
-export const activityTable = mysqlTable("activities", {
-  activity_id: int("activity_id").autoincrement().primaryKey(),
-  activity_name: varchar("activity_name", { length: 255 }).notNull().unique(),
-  activity_description: text("activity_description").notNull(),
-  created_at: timestamp("created_at").notNull().defaultNow(),
-  updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
-});
-
-export const workOrderActivityBudgetTable = mysqlTable(
-  "work_order_activity_budgets",
-  {
-    work_order_budget_id: int("work_order_budget_id")
-      .autoincrement()
-      .primaryKey(),
-    work_order_id: int("work_order_id")
-      .notNull()
-      .references(() => workOrderTable.work_order_id, { onDelete: "cascade" }),
-    activity_id: int("activity_id")
-      .notNull()
-      .references(() => activityTable.activity_id, { onDelete: "cascade" }),
-    work_order_budget_amount: decimal("work_order_budget_amount", {
-      precision: 10,
-      scale: 2,
-    }).notNull(),
-    work_order_expense_amount: decimal("work_order_expense_amount", {
-      precision: 10,
-      scale: 2,
-    }).notNull(),
-    work_order_budget_description: text(
-      "work_order_budget_description"
-    ).notNull(),
-    created_at: timestamp("created_at").notNull().defaultNow(),
-    updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
-  }
-);
-
-export const siteTable = mysqlTable("sites", {
-  site_id: int("site_id").autoincrement().primaryKey(),
-  site_name: varchar("site_name", { length: 255 }).notNull(),
-  site_address: varchar("site_address", { length: 255 }).notNull(),
-  site_state: varchar("site_state", { length: 255 }).notNull(),
-  site_city: varchar("site_city", { length: 255 }).notNull(),
-  site_pincode: varchar("site_pincode", { length: 10 }).notNull(),
-  site_contact_person: varchar("site_contact_person", {
+export const OfficeTable = mysqlTable("offices", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  address: varchar("address", { length: 255 }).notNull(),
+  state: varchar("state", { length: 255 }).notNull(),
+  city: varchar("city", { length: 255 }).notNull(),
+  pincode: varchar("pincode", { length: 10 }).notNull(),
+  contact_person: varchar("contact_person", {
     length: 255,
   }).notNull(),
-  site_contact_number: varchar("site_contact_number", {
+  contact_number: varchar("contact_number", {
     length: 15,
   }).notNull(),
-  site_email: varchar("site_email", { length: 320 }).notNull().unique(),
+  email: varchar("email", { length: 320 }).notNull().unique(),
   created_at: timestamp("created_at").notNull().defaultNow(),
   updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
 });
 
-export const siteActivityTable = mysqlTable("site_activities", {
-  site_activity_id: int("site_activity_id").autoincrement().primaryKey(),
-  site_id: int("site_id")
+export const WorkOrderTable = mysqlTable("work_orders", {
+  id: int("id").autoincrement().primaryKey(),
+  code: varchar("code", { length: 255 }).notNull().unique(),
+  title: varchar("title", { length: 255 }).notNull(),
+  office_id: int("office_id")
     .notNull()
-    .references(() => siteTable.site_id, { onDelete: "cascade" }),
-  activity_id: int("activity_id")
-    .notNull()
-    .references(() => activityTable.activity_id, { onDelete: "cascade" }),
-  site_activity_status: varchar("site_activity_status", {
-    length: 50,
-  })
-    .notNull()
-    .default("pending"),
-  site_activity_date: timestamp("site_activity_date").notNull(),
-  created_at: timestamp("created_at").notNull().defaultNow(),
-  updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
-});
-
-export const workOrderSiteTable = mysqlTable("work_order_sites", {
-  work_order_site_id: int("work_order_site_id").autoincrement().primaryKey(),
-  work_order_id: int("work_order_id")
-    .notNull()
-    .references(() => workOrderTable.work_order_id, { onDelete: "cascade" }),
-  site_id: int("site_id")
-    .notNull()
-    .references(() => siteTable.site_id, { onDelete: "cascade" }),
-  created_at: timestamp("created_at").notNull().defaultNow(),
-  updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
-});
-
-export const siteExpenseTable = mysqlTable("site_expenses", {
-  site_expense_id: int("site_expense_id").autoincrement().primaryKey(),
-  work_order_id: int("work_order_id")
-    .notNull()
-    .references(() => workOrderTable.work_order_id, { onDelete: "cascade" }),
-  site_id: int("site_id")
-    .notNull()
-    .references(() => siteTable.site_id, { onDelete: "cascade" }),
-  activity_id: int("activity_id")
-    .notNull()
-    .references(() => activityTable.activity_id, { onDelete: "cascade" }),
+    .references(() => OfficeTable.id, { onDelete: "cascade" }),
+  date: timestamp("date").notNull(),
+  description: text("description").notNull(),
+  budget_amount: decimal("budget_amount", {
+    precision: 10,
+    scale: 2,
+  }).notNull(),
   expense_amount: decimal("expense_amount", {
     precision: 10,
     scale: 2,
   }).notNull(),
-  expense_description: text("expense_description").notNull(),
-  expense_date: timestamp("expense_date").notNull(),
-  expense_category: varchar("expense_category", { length: 100 }).notNull(),
-  expense_receipt_number: varchar("expense_receipt_number", { length: 100 }),
-  expense_status: varchar("expense_status", { length: 50 })
+  status: varchar("status", {
+    length: 50,
+    enum: ["pending", "completed", "cancelled"],
+  })
     .notNull()
     .default("pending"),
+  cancellation_reason: text("cancellation_reason"),
   created_at: timestamp("created_at").notNull().defaultNow(),
   updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
 });
+
+export const WorkOrderSiteTable = mysqlTable("work_order_sites", {
+  id: int("id").autoincrement().primaryKey(),
+  work_order_id: int("work_order_id")
+    .notNull()
+    .references(() => WorkOrderTable.id, { onDelete: "cascade" }),
+  site_id: int("site_id")
+    .notNull()
+    .references(() => SiteTable.id, { onDelete: "cascade" }),
+  created_at: timestamp("created_at").notNull().defaultNow(),
+  updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+});
+
+export const SiteBudgetTable = mysqlTable("site_budgets", {
+  id: int("id").autoincrement().primaryKey(),
+  wo_site_id: int("wo_site_id")
+    .notNull()
+    .references(() => WorkOrderSiteTable.id, { onDelete: "cascade" }),
+  budget_category_id: int("budget_category_id")
+    .notNull()
+    .references(() => BudgetCategoryTable.id, { onDelete: "cascade" }),
+  budget_amount: decimal("budget_amount", {
+    precision: 10,
+    scale: 2,
+  }).notNull(),
+  expense_amount: decimal("expense_amount", {
+    precision: 10,
+    scale: 2,
+  }).notNull(),
+  created_at: timestamp("created_at").notNull().defaultNow(),
+  updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+});
+
+export const SiteActivityTable = mysqlTable("site_activities", {
+  id: int("id").autoincrement().primaryKey(),
+  wo_site_id: int("wo_site_id")
+    .notNull()
+    .references(() => WorkOrderSiteTable.id, { onDelete: "cascade" }),
+  activity_id: int("activity_id")
+    .notNull()
+    .references(() => ActivityTable.id, { onDelete: "cascade" }),
+  status: varchar("status", {
+    length: 50,
+    enum: ["pending", "completed", "cancelled"],
+  })
+    .notNull()
+    .default("pending"),
+  start_date: timestamp("start_date").notNull(),
+  end_date: timestamp("end_date").notNull(),
+  created_at: timestamp("created_at").notNull().defaultNow(),
+  updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+});
+
+// export const SiteBudgetActivityTable = mysqlTable("site_budget_activities", {
+//   id: int("id").autoincrement().primaryKey(),
+//   site_budget_id: int("site_budget_id")
+//     .notNull()
+//     .references(() => SiteBudgetTable.id, { onDelete: "cascade" }),
+//   site_activity_id: int("site_activity_id")
+//     .notNull()
+//     .references(() => SiteActivityTable.id, { onDelete: "cascade" }),
+//   created_at: timestamp("created_at").notNull().defaultNow(),
+//   updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+// });
+
+export const SiteActivityExpenseTable = mysqlTable("site_activity_expenses", {
+  id: int("id").autoincrement().primaryKey(),
+  site_activity_id: int("site_activity_id")
+    .notNull()
+    .references(() => SiteActivityTable.id, { onDelete: "cascade" }),
+  site_budget_id: int("site_budget_id")
+    .notNull()
+    .references(() => SiteBudgetTable.id, { onDelete: "cascade" }),
+  created_at: timestamp("created_at").notNull().defaultNow(),
+  updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+  expense_amount: decimal("expense_amount", {
+    precision: 10,
+    scale: 2,
+  }).notNull(),
+  description: text("description").notNull(),
+  expense_date: timestamp("expense_date").notNull(),
+  category: varchar("category", { length: 100 }).notNull(),
+  receipt_number: varchar("receipt_number", { length: 100 }),
+});
+
+// export const WorkOrderBudgetCategoryTable = mysqlTable(
+//   "work_order_budget_categories",
+//   {
+//     id: int("id").autoincrement().primaryKey(),
+//     work_order_id: int("work_order_id")
+//       .notNull()
+//       .references(() => WorkOrderTable.id, { onDelete: "cascade" }),
+//     budget_category_id: int("budget_category_id")
+//       .notNull()
+//       .references(() => BudgetCategoryTable.id, { onDelete: "cascade" }),
+//     created_at: timestamp("created_at").notNull().defaultNow(),
+//     updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+//     budget_amount: decimal("budget_amount", {
+//       precision: 10,
+//       scale: 2,
+//     }).notNull(),
+//     expense_amount: decimal("expense_amount", {
+//       precision: 10,
+//       scale: 2,
+//     }).notNull(),
+//   }
+// );
+
+// export const WorkOrderActivityBudgetTable = mysqlTable(
+//   "work_order_activity_budgets",
+//   {
+//     id: int("id").autoincrement().primaryKey(),
+//     work_order_id: int("work_order_id")
+//       .notNull()
+//       .references(() => WorkOrderTable.id, { onDelete: "cascade" }),
+//     activity_id: int("activity_id")
+//       .notNull()
+//       .references(() => ActivityTable.id, { onDelete: "cascade" }),
+//     budget_amount: decimal("budget_amount", {
+//       precision: 10,
+//       scale: 2,
+//     }).notNull(),
+//     expense_amount: decimal("expense_amount", {
+//       precision: 10,
+//       scale: 2,
+//     }).notNull(),
+//     description: text("description").notNull(),
+//     created_at: timestamp("created_at").notNull().defaultNow(),
+//     updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+//   }
+// );
+
+// export const SiteActivityTable = mysqlTable("site_activities", {
+//   id: int("id").autoincrement().primaryKey(),
+//   site_id: int("site_id")
+//     .notNull()
+//     .references(() => SiteTable.id, { onDelete: "cascade" }),
+//   activity_id: int("activity_id")
+//     .notNull()
+//     .references(() => ActivityTable.id, { onDelete: "cascade" }),
+//   status: varchar("status", {
+//     length: 50,
+//   })
+//     .notNull()
+//     .default("pending"),
+//   date: timestamp("date").notNull(),
+//   created_at: timestamp("created_at").notNull().defaultNow(),
+//   updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+// });
+
+// export const WorkOrderSiteTable = mysqlTable("work_order_sites", {
+//   id: int("id").autoincrement().primaryKey(),
+//   work_order_id: int("work_order_id")
+//     .notNull()
+//     .references(() => WorkOrderTable.id, { onDelete: "cascade" }),
+//   site_id: int("site_id")
+//     .notNull()
+//     .references(() => SiteTable.id, { onDelete: "cascade" }),
+//   created_at: timestamp("created_at").notNull().defaultNow(),
+//   updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+// });
+
+// export const SiteExpenseTable = mysqlTable("site_expenses", {
+//   id: int("id").autoincrement().primaryKey(),
+//   work_order_id: int("work_order_id")
+//     .notNull()
+//     .references(() => WorkOrderTable.id, { onDelete: "cascade" }),
+//   site_id: int("site_id")
+//     .notNull()
+//     .references(() => SiteTable.id, { onDelete: "cascade" }),
+//   activity_id: int("activity_id")
+//     .notNull()
+//     .references(() => ActivityTable.id, { onDelete: "cascade" }),
+//   amount: decimal("amount", {
+//     precision: 10,
+//     scale: 2,
+//   }).notNull(),
+//   description: text("description").notNull(),
+//   date: timestamp("date").notNull(),
+//   category: varchar("category", { length: 100 }).notNull(),
+//   receipt_number: varchar("receipt_number", { length: 100 }),
+//   status: varchar("status", { length: 50 }).notNull().default("pending"),
+//   created_at: timestamp("created_at").notNull().defaultNow(),
+//   updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+// });
