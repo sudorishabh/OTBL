@@ -35,7 +35,7 @@ const DialogWindow = ({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className='h-[calc(100vh-15rem)] mt-5'>
+        <ScrollArea className='h-[calc(100vh-15rem)] my-2 py-2'>
           {children}
         </ScrollArea>
       </DialogContent>

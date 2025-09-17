@@ -10,12 +10,23 @@ import Icon from "@/components/custom/CustomIcon";
 import CustomButton from "@/components/custom/CustomButton";
 import NoFetchData from "@/components/NoFetchData";
 import AddOfficeDialog from "./_components/AddOfficeDialog";
+import { trpc } from "@/lib/trpc";
+import PageFetchingData from "@/components/PageFetchingData";
 
-const offices: Office[] = [];
+// const offices: Office[] = [];
 
 const Offices = () => {
-  const isOffices = offices && offices.length > 0;
   const [open, setOpen] = useState(false);
+
+  const getOffices = trpc.office.getOffices.useQuery();
+  const officesData = getOffices.data;
+  const isOffices = officesData && officesData.length > 0;
+  const isOfficeLoading = getOffices.isLoading;
+
+  if (isOfficeLoading) {
+    return <PageFetchingData title='' />;
+  }
+
   return (
     <Wrapper
       title='Offices'
@@ -27,14 +38,14 @@ const Offices = () => {
           onClick={() => setOpen(true)}
         />
       }>
-      {isOffices && <OfficeFilterTab officeLength={offices.length} />}
+      {isOffices && <OfficeFilterTab officeLength={officesData.length} />}
 
       {isOffices ? (
         <div className='space-y-6'>
           <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-            {offices.map((office) => (
+            {officesData.map((office) => (
               <OfficeCard
-                key={office.office_id}
+                key={office.id}
                 office={office}
               />
             ))}

@@ -23,12 +23,12 @@ const OfficeCard: React.FC<OfficeCardProps> = ({ office }) => {
         <div className='flex items-center justify-between'>
           <div className='flex items-center space-x-2 w-2/3'>
             <h3 className='text-lg font-semibold text-gray-900  line-clamp-1 group-hover:text-green-700 transition-colors'>
-              {office.office_name}
+              {office.name}
             </h3>
           </div>
           <div className='text-xs text-gray-400 flex items-center space-x-1'>
             <Calendar className='h-3 w-3' />
-            <span>{formatDate(office.created_at)}</span>
+            <span>{formatDate(office.created_at as typeof Date)}</span>
           </div>
         </div>
       </div>
@@ -41,11 +41,10 @@ const OfficeCard: React.FC<OfficeCardProps> = ({ office }) => {
           <div className='flex-1'>
             <p className='text-sm font-medium text-gray-700'>Address</p>
             <p className='text-sm text-gray-600 mt-0.5 leading-relaxed'>
-              {office.office_address}
+              {office.address}
             </p>
             <p className='text-sm text-gray-500'>
-              {office.office_city}, {office.office_state} -{" "}
-              {office.office_pincode}
+              {office.city}, {office.state} - {office.pincode}
             </p>
           </div>
         </div>
@@ -56,7 +55,7 @@ const OfficeCard: React.FC<OfficeCardProps> = ({ office }) => {
           <div className='flex-1'>
             <p className='text-sm font-medium text-gray-700'>Contact Person</p>
             <p className='text-sm text-gray-600 mt-0.5'>
-              {office.office_contact_person}
+              {office.contact_person}
             </p>
           </div>
         </div>
@@ -68,9 +67,9 @@ const OfficeCard: React.FC<OfficeCardProps> = ({ office }) => {
             <div className='flex-1 min-w-0'>
               <p className='text-sm font-medium text-gray-700'>Phone</p>
               <a
-                href={`tel:${office.office_contact_number}`}
+                href={`tel:${office.contact_number}`}
                 className='text-sm text-green-600 hover:text-green-700 transition-colors truncate block'>
-                {office.office_contact_number}
+                {office.contact_number}
               </a>
             </div>
           </div>
@@ -80,10 +79,10 @@ const OfficeCard: React.FC<OfficeCardProps> = ({ office }) => {
             <div className='flex-1 min-w-0'>
               <p className='text-sm font-medium text-gray-700'>Email</p>
               <a
-                href={`mailto:${office.office_email}`}
+                href={`mailto:${office.email}`}
                 className='text-sm text-green-600 hover:text-green-700 transition-colors truncate block'
-                title={office.office_email}>
-                {office.office_email}
+                title={office.email}>
+                {office.email}
               </a>
             </div>
           </div>

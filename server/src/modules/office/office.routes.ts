@@ -48,9 +48,15 @@ export const officeRouter = router({
       });
 
       return {
-        message: "Office added successfully",
+        success: true,
       };
     }),
+
+  getOffices: publicProcedure.query(async () => {
+    const offices = await db.select().from(OfficeTable);
+
+    return offices;
+  }),
 
   // Protected: only accessible with valid Bearer token
   //   me: protectedProcedure.query(({ ctx }) => {

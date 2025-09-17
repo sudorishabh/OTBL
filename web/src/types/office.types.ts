@@ -1,13 +1,13 @@
 export interface Office {
-  office_id: number;
-  office_name: string;
-  office_address: string;
-  office_state: string;
-  office_city: string;
-  office_pincode: string;
-  office_contact_person: string;
-  office_contact_number: string;
-  office_email: string;
-  created_at: Date;
-  updated_at: Date;
+  address: string;
+  city: string;
+  contact_number: string;
+  contact_person: string;
+  created_at: string;
+  email: string;
+  id: number;
+  name: string;
+  pincode: string;
+  state: string;
+  updated_at: string;
 }
