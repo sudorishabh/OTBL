@@ -26,7 +26,7 @@ const CustomButton = ({
     <Button
       type={type}
       className={cn(
-        "bg-emerald-600 text-white rounded-sm cursor-pointer hover:bg-emerald-700 shadow-sm transition-all duration-200 hover:shadow-md",
+        "bg-[#00d57f] text-[#035864] rounded-md cursor-pointer hover:bg-[#00d580de] shadow-sm transition-all duration-200 hover:shadow-md",
         disabled || loading ? "opacity-70 cursor-not-allowed" : "",
         className
       )}

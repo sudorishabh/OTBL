@@ -15,9 +15,17 @@ import {
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, LayoutDashboard, User, Settings } from "lucide-react";
+import {
+  Building2,
+  LayoutDashboard,
+  User,
+  Settings,
+  ReceiptIndianRupee,
+  ChartNoAxesGantt,
+} from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 const sidebarLinks = [
   {
@@ -27,8 +35,18 @@ const sidebarLinks = [
   },
   {
     title: "Offices",
-    link: "/offices",
+    link: "/office",
     icon: Building2,
+  },
+  {
+    title: "Activities",
+    link: "/activity",
+    icon: ChartNoAxesGantt,
+  },
+  {
+    title: "Budget Categories",
+    link: "/budget-category",
+    icon: ReceiptIndianRupee,
   },
 ];
 
@@ -52,54 +70,61 @@ function AppSidebar() {
   return (
     <Sidebar
       collapsible='icon'
-      className='border-r'>
-      <SidebarHeader className='p-6'>
-        <div className='flex items-center gap-3'>
-          <div className='flex h-8 w-8 items-center justify-center rounded-lg bg-primary'>
-            <Image
-              src='/otbl-logo.png'
-              alt='OTBL Logo'
-              width={24}
-              height={24}
-              className='h-6 w-6'
-            />
-          </div>
+      className='border-0'>
+      <SidebarHeader className='p-6 bg-[#035864]'>
+        <div className='flex justify-center items-center gap-3'>
+          <Image
+            src='/otbl-logo.png'
+            alt='OTBL Logo'
+            width={200}
+            height={200}
+            className='h-7 w-13'
+          />
           {state !== "collapsed" && (
             <div className='flex flex-col'>
-              <span className='text-sm font-semibold text-foreground'>
+              <span className='text-sm  font-semibold text-[#f4f6f9]'>
                 OTBL
               </span>
-              <span className='text-xs text-muted-foreground'>
-                Management System
-              </span>
+              <span className='text-xs text-[#f4f6f9]'>Management System</span>
             </div>
           )}
         </div>
       </SidebarHeader>
 
-      <SidebarContent className='px-3'>
+      <SidebarContent className='px-3 bg-[#035864]'>
+        <Separator />
         <SidebarGroup>
-          <SidebarGroupLabel className='text-xs font-medium text-muted-foreground uppercase tracking-wider'>
+          <SidebarGroupLabel className='text-[11px] font-medium text-gray-300 uppercase tracking-wider'>
             Navigation
           </SidebarGroupLabel>
           <SidebarMenu className='mt-2'>
             {sidebarLinks.map((item) => {
+              console.log(item.link);
               const isActive =
                 item.link === "/"
                   ? pathname === item.link
                   : pathname.startsWith(item.link);
+
               return (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
                     isActive={isActive}
                     tooltip={item.title}
-                    className='h-10 px-3'>
+                    // Use !important to force background color for active tab
+                    className={cn(
+                      "h-8 px-3",
+                      isActive
+                        ? "!bg-[#00d58091] !text-[#f4f6f9] shadow"
+                        : "text-[#f4f6f9]"
+                    )}>
                     <Link
                       href={item.link}
                       className='flex items-center gap-3'>
-                      <item.icon className='h-4 w-4' />
-                      <span className='text-sm font-medium'>{item.title}</span>
+                      <item.icon className={cn("h-4 w-4")} />
+                      <span className={cn("text-sm font-medium")}>
+                        {item.title}
+                      </span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -111,7 +136,7 @@ function AppSidebar() {
         <Separator className='my-4' />
 
         <SidebarGroup>
-          <SidebarGroupLabel className='text-xs font-medium text-muted-foreground uppercase tracking-wider'>
+          <SidebarGroupLabel className='text-[11px] font-medium text-gray-300 uppercase tracking-wider'>
             Account
           </SidebarGroupLabel>
           <SidebarMenu className='mt-2'>
@@ -123,7 +148,10 @@ function AppSidebar() {
                     asChild
                     isActive={isActive}
                     tooltip={item.title}
-                    className='h-10 px-3'>
+                    className={cn(
+                      "h-10 px-3 ",
+                      isActive ? "bg-white" : "text-[#f4f6f9]"
+                    )}>
                     <Link
                       href={item.link}
                       className='flex items-center gap-3'>

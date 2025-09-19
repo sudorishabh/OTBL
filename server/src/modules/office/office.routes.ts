@@ -4,7 +4,8 @@ import { z } from "zod";
 import jwt from "jsonwebtoken";
 import { TRPCError } from "@trpc/server";
 import { db } from "../../db";
-import { OfficeTable } from "../../db/schema";
+import { OfficeTable, WorkOrderTable } from "../../db/schema";
+import { eq } from "drizzle-orm";
 
 export const addOfficeSchema = z.object({
   name: z.string().min(1, { message: "Office name is required." }),
@@ -57,6 +58,43 @@ export const officeRouter = router({
 
     return offices;
   }),
+
+  getOffice: publicProcedure
+    .input(
+      z.object({
+        id: z.number().int().positive(),
+      })
+    )
+    .query(async ({ input }) => {
+      const office = await db
+        .select()
+        .from(OfficeTable)
+        .where(eq(OfficeTable.id, input.id));
+
+      if (!office || office.length === 0) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Office not found" });
+      }
+
+      return office[0];
+    }),
+
+  getOfficeWorkOrders: publicProcedure
+    .input(
+      z.object({
+        id: z.number().int().positive(),
+      })
+    )
+    .query(async ({ input }) => {
+      const all = await db
+        .select()
+        .from(WorkOrderTable)
+        .where(eq(WorkOrderTable.office_id, input.id));
+
+      const active = all.filter((wo) => wo.status === "pending");
+      const completed = all.filter((wo) => wo.status === "completed");
+
+      return { active, completed };
+    }),
 
   // Protected: only accessible with valid Bearer token
   //   me: protectedProcedure.query(({ ctx }) => {
