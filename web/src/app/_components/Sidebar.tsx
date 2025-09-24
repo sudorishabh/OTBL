@@ -22,6 +22,7 @@ import {
   Settings,
   ReceiptIndianRupee,
   ChartNoAxesGantt,
+  Tent,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
@@ -37,6 +38,11 @@ const sidebarLinks = [
     title: "Offices",
     link: "/office",
     icon: Building2,
+  },
+  {
+    title: "Sites",
+    link: "/site",
+    icon: Tent,
   },
   {
     title: "Activities",
@@ -92,7 +98,7 @@ function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className='px-3 bg-[#035864]'>
-        <Separator />
+        <Separator className='bg-gray-300' />
         <SidebarGroup>
           <SidebarGroupLabel className='text-[11px] font-medium text-gray-300 uppercase tracking-wider'>
             Navigation
@@ -113,10 +119,10 @@ function AppSidebar() {
                     tooltip={item.title}
                     // Use !important to force background color for active tab
                     className={cn(
-                      "h-8 px-3",
+                      "h-8 px-3 ",
                       isActive
                         ? "!bg-[#00d58091] !text-[#f4f6f9] shadow"
-                        : "text-[#f4f6f9]"
+                        : "!text-[#f4f6f9] hover:bg-[#00d58091]/45 focus:!bg-transparent"
                     )}>
                     <Link
                       href={item.link}
@@ -133,7 +139,7 @@ function AppSidebar() {
           </SidebarMenu>
         </SidebarGroup>
 
-        <Separator className='my-4' />
+        <Separator className='my-4 bg-gray-300' />
 
         <SidebarGroup>
           <SidebarGroupLabel className='text-[11px] font-medium text-gray-300 uppercase tracking-wider'>
@@ -149,8 +155,10 @@ function AppSidebar() {
                     isActive={isActive}
                     tooltip={item.title}
                     className={cn(
-                      "h-10 px-3 ",
-                      isActive ? "bg-white" : "text-[#f4f6f9]"
+                      "h-10 px-3 focus:!bg-transparent focus-visible:!bg-transparent active:!bg-transparent",
+                      isActive
+                        ? "!bg-white !text-black"
+                        : "!text-[#f4f6f9] hover:bg-[#00d58091]/45"
                     )}>
                     <Link
                       href={item.link}

@@ -1,0 +1,36 @@
+import { z } from "zod";
+
+// MUTATION
+
+export const addOfficeSchema = z.object({
+  name: z.string().min(1, { message: "Office name is required." }),
+  address: z.string().min(1, { message: "Address is required." }),
+  state: z.string().min(1, { message: "State is required." }),
+  city: z.string().min(1, { message: "City is required." }),
+  pincode: z.string().min(1, { message: "Pincode is required." }).max(10),
+  contact_person: z.string().min(1, { message: "Contact person is required." }),
+  contact_number: z
+    .string()
+    .min(1, { message: "Contact number is required." })
+    .max(15),
+  email: z.string(),
+});
+
+// QUERY
+
+export const getOfficeSchema = z.object({
+  id: z.number().int().positive(),
+});
+
+export const getOfficeWorkOrderScema = z.object({
+  id: z.number().int().positive(),
+});
+
+export const getOfficeStatsSchema = z.object({
+  id: z.number().int().positive(),
+});
+
+export const getOfficesPaginatedSchema = z.object({
+  page: z.number().int().positive().default(1),
+  limit: z.number().int().positive().max(50).default(10),
+});

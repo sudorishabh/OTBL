@@ -1,31 +1,49 @@
 "use client";
 import Wrapper from "@/components/Wrapper";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import OfficeFilterTab from "./_components/OfficeFilterTab";
-import { Button } from "@/components/ui/button";
 import OfficeCard from "./_components/OfficeCard";
 import { Office } from "@/types/office.types";
 import { Plus, Building2 } from "lucide-react";
-import Icon from "@/components/custom/CustomIcon";
 import CustomButton from "@/components/custom/CustomButton";
 import NoFetchData from "@/components/NoFetchData";
 import AddOfficeDialog from "./_components/AddOfficeDialog";
 import { trpc } from "@/lib/trpc";
-import PageFetchingData from "@/components/PageFetchingData";
-import { Input } from "@/components/ui/input";
-
-// const offices: Office[] = [];
+import PageLoading from "@/components/PageLoading";
+import LoadMoreBtn from "@/components/LoadMoreBtn";
 
 const Offices = () => {
-  const [open, setOpen] = useState(false);
+  const [isAddOfficeDialog, setIsAddOfficeDialog] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [allOffices, setAllOffices] = useState<Office[]>([]);
 
-  const getOffices = trpc.office.getOffices.useQuery();
-  const officesData = getOffices.data;
-  const isOffices = officesData && officesData.length > 0;
-  const isOfficeLoading = getOffices.isLoading;
+  const officesQueryLimit = 40;
+  const getOfficesPaginated = trpc.officeQuery.getOfficesPaginated.useQuery({
+    page: currentPage,
+    limit: officesQueryLimit,
+  });
+
+  const officesData = getOfficesPaginated.data;
+
+  useEffect(() => {
+    if (officesData) {
+      if (currentPage === 1) {
+        setAllOffices(officesData.offices);
+      } else {
+        setAllOffices((prev) => [...prev, ...officesData.offices]);
+      }
+    }
+  }, [officesData, currentPage]);
+
+  const handleLoadMore = () => {
+    setCurrentPage((prev) => prev + 1);
+  };
+
+  const isOffices = allOffices.length > 0;
+  const isOfficeLoading = getOfficesPaginated.isLoading && currentPage === 1;
 
   if (isOfficeLoading) {
-    return <PageFetchingData title='' />;
+    return <PageLoading />;
   }
 
   return (
@@ -36,21 +54,34 @@ const Offices = () => {
         <CustomButton
           text='Add Office'
           Icon={Plus}
-          onClick={() => setOpen(true)}
+          onClick={() => setIsAddOfficeDialog(true)}
+          variant='primary'
         />
       }>
-      {isOffices && <OfficeFilterTab officeLength={officesData.length} />}
+      {isOffices && (
+        <OfficeFilterTab
+          officeLength={officesData?.pagination.total || allOffices.length}
+        />
+      )}
 
       {isOffices ? (
         <div className='space-y-6'>
           <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
-            {officesData.map((office) => (
+            {allOffices.map((office) => (
               <OfficeCard
                 key={office.id}
                 office={office}
               />
             ))}
           </div>
+
+          {officesData?.pagination.hasMore && (
+            <LoadMoreBtn
+              onClick={handleLoadMore}
+              disabled={isOfficeLoading}
+              loading={isOfficeLoading}
+            />
+          )}
         </div>
       ) : (
         <NoFetchData
@@ -60,8 +91,8 @@ const Offices = () => {
         />
       )}
       <AddOfficeDialog
-        open={open}
-        setOpen={setOpen}
+        open={isAddOfficeDialog}
+        setOpen={setIsAddOfficeDialog}
       />
     </Wrapper>
   );

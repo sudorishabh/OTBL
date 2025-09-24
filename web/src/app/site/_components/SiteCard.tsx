@@ -1,32 +1,59 @@
 import React from "react";
-import { Building2, MapPin, Phone, Mail, User, Calendar } from "lucide-react";
+import { MapPin, Phone, Mail, User, Calendar, Edit2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { Office } from "@/types/office.types";
-import { useRouter } from "next/navigation";
 
-interface OfficeCardProps {
-  office: Office;
+interface Site {
+  id: number;
+  name: string;
+  address: string;
+  state: string;
+  city: string;
+  pincode: string;
+  contact_person: string;
+  contact_number: string;
+  email: string;
+  created_at?: string | Date;
+  updated_at?: string | Date;
 }
 
-const OfficeCard: React.FC<OfficeCardProps> = ({ office }) => {
-  const router = useRouter();
+interface SiteCardProps {
+  site: Site;
+  isSiteInfoDialog: boolean;
+  setIsSiteInfoDialog: (isSiteInfoDialog: boolean) => void;
+}
 
+const SiteCard: React.FC<SiteCardProps> = ({
+  site,
+  isSiteInfoDialog,
+  setIsSiteInfoDialog,
+}) => {
   return (
     <div
-      className='bg-white rounded-lg cursor-pointer border border-gray-200 shadow hover:shadow-md hover:border-[#00d57f]/20 transition-all duration-300 overflow-hidden group'
-      onClick={() => router.push(`/office/${office.id}`)}>
+      className='bg-white rounded-lg border border-gray-200 shadow-md hover:shadow-lg hover:border-[#00d57f]/20 transition-all duration-300 overflow-hidden group cursor-pointer'
+      onClick={() => setIsSiteInfoDialog(!isSiteInfoDialog)}>
       {/* Header Section */}
       <div className='bg-gradient-to-r from-[#035864] to-[#035864]/90 px-4 py-3'>
         <div className='flex items-center justify-between'>
           <div className='flex items-center space-x-2 w-2/3'>
-            <Building2 className='h-4 w-4 text-white/80 flex-shrink-0' />
+            <MapPin className='h-4 w-4 text-white/80 flex-shrink-0' />
             <h3 className='text-lg font-semibold text-white line-clamp-1 group-hover:text-[#00d57f] transition-colors'>
-              {office.name}
+              {site.name}
             </h3>
           </div>
-          <div className='text-xs text-white/70 flex items-center space-x-1'>
-            <Calendar className='h-3 w-3' />
-            <span>{format(office.created_at, "dd MMM, yyyy")}</span>
+          <div className='flex items-center space-x-2'>
+            {site.created_at && (
+              <div className='text-xs text-white/70 flex items-center space-x-1'>
+                <Calendar className='h-3 w-3' />
+                <span>{format(site.created_at, "dd MMM, yyyy")}</span>
+              </div>
+            )}
+            <Badge
+              variant='secondary'
+              className='text-xs bg-white/20 text-white border-white/30'>
+              Site
+            </Badge>
           </div>
         </div>
       </div>
@@ -41,10 +68,10 @@ const OfficeCard: React.FC<OfficeCardProps> = ({ office }) => {
           <div className='flex-1'>
             <p className='text-sm font-medium text-gray-800 mb-1'>Address</p>
             <p className='text-sm text-gray-600 leading-relaxed'>
-              {office.address}
+              {site.address}
             </p>
             <p className='text-sm text-gray-500 mt-1'>
-              {office.city}, {office.state} - {office.pincode}
+              {site.city}, {site.state} - {site.pincode}
             </p>
           </div>
         </div>
@@ -58,7 +85,7 @@ const OfficeCard: React.FC<OfficeCardProps> = ({ office }) => {
             <p className='text-sm font-medium text-gray-800 mb-1'>
               Contact Person
             </p>
-            <p className='text-sm text-gray-600'>{office.contact_person}</p>
+            <p className='text-sm text-gray-600'>{site.contact_person}</p>
           </div>
         </div>
 
@@ -71,9 +98,10 @@ const OfficeCard: React.FC<OfficeCardProps> = ({ office }) => {
             <div className='flex-1 min-w-0'>
               <p className='text-sm font-medium text-gray-800 mb-1'>Phone</p>
               <a
-                href={`tel:${office.contact_number}`}
+                onClick={(e) => e.stopPropagation()}
+                href={`tel:${site.contact_number}`}
                 className='text-sm text-[#00d57f] hover:text-[#035864] transition-colors truncate block font-medium'>
-                {office.contact_number}
+                {site.contact_number}
               </a>
             </div>
           </div>
@@ -85,22 +113,12 @@ const OfficeCard: React.FC<OfficeCardProps> = ({ office }) => {
             <div className='flex-1 min-w-0'>
               <p className='text-sm font-medium text-gray-800 mb-1'>Email</p>
               <a
-                href={`mailto:${office.email}`}
+                href={`mailto:${site.email}`}
                 className='text-sm text-[#00d57f] hover:text-[#035864] transition-colors truncate block font-medium'
-                title={office.email}>
-                {office.email}
+                title={site.email}>
+                {site.email}
               </a>
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Footer Section */}
-      <div className='px-4 py-3 bg-gray-50/50 border-t border-gray-100'>
-        <div className='flex items-center justify-between'>
-          <div className='text-xs text-gray-500'>Click to view details</div>
-          <div className='text-xs text-[#00d57f] font-medium group-hover:text-[#035864] transition-colors'>
-            View Details →
           </div>
         </div>
       </div>
@@ -108,4 +126,4 @@ const OfficeCard: React.FC<OfficeCardProps> = ({ office }) => {
   );
 };
 
-export default OfficeCard;
+export default SiteCard;

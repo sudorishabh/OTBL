@@ -1,9 +1,8 @@
 import DialogWindow from "@/components/DialogWindow";
-import React, { useState } from "react";
+import React from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -37,7 +36,7 @@ const AddOfficeDialog = ({ open, setOpen }: Props) => {
     },
   });
 
-  const addOffice = trpc.office.addOffice.useMutation();
+  const addOffice = trpc.officeMutation.addOffice.useMutation();
 
   async function onSubmit(values: z.infer<typeof addOfficeSchema>) {
     await addOffice.mutateAsync(values);

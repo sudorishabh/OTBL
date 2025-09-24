@@ -36,7 +36,7 @@ export const SiteTable = mysqlTable("sites", {
   contact_number: varchar("contact_number", {
     length: 15,
   }).notNull(),
-  email: varchar("email", { length: 320 }).notNull().unique(),
+  email: varchar("email", { length: 320 }).notNull(),
   created_at: timestamp("created_at").notNull().defaultNow(),
   updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
 });
@@ -54,7 +54,11 @@ export const OfficeTable = mysqlTable("offices", {
   contact_number: varchar("contact_number", {
     length: 15,
   }).notNull(),
-  email: varchar("email", { length: 320 }).notNull().unique(),
+  email: varchar("email", { length: 320 }).notNull(),
+  status: varchar("status", {
+    length: 50,
+    enum: ["active", "inactive"],
+  }).default("active"),
   created_at: timestamp("created_at").notNull().defaultNow(),
   updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
 });
