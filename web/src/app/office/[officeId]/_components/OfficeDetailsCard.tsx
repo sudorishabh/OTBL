@@ -24,18 +24,18 @@ interface Props {
 
 const OfficeDetailsCard = ({ office }: Props) => {
   return (
-    <Card className='relative shadow-sm border-emerald-500/60 bg-gradient-to-b from-white to-gray-50'>
+    <Card className='relative shadow-sm border-0 bg-gradient-to-br from-white to-gray-50'>
       <CardContent>
         <div className=' flex flex-wrap items-center gap-x-8 gap-y-4 text-sm'>
           <div className='flex flex-1 items-center gap-3'>
-            <div className='size-7 rounded-full bg-sky-50 border border-sky-100 flex items-center justify-center'>
-              <MapPin className='size-3.5 text-sky-600' />
+            <div className='size-7 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center'>
+              <MapPin className='size-3.5 text-cyan-800' />
             </div>
             <div className='min-w-0 flex-1'>
               <div className='text-[11px] uppercase tracking-wide text-gray-500'>
                 Address
               </div>
-              <p className='text-gray-800 font-medium break-words line-clamp-3'>
+              <p className='text-gray-700 font-medium break-words line-clamp-3'>
                 {office.address}
               </p>
               <p className='text-gray-500 break-words line-clamp-1'>
@@ -47,14 +47,14 @@ const OfficeDetailsCard = ({ office }: Props) => {
           <div className='hidden sm:block h-8 w-px bg-gray-200' />
 
           <div className='flex flex-1 items-center gap-3'>
-            <div className='size-7 rounded-full bg-indigo-50 border border-indigo-100 flex items-center justify-center'>
-              <User className='size-3.5 text-indigo-600' />
+            <div className='size-7 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center'>
+              <User className='size-3.5 text-cyan-800' />
             </div>
             <div>
               <div className='text-[11px] uppercase tracking-wide text-gray-500'>
                 Contact Person
               </div>
-              <div className='text-gray-800 font-medium'>
+              <div className='text-gray-700 font-medium'>
                 {office.contact_person}
               </div>
             </div>
@@ -63,8 +63,8 @@ const OfficeDetailsCard = ({ office }: Props) => {
           <div className='hidden sm:block h-8 w-px bg-gray-200' />
 
           <div className='flex flex-1 items-center gap-3'>
-            <div className='size-7 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center'>
-              <Phone className='size-3.5 text-emerald-600' />
+            <div className='size-7 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center'>
+              <Phone className='size-3.5 text-cyan-800' />
             </div>
             <div>
               <div className='text-[11px] uppercase tracking-wide text-gray-500'>
@@ -72,7 +72,7 @@ const OfficeDetailsCard = ({ office }: Props) => {
               </div>
               <a
                 href={`tel:${office.contact_number}`}
-                className='text-green-700 font-medium hover:underline'>
+                className='text-gray-700 font-medium hover:underline'>
                 {office.contact_number}
               </a>
             </div>
@@ -81,8 +81,8 @@ const OfficeDetailsCard = ({ office }: Props) => {
           <div className='hidden sm:block h-8 w-px bg-gray-200' />
 
           <div className='flex flex-1 items-center gap-3 min-w-0'>
-            <div className='size-7 rounded-full bg-amber-50 border border-amber-100 flex items-center justify-center'>
-              <Mail className='size-3.5 text-amber-600' />
+            <div className='size-7 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center'>
+              <Mail className='size-3.5 text-cyan-800' />
             </div>
             <div className='min-w-0'>
               <div className='text-[11px] uppercase tracking-wide text-gray-500'>
@@ -90,7 +90,7 @@ const OfficeDetailsCard = ({ office }: Props) => {
               </div>
               <a
                 href={`mailto:${office.email}`}
-                className='text-green-700 font-medium hover:underline truncate block max-w-[260px]'>
+                className='text-gray-700 font-medium hover:underline truncate block max-w-[260px]'>
                 {office.email}
               </a>
             </div>

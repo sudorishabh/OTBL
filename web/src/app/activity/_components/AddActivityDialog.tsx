@@ -94,10 +94,11 @@ const AddActivityDialog = ({
       title='Add Activity'
       description='Add activity for sites activities'
       open={open}
-      setOpen={handleOpenChange}>
+      setOpen={handleOpenChange}
+      size='sm'>
       <Form {...form}>
         <form
-          className='space-y-6 px-3.5'
+          className=''
           onSubmit={form.handleSubmit(onSubmit)}>
           <FormField
             control={form.control}
@@ -138,6 +139,7 @@ const AddActivityDialog = ({
             className='w-full'
             loading={form.formState.isSubmitting}
             disabled={form.formState.isSubmitting}
+            variant='primary'
           />
         </form>
       </Form>

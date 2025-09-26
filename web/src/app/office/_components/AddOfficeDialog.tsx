@@ -49,11 +49,12 @@ const AddOfficeDialog = ({ open, setOpen }: Props) => {
       open={open}
       setOpen={setOpen}
       title='Add Office'
-      description='Add a new office to the system.'>
+      description='Add a new office to the system.'
+      size='sm'>
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className='space-y-6 px-3.5'>
+          className='space-y-6'>
           <FormField
             control={form.control}
             name='name'
@@ -197,6 +198,7 @@ const AddOfficeDialog = ({ open, setOpen }: Props) => {
             className='w-full'
             type='submit'
             text='Submit'
+            variant='primary'
             loading={form.formState.isSubmitting}
             disabled={form.formState.isSubmitting}
           />

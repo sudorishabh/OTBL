@@ -6,17 +6,17 @@ interface Props {
   setOpen: (open: boolean) => void;
 }
 
-const EditOfficeDetailsDialog = ({ open, setOpen }: Props) => {
+const TotalSitesDialog = ({ open, setOpen }: Props) => {
   return (
     <DialogWindow
       open={open}
       setOpen={setOpen}
       size='md'
-      title='Edit Office Details'
-      description='xyz..'>
+      title='Total Sites'
+      description='xyz...'>
       <div></div>
     </DialogWindow>
   );
 };
 
-export default EditOfficeDetailsDialog;
+export default TotalSitesDialog;

@@ -33,6 +33,7 @@ const Activity = () => {
             setIsEditInfo(null);
             setIsActivityDialog(!isActivityDialog);
           }}
+          variant='primary'
         />
       }>
       <div className='my-5'>

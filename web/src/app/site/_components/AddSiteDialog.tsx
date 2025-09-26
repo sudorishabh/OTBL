@@ -88,10 +88,11 @@ const AddSiteDialog = ({ open, setOpen }: Props) => {
       title='Add Site'
       description='Add a new site to the system'
       open={open}
+      size='sm'
       setOpen={handleOpenChange}>
       <Form {...form}>
         <form
-          className='space-y-6 px-3.5'
+          className='space-y-6'
           onSubmit={form.handleSubmit(onSubmit)}>
           <FormField
             control={form.control}
@@ -233,6 +234,7 @@ const AddSiteDialog = ({ open, setOpen }: Props) => {
             type='submit'
             text='Submit'
             className='w-full'
+            variant='primary'
             loading={form.formState.isSubmitting}
             disabled={form.formState.isSubmitting}
           />

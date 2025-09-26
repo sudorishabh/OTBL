@@ -96,7 +96,8 @@ const AddBudgetCategoryDialog = ({
       title='Add Budget Category'
       description='Add budget category for work order budgetting'
       open={open}
-      setOpen={handleOpenChange}>
+      setOpen={handleOpenChange}
+      size='sm'>
       <Form {...form}>
         <form
           className='space-y-6 px-3.5'
@@ -138,6 +139,7 @@ const AddBudgetCategoryDialog = ({
             type='submit'
             text='Submit'
             className='w-full'
+            variant='primary'
             loading={form.formState.isSubmitting}
             disabled={form.formState.isSubmitting}
           />

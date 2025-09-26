@@ -34,6 +34,7 @@ const BudgetCategory = () => {
             setIsEditInfo(null);
             setIsBudgetCategoryDialog(!isBudgetCategoryDialog);
           }}
+          variant='primary'
         />
       }>
       <div className='my-5'>

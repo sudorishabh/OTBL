@@ -25,12 +25,12 @@ import { format } from "date-fns";
 import { capitalFirstLetter } from "@/utils/capitalFirstLetter";
 import { useRouter } from "next/navigation";
 import CustomButton from "@/components/custom/CustomButton";
-import CompletedWOCard from "./_components/CompletedWOCard";
-import ActiveWOCard from "./_components/ActiveWOCard";
+import CompletedWOCard from "./_components/office-work-order/CompletedWOCard";
+import ActiveWOCard from "./_components/office-work-order/ActiveWOCard";
 import OfficeDetailsCard from "./_components/OfficeDetailsCard";
-import OfficeStats from "./_components/OfficeStats";
-import OfficeWOComp from "./_components/OfficeWOComp";
-import CreateWODialog from "./_components/CreateWODialog";
+import OfficeStats from "./_components/office-stats/OfficeStats";
+import OfficeWOComp from "./_components/office-work-order/OfficeWOComp";
+import CreateWODialog from "./_components/office-work-order/CreateWODialog";
 import EditOfficeDetailsDialog from "./_components/EditOfficeDetailsDialog";
 
 type PageProps = {
@@ -38,7 +38,7 @@ type PageProps = {
 };
 
 const Office = ({ params }: PageProps) => {
-  const [isCreateWODialog, setIsCreateWODialog] = useState(false);
+  const [isEditOffieDialog, setIsEditOfficeDialog] = useState(false);
 
   const { officeId } = React.use(params);
 
@@ -91,29 +91,25 @@ const Office = ({ params }: PageProps) => {
           text='Edit details'
           variant='primary'
           Icon={PencilLine}
-          className='bg-emerald-600 text-white'
-          onClick={() => router.push(`/office/${officeId}/edit`)}
+          onClick={() => setIsEditOfficeDialog(!isEditOffieDialog)}
         />
       }>
-      {/* Office details */}
       {office ? (
         <div className='mt-4 space-y-6'>
           <OfficeDetailsCard office={office} />
-          <OfficeStats stats={stats} />
-          <OfficeWOComp
-            isCreateWODialog={isCreateWODialog}
-            setIsCreateWODialog={setIsCreateWODialog}
+          <OfficeStats
+            stats={stats}
+            officeId={officeId}
           />
+          <OfficeWOComp />
         </div>
       ) : (
         <div></div>
       )}
 
-      <EditOfficeDetailsDialog />
-
-      <CreateWODialog
-        open={isCreateWODialog}
-        setOpen={setIsCreateWODialog}
+      <EditOfficeDetailsDialog
+        open={isEditOffieDialog}
+        setOpen={setIsEditOfficeDialog}
       />
     </Wrapper>
   );

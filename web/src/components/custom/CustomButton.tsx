@@ -30,25 +30,38 @@ const CustomButton = ({
   loading = false,
 }: Props) => {
   let varientStyle = "";
+  let varientIconStyle = "";
 
   switch (variant) {
     case "primary":
       varientStyle =
-        "bg-[#00d57f] text-[#035864] rounded-md cursor-pointer hover:bg-[#00d580de] shadow-sm transition-all duration-200 hover:shadow-md";
+        "bg-emerald-600 text-gray-100 rounded-md cursor-pointer hover:bg-emerald-700/90 shadow-sm transition-all duration-200 hover:shadow-md gap-1.5 h-8.5 text-[0.813rem]";
       break;
     case "secondary":
-      varientStyle = "";
+      varientStyle =
+        "bg-gray-100 text-gray-700 rounded-md cursor-pointer hover:bg-gray-200/60 shadow-sm/5 transition-all duration-200 hover:shadow-sm gap-1.5 h-8.5 text-[0.813rem]";
       break;
     case "outline":
       varientStyle =
-        "bg-white text-[#035864] hover:bg-gray-100 cursor-pointer border shadow";
+        "bg-white text-gray-800 hover:bg-gray-100 cursor-pointer border shadow";
+      break;
+  }
+
+  switch (variant) {
+    case "primary":
+      varientIconStyle = "size-3.5 text-gray-100";
+      break;
+    case "secondary":
+      varientIconStyle = "size-3.5 text-gray-700";
+      break;
+    case "outline":
+      varientIconStyle = "size-3.5 text-gray-100";
       break;
   }
 
   return (
     <Button
       type={type}
-      // variant={"outline"}
       className={cn(
         varientStyle,
         disabled || loading ? "cursor-not-allowed" : "",
@@ -59,7 +72,7 @@ const CustomButton = ({
       {loading && <Loader className='animate-spin' />}
       {Icon && !loading && (
         <Icon
-          className='w-4 h-4 mr-1'
+          className={varientIconStyle}
           size={16}
         />
       )}

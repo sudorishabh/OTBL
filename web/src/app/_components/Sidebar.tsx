@@ -77,7 +77,7 @@ function AppSidebar() {
     <Sidebar
       collapsible='icon'
       className='border-0'>
-      <SidebarHeader className='p-6 bg-[#035864]'>
+      <SidebarHeader className='p-6 bg-cyan-900'>
         <div className='flex justify-center items-center gap-3'>
           <Image
             src='/otbl-logo.png'
@@ -88,17 +88,15 @@ function AppSidebar() {
           />
           {state !== "collapsed" && (
             <div className='flex flex-col'>
-              <span className='text-sm  font-semibold text-[#f4f6f9]'>
-                OTBL
-              </span>
-              <span className='text-xs text-[#f4f6f9]'>Management System</span>
+              <span className='text-sm  font-semibold text-gray-100'>OTBL</span>
+              <span className='text-xs text-gray-100'>Management System</span>
             </div>
           )}
         </div>
       </SidebarHeader>
 
-      <SidebarContent className='px-3 bg-[#035864]'>
-        <Separator className='bg-gray-300' />
+      <SidebarContent className='px-3 bg-cyan-900'>
+        <Separator className='bg-gray-400' />
         <SidebarGroup>
           <SidebarGroupLabel className='text-[11px] font-medium text-gray-300 uppercase tracking-wider'>
             Navigation
@@ -117,18 +115,21 @@ function AppSidebar() {
                     asChild
                     isActive={isActive}
                     tooltip={item.title}
-                    // Use !important to force background color for active tab
                     className={cn(
                       "h-8 px-3 ",
                       isActive
-                        ? "!bg-[#00d58091] !text-[#f4f6f9] shadow"
-                        : "!text-[#f4f6f9] hover:bg-[#00d58091]/45 focus:!bg-transparent"
+                        ? "!bg-emerald-600 !text-gray-100 shadow"
+                        : "!text-gray-300 hover:bg-emerald-600/65 focus:!bg-transparent"
                     )}>
                     <Link
                       href={item.link}
                       className='flex items-center gap-3'>
                       <item.icon className={cn("h-4 w-4")} />
-                      <span className={cn("text-sm font-medium")}>
+                      <span
+                        className={cn(
+                          "text-sm",
+                          isActive ? "font-semibold" : ""
+                        )}>
                         {item.title}
                       </span>
                     </Link>
@@ -139,7 +140,7 @@ function AppSidebar() {
           </SidebarMenu>
         </SidebarGroup>
 
-        <Separator className='my-4 bg-gray-300' />
+        <Separator className='my-4 bg-gray-400' />
 
         <SidebarGroup>
           <SidebarGroupLabel className='text-[11px] font-medium text-gray-300 uppercase tracking-wider'>
@@ -155,16 +156,22 @@ function AppSidebar() {
                     isActive={isActive}
                     tooltip={item.title}
                     className={cn(
-                      "h-10 px-3 focus:!bg-transparent focus-visible:!bg-transparent active:!bg-transparent",
+                      "h-8 px-3 ",
                       isActive
-                        ? "!bg-white !text-black"
-                        : "!text-[#f4f6f9] hover:bg-[#00d58091]/45"
+                        ? "!bg-emerald-600 !text-gray-100 shadow"
+                        : "!text-gray-300 hover:bg-emerald-600/65 focus:!bg-transparent"
                     )}>
                     <Link
                       href={item.link}
                       className='flex items-center gap-3'>
-                      <item.icon className='h-4 w-4' />
-                      <span className='text-sm font-medium'>{item.title}</span>
+                      <item.icon className={cn("h-4 w-4")} />
+                      <span
+                        className={cn(
+                          "text-sm",
+                          isActive ? "font-semibold" : ""
+                        )}>
+                        {item.title}
+                      </span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

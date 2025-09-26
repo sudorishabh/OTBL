@@ -71,15 +71,15 @@ export const WorkOrderTable = mysqlTable("work_orders", {
     .notNull()
     .references(() => OfficeTable.id, { onDelete: "cascade" }),
   date: timestamp("date").notNull(),
-  description: text("description").notNull(),
+  description: text("description"),
   budget_amount: decimal("budget_amount", {
     precision: 10,
     scale: 2,
-  }).notNull(),
+  }),
   expense_amount: decimal("expense_amount", {
     precision: 10,
     scale: 2,
-  }).notNull(),
+  }),
   status: varchar("status", {
     length: 50,
     enum: ["pending", "completed", "cancelled"],
