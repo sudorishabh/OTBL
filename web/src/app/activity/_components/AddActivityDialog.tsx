@@ -1,8 +1,6 @@
 import DialogWindow from "@/components/DialogWindow";
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import z from "zod";
-import { addActivitySchema } from "../_schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Form,
@@ -10,13 +8,17 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import CustomButton from "@/components/custom/CustomButton";
+import CustomButton from "@/components/CustomButton";
 import { trpc } from "@/lib/trpc";
 import { Textarea } from "@/components/ui/textarea";
-import toast from "react-hot-toast";
+import { z } from "zod";
+
+export const addActivitySchema = z.object({
+  name: z.string().min(1, { message: "Activity name is required" }),
+  description: z.string(),
+});
 
 interface Props {
   open: boolean;

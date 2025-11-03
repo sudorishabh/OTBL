@@ -1,9 +1,8 @@
 "use client";
-import { Input } from "@/components/ui/input";
 import React from "react";
 import { DropdownMenuCheckboxItemProps } from "@radix-ui/react-dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { ChevronDownIcon, FilterIcon } from "lucide-react";
+import { ChevronDownIcon } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,

@@ -12,9 +12,130 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { addOfficeSchema } from "../_schemas";
+
 import { trpc } from "@/lib/trpc";
-import CustomButton from "@/components/custom/CustomButton";
+import CustomButton from "@/components/CustomButton";
+import CustomForm from "@/components/CustomForm";
+
+const addOfficeSchema = z.object({
+  name: z.string().min(1, { message: "Office name is required." }),
+  address: z.string().min(1, { message: "Office Address is required." }),
+  state: z.string().min(1, { message: "Office State is required." }),
+  city: z.string().min(1, { message: "Office City is required." }),
+  pincode: z
+    .string()
+    .min(1, { message: "Office Pincode is required." })
+    .max(10),
+  contact_person: z
+    .string()
+    .min(1, { message: "Office Contact person is required." }),
+  contact_number: z
+    .string()
+    .min(1, { message: "Contact number is required." })
+    .max(15),
+  email: z.email({ message: "Invalid email address." }),
+});
+
+const workOrderFormSchema = z
+  .object({
+    code: z.string().min(1, { message: "Code is required" }),
+    title: z.string().min(1, { message: "Title is required" }),
+    date: z.string().min(1, { message: "Date is required" }),
+    description: z.string().min(1, { message: "Description is required" }),
+    budget_amount: z.string().min(1, { message: "Budget is required" }),
+    expense_amount: z.string().min(1, { message: "Expense is required" }),
+    status: z.enum(["pending", "completed", "cancelled"]),
+    // Site selection
+    siteMode: z.enum(["existing", "new"]),
+    site_ids: z.array(z.string()).optional(),
+    newSites: z
+      .array(
+        z.object({
+          name: z.string().min(1, { message: "Site name is required" }),
+          address: z.string().min(1, { message: "Address is required" }),
+          state: z.string().min(1, { message: "State is required" }),
+          city: z.string().min(1, { message: "City is required" }),
+          pincode: z
+            .string()
+            .min(1, { message: "Pincode is required" })
+            .max(10),
+          contact_person: z
+            .string()
+            .min(1, { message: "Contact person is required" }),
+          contact_number: z
+            .string()
+            .min(1, { message: "Contact number is required" })
+            .max(15),
+          email: z.string().email({ message: "Valid email is required" }),
+        })
+      )
+      .optional(),
+
+    // Budget categories per site (Step 3)
+    selectedSiteBudgets: z
+      .array(
+        z.object({
+          site_id: z.string(),
+          budget_category_ids: z.array(z.string()),
+        })
+      )
+      .default([]),
+    newSiteBudgets: z
+      .array(
+        z.object({
+          site_index: z.number().nonnegative(),
+          budget_category_ids: z.array(z.string()),
+        })
+      )
+      .default([]),
+  })
+  .superRefine((val, ctx) => {
+    if (val.siteMode === "existing") {
+      const ids = val.site_ids ?? [];
+      if (ids.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["site_ids"],
+          message: "Select at least one site",
+        });
+      }
+    } else if (val.siteMode === "new") {
+      const list = val.newSites ?? [];
+      if (list.length === 0) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["newSites"],
+          message: "Add at least one site",
+        });
+      }
+      list.forEach((site, index) => {
+        const requiredFields: Array<keyof typeof site> = [
+          "name",
+          "address",
+          "state",
+          "city",
+          "pincode",
+          "contact_person",
+          "contact_number",
+          "email",
+        ];
+        requiredFields.forEach((key) => {
+          const value = (site as Record<string, unknown>)[key];
+          const isEmpty =
+            value === undefined ||
+            value === null ||
+            String(value).trim() === "";
+          if (isEmpty) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: ["newSites", index, key as string],
+              message: "This field is required",
+            });
+          }
+        });
+      });
+    }
+  });
 
 interface Props {
   open: boolean;
@@ -52,9 +173,7 @@ const AddOfficeDialog = ({ open, setOpen }: Props) => {
       description='Add a new office to the system.'
       size='sm'>
       <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className='space-y-6'>
+        <CustomForm onSubmit={form.handleSubmit(onSubmit)}>
           <FormField
             control={form.control}
             name='name'
@@ -202,7 +321,7 @@ const AddOfficeDialog = ({ open, setOpen }: Props) => {
             loading={form.formState.isSubmitting}
             disabled={form.formState.isSubmitting}
           />
-        </form>
+        </CustomForm>
       </Form>
     </DialogWindow>
   );

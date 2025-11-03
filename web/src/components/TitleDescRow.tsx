@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import React from "react";
-import CustomIcon from "./custom/CustomIcon";
+import CustomIcon from "./CustomIcon";
 import { Calendar, Clock, Edit, MoreVertical } from "lucide-react";
 import { format } from "date-fns";
 import { capitalFirstLetter } from "@/utils/capitalFirstLetter";

@@ -1,5 +1,5 @@
 "use client";
-import CustomButton from "@/components/custom/CustomButton";
+import CustomButton from "@/components/CustomButton";
 import Wrapper from "@/components/Wrapper";
 import { Plus } from "lucide-react";
 import React, { useState } from "react";

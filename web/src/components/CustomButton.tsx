@@ -1,5 +1,5 @@
 import React from "react";
-import { Button } from "../ui/button";
+import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import { Loader } from "lucide-react";
 
@@ -39,11 +39,11 @@ const CustomButton = ({
       break;
     case "secondary":
       varientStyle =
-        "bg-gray-100 text-gray-700 rounded-md cursor-pointer hover:bg-gray-200/60 shadow-sm/5 transition-all duration-200 hover:shadow-sm gap-1.5 h-8.5 text-[0.813rem]";
+        "bg-gray-100 text-gray-700 rounded-md cursor-pointer borde hover:bg-gray-200/60 shadow-sm transition-all duration-200 hover:shadow-sm gap-1.5 h-8.5 text-[0.813rem]";
       break;
     case "outline":
       varientStyle =
-        "bg-white text-gray-800 hover:bg-gray-100 cursor-pointer border shadow";
+        "bg-white text-gray-800 shadow-none hover:bg-gray-50 cursor-pointer border transition-all duration-200  h-8.5";
       break;
   }
 
@@ -55,7 +55,7 @@ const CustomButton = ({
       varientIconStyle = "size-3.5 text-gray-700";
       break;
     case "outline":
-      varientIconStyle = "size-3.5 text-gray-100";
+      varientIconStyle = "size-3.5 text-gray-700";
       break;
   }
 

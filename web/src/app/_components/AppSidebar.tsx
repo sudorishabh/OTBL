@@ -1,9 +1,7 @@
 "use client";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Sidebar,
   SidebarGroup,
-  SidebarGroupContent,
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
@@ -11,7 +9,6 @@ import {
   useSidebar,
   SidebarContent,
   SidebarHeader,
-  SidebarFooter,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -23,6 +20,7 @@ import {
   ReceiptIndianRupee,
   ChartNoAxesGantt,
   Tent,
+  Users,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
@@ -33,6 +31,11 @@ const sidebarLinks = [
     title: "Overview",
     link: "/",
     icon: LayoutDashboard,
+  },
+  {
+    title: "User Management",
+    link: "/user",
+    icon: Users,
   },
   {
     title: "Offices",

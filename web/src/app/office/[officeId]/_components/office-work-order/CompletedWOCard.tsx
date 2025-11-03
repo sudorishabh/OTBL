@@ -17,12 +17,12 @@ const CompletedWOCard = ({
   title,
 }: Props) => {
   return (
-    <div className='flex flex-col rounded-lg border bg-gray-50 px-3 py-3 hover:shadow-sm transition-shadow cursor-pointer'>
+    <div className='flex flex-col rounded-lg border bg-gray-50 px-3 py-3 hover:shadow transition-shadow cursor-pointer'>
       <div className='flex items-center justify-between'>
         <h2 className='font-semibold line-clamp-1 text-sm text-gray-700'>
           {title}
         </h2>
-        <p className='text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 border'>
+        <p className='text-xs px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 border text-nowrap'>
           {code}
         </p>
       </div>

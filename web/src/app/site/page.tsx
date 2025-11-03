@@ -1,5 +1,5 @@
 "use client";
-import CustomButton from "@/components/custom/CustomButton";
+import CustomButton from "@/components/CustomButton";
 import Wrapper from "@/components/Wrapper";
 import { Plus, Tent } from "lucide-react";
 import React, { useState } from "react";
@@ -32,6 +32,7 @@ const Site = () => {
           onClick={() => {
             setIsSiteDialog(!isSiteDialog);
           }}
+          variant='primary'
         />
       }>
       {isSites ? (

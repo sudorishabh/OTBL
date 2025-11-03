@@ -3,34 +3,13 @@ import React, { useState } from "react";
 import Wrapper from "@/components/Wrapper";
 import { trpc } from "@/lib/trpc";
 import PageFetchingData from "@/components/PageFetchingData";
-import {
-  CalendarDays,
-  CheckCircle2,
-  Clock,
-  IndianRupee,
-  MapPin,
-  Phone,
-  User,
-  Mail,
-  ArrowUpRight,
-  ArrowLeft,
-  PencilLine,
-  Plus,
-  Edit,
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
+import { PencilLine } from "lucide-react";
 import { capitalFirstLetter } from "@/utils/capitalFirstLetter";
 import { useRouter } from "next/navigation";
-import CustomButton from "@/components/custom/CustomButton";
-import CompletedWOCard from "./_components/office-work-order/CompletedWOCard";
-import ActiveWOCard from "./_components/office-work-order/ActiveWOCard";
+import CustomButton from "@/components/CustomButton";
 import OfficeDetailsCard from "./_components/OfficeDetailsCard";
 import OfficeStats from "./_components/office-stats/OfficeStats";
 import OfficeWOComp from "./_components/office-work-order/OfficeWOComp";
-import CreateWODialog from "./_components/office-work-order/CreateWODialog";
 import EditOfficeDetailsDialog from "./_components/EditOfficeDetailsDialog";
 
 type PageProps = {
@@ -38,7 +17,7 @@ type PageProps = {
 };
 
 const Office = ({ params }: PageProps) => {
-  const [isEditOffieDialog, setIsEditOfficeDialog] = useState(false);
+  const [isEditOffieDialog, setIsEditOfficeDialog] = useState<boolean>(false);
 
   const { officeId } = React.use(params);
 
@@ -110,6 +89,7 @@ const Office = ({ params }: PageProps) => {
       <EditOfficeDetailsDialog
         open={isEditOffieDialog}
         setOpen={setIsEditOfficeDialog}
+        office={office}
       />
     </Wrapper>
   );

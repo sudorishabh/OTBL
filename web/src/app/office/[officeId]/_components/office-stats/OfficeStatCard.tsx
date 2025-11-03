@@ -18,7 +18,7 @@ const OfficeStatCard = ({
 }: Props) => {
   return (
     <div
-      className='rounded-xl border p-4 bg-gradient-to-br from-white to-gray-50 shadow-sm hover:shadow-md transition-shadow group hover:border-emerald-400 cursor-pointer'
+      className='rounded-xl border p-4 bg-gradient-to-br from-white to-gray-50 shadow hover:shadow-md transition-shadow group hover:border-emerald-400 cursor-pointer'
       onClick={() => setOpenDialog(!openDialog)}>
       <div className='flex items-center justify-between'>
         <div className='text-sm flex items-center gap-1.5 text-gray-500'>

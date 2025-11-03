@@ -1,1 +1,0 @@
-ALTER TABLE `offices` ADD `status` varchar(50) DEFAULT 'active';

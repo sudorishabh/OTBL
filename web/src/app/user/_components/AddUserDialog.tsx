@@ -1,0 +1,262 @@
+import DialogWindow from "@/components/DialogWindow";
+import React, { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import CustomButton from "@/components/CustomButton";
+import { z } from "zod";
+
+const addUserSchema = z.object({
+  name: z.string().min(1, { message: "Name is required" }),
+  email: z.string().email({ message: "Invalid email address" }),
+  password: z
+    .string()
+    .min(6, { message: "Password must be at least 6 characters" })
+    .optional(),
+  contact_number: z.string().max(15).optional(),
+  role: z.enum(["admin", "manager", "staff", "viewer", "operator"], {
+    message: "Role is required",
+  }),
+  status: z.enum(["active", "inactive"]),
+});
+
+interface Props {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  isEditInfo: {
+    id: number;
+    name: string;
+    email: string;
+    contact_number?: string | null;
+    role: string;
+    status: string;
+    offices?: any[];
+  } | null;
+  setIsEditInfo: (
+    isEditInfo: {
+      id: number;
+      name: string;
+      email: string;
+      contact_number?: string | null;
+      role: string;
+      status: string;
+      offices?: any[];
+    } | null
+  ) => void;
+}
+
+const AddUserDialog = ({ open, setOpen, isEditInfo, setIsEditInfo }: Props) => {
+  const form = useForm<z.infer<typeof addUserSchema>>({
+    resolver: zodResolver(addUserSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      contact_number: "",
+      role: "staff",
+      status: "active",
+    },
+  });
+
+  const isEditMode = isEditInfo ? true : false;
+
+  // TODO: Replace with actual tRPC mutations
+  // const addUser = trpc.userMutation.addUser.useMutation();
+  // const editUser = trpc.userMutation.editUser.useMutation();
+
+  async function onSubmit(values: z.infer<typeof addUserSchema>) {
+    console.log("Submit values:", values);
+    // if (isEditMode) {
+    //   await editUser.mutateAsync({ id: isEditInfo?.id, ...values });
+    // } else {
+    //   await addUser.mutateAsync(values);
+    // }
+    setOpen(false);
+    form.reset();
+  }
+
+  useEffect(() => {
+    if (isEditInfo) {
+      form.reset({
+        name: isEditInfo.name ?? "",
+        email: isEditInfo.email ?? "",
+        contact_number: isEditInfo.contact_number ?? "",
+        role: isEditInfo.role as any,
+        status: isEditInfo.status as any,
+        password: undefined,
+      });
+    } else {
+      form.reset({
+        name: "",
+        email: "",
+        password: "",
+        contact_number: "",
+        role: "staff",
+        status: "active",
+      });
+    }
+  }, [isEditInfo]);
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    if (!nextOpen) {
+      form.reset();
+      setIsEditInfo(null);
+    }
+  };
+
+  return (
+    <DialogWindow
+      title={isEditMode ? "Edit User" : "Add User"}
+      description={
+        isEditMode ? "Update user information" : "Create a new user account"
+      }
+      open={open}
+      setOpen={handleOpenChange}
+      size='md'>
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className='space-y-4 px-3.5 py-4'>
+          <FormField
+            control={form.control}
+            name='name'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Name</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder='Enter user name'
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name='email'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input
+                    type='email'
+                    placeholder='Enter email address'
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {!isEditMode && (
+            <FormField
+              control={form.control}
+              name='password'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      type='password'
+                      placeholder='Enter password'
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
+
+          <FormField
+            control={form.control}
+            name='contact_number'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Contact Number (Optional)</FormLabel>
+                <FormControl>
+                  <Input
+                    type='tel'
+                    placeholder='Enter contact number'
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name='role'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Role</FormLabel>
+                <FormControl>
+                  <select
+                    {...field}
+                    className='flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'>
+                    <option value='admin'>Admin</option>
+                    <option value='manager'>Manager</option>
+                    <option value='staff'>Staff</option>
+                    <option value='viewer'>Viewer</option>
+                    <option value='operator'>Operator</option>
+                  </select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name='status'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Status</FormLabel>
+                <FormControl>
+                  <select
+                    {...field}
+                    className='flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'>
+                    <option value='active'>Active</option>
+                    <option value='inactive'>Inactive</option>
+                  </select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className='flex gap-2 justify-end pt-4'>
+            <CustomButton
+              text='Cancel'
+              onClick={() => handleOpenChange(false)}
+              variant='outline'
+              type='button'
+            />
+            <CustomButton
+              text={isEditMode ? "Update" : "Create"}
+              variant='primary'
+              type='submit'
+            />
+          </div>
+        </form>
+      </Form>
+    </DialogWindow>
+  );
+};
+
+export default AddUserDialog;

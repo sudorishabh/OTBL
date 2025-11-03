@@ -2,7 +2,6 @@
 import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
-import { addSiteSchema } from "../_schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import DialogWindow from "@/components/DialogWindow";
 import {
@@ -14,8 +13,23 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import CustomButton from "@/components/custom/CustomButton";
+import CustomButton from "@/components/CustomButton";
 import { trpc } from "@/lib/trpc";
+import CustomForm from "@/components/CustomForm";
+
+const addSiteSchema = z.object({
+  name: z.string().min(1, { message: "Site name is required" }),
+  address: z.string().min(1, { message: "Site address is required" }),
+  state: z.string().min(1, { message: "State is required." }),
+  city: z.string().min(1, { message: "City is required." }),
+  pincode: z.string().min(1, { message: "Pincode is required." }).max(10),
+  contact_person: z.string().min(1, { message: "Contact person is required." }),
+  contact_number: z
+    .string()
+    .min(1, { message: "Contact number is required." })
+    .max(15),
+  email: z.email({ message: "Invalid email address." }),
+});
 
 interface Props {
   open: boolean;
@@ -91,9 +105,7 @@ const AddSiteDialog = ({ open, setOpen }: Props) => {
       size='sm'
       setOpen={handleOpenChange}>
       <Form {...form}>
-        <form
-          className='space-y-6'
-          onSubmit={form.handleSubmit(onSubmit)}>
+        <CustomForm onSubmit={form.handleSubmit(onSubmit)}>
           <FormField
             control={form.control}
             name='name'
@@ -238,7 +250,7 @@ const AddSiteDialog = ({ open, setOpen }: Props) => {
             loading={form.formState.isSubmitting}
             disabled={form.formState.isSubmitting}
           />
-        </form>
+        </CustomForm>
       </Form>
     </DialogWindow>
   );

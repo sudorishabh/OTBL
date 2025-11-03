@@ -7,6 +7,23 @@ export const addOfficeSchema = z.object({
   address: z.string().min(1, { message: "Address is required." }),
   state: z.string().min(1, { message: "State is required." }),
   city: z.string().min(1, { message: "City is required." }),
+  gst_number: z.string().min(1, { message: "GST number is required." }).max(15),
+  pincode: z.string().min(1, { message: "Pincode is required." }).max(10),
+  contact_person: z.string().min(1, { message: "Contact person is required." }),
+  contact_number: z
+    .string()
+    .min(1, { message: "Contact number is required." })
+    .max(15),
+  email: z.string(),
+});
+
+export const editOfficeSchema = z.object({
+  id: z.number().int().positive(),
+  name: z.string().min(1, { message: "Office name is required." }),
+  address: z.string().min(1, { message: "Address is required." }),
+  state: z.string().min(1, { message: "State is required." }),
+  city: z.string().min(1, { message: "City is required." }),
+  gst_number: z.string().min(1, { message: "GST number is required." }).max(15),
   pincode: z.string().min(1, { message: "Pincode is required." }).max(10),
   contact_person: z.string().min(1, { message: "Contact person is required." }),
   contact_number: z

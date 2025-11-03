@@ -24,7 +24,7 @@ interface Props {
 
 const OfficeDetailsCard = ({ office }: Props) => {
   return (
-    <Card className='relative shadow-sm border-0 bg-gradient-to-br from-white to-gray-50'>
+    <Card className='relative shadow border bg-gradient-to-br border-emerald-400 from-white to-gray-50'>
       <CardContent>
         <div className=' flex flex-wrap items-center gap-x-8 gap-y-4 text-sm'>
           <div className='flex flex-1 items-center gap-3'>

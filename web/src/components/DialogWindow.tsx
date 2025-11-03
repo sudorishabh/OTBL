@@ -49,13 +49,18 @@ const DialogWindow = ({
     <Dialog
       open={open}
       onOpenChange={setOpen}>
-      <DialogContent className={cn(className, dialogSize)}>
+      <DialogContent
+        className={cn(
+          "min-h-96 max-h-[calc(100vh-4rem)]",
+          className,
+          dialogSize
+        )}>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className='max-h-[calc(100vh-15rem)] py-2 px-3.5'>
+        <ScrollArea className='max-h-[calc(100vh-10rem)] py-'>
           {children}
         </ScrollArea>
       </DialogContent>

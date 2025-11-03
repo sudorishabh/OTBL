@@ -5,7 +5,7 @@ import OfficeFilterTab from "./_components/OfficeFilterTab";
 import OfficeCard from "./_components/OfficeCard";
 import { Office } from "@/types/office.types";
 import { Plus, Building2 } from "lucide-react";
-import CustomButton from "@/components/custom/CustomButton";
+import CustomButton from "@/components/CustomButton";
 import NoFetchData from "@/components/NoFetchData";
 import AddOfficeDialog from "./_components/AddOfficeDialog";
 import { trpc } from "@/lib/trpc";

@@ -1,4 +1,5 @@
 import { CalendarDays, IndianRupee } from "lucide-react";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 interface Props {
@@ -7,6 +8,7 @@ interface Props {
   description: string;
   budget_amount: number;
   date?: string;
+  id: number;
 }
 
 const ActiveWOCard = ({
@@ -15,14 +17,18 @@ const ActiveWOCard = ({
   description,
   title,
   date,
+  id,
 }: Props) => {
+  const router = useRouter();
   return (
-    <div className='flex flex-col rounded-lg border px-3 py-3 bg-gray-50 hover:shadow-sm transition-shadow cursor-pointer'>
+    <div
+      className='flex flex-col rounded-lg border px-3 py-3 bg-gray-50 hover:shadow transition-shadow cursor-pointer'
+      onClick={() => router.push(`/work-order/${id}`)}>
       <div className='flex items-center justify-between'>
         <h2 className='font-semibold line-clamp-1 text-sm text-gray-700'>
           {title || "Untitled Work Order"}
         </h2>
-        <p className='text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200'>
+        <p className='text-xs px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-nowrap'>
           {code}
         </p>
       </div>

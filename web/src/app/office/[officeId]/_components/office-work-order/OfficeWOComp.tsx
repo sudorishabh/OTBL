@@ -1,9 +1,9 @@
-import CustomButton from "@/components/custom/CustomButton";
+import CustomButton from "@/components/CustomButton";
 import { ArrowUpRight, CheckCircle2, Clock, Plus } from "lucide-react";
 import React, { useState } from "react";
 import ActiveWOCard from "./ActiveWOCard";
 import CompletedWOCard from "./CompletedWOCard";
-import CreateWODialog from "./CreateWODialog";
+import CreateWODialog from "./CreateWO/CreateWODialog";
 
 const completedWOs = [
   {
@@ -48,7 +48,7 @@ const OfficeWOComp = () => {
             <div className='flex items-center gap-3'>
               <CustomButton
                 text='Create Work Order'
-                variant='secondary'
+                variant='outline'
                 Icon={Plus}
                 onClick={() => setIsCreateWODialog(!isCreateWODialog)}
               />
@@ -57,8 +57,9 @@ const OfficeWOComp = () => {
               </div>
             </div>
           </div>
-          <div className='px-4 pb-4 pt-2 grid grid-cols-1 gap-4'>
+          <div className='px-4 pb-4 pt-2 grid grid-cols-1 gap-5'>
             <ActiveWOCard
+              id={1}
               title='Generator maintenance at Site A'
               code='WO-1023'
               description='Routine maintenance and oil change for generator set.'
@@ -66,6 +67,7 @@ const OfficeWOComp = () => {
               date={"12 Oct 2025"}
             />
             <ActiveWOCard
+              id={2}
               title='Solar panel cleaning'
               code='WO-1045'
               description='Quarterly cleaning and inspection of solar panels.'
@@ -73,6 +75,7 @@ const OfficeWOComp = () => {
               date={"18 Oct 2025"}
             />
             <ActiveWOCard
+              id={3}
               title='CCTV installation expansion'
               code='WO-1102'
               description='Add 6 additional cameras and re-route cables.'
@@ -85,14 +88,14 @@ const OfficeWOComp = () => {
         <div className='w-2/6 bg-gradient-to-br from-white to-gray-50 shadow-sm py-2 px-0.5  rounded-xl border'>
           <div className='flex items-center justify-between py-2 px-4'>
             <h3 className='text-base font-semibold text-gray-900 flex items-center gap-2'>
-              <CheckCircle2 className='h-4 w-4 text-green-600' /> Active Work
+              <CheckCircle2 className='h-4 w-4 text-green-600' /> Completed Work
               Orders
             </h3>
             <div className='h-8 w-8 rounded-full bg-white border hover:border-0 group flex items-center justify-center hover:bg-emerald-600 relative cursor-pointer'>
               <ArrowUpRight className='h-4 w-4 text-emerald-700 group-hover:text-white' />
             </div>
           </div>
-          <div className='px-4 pb-4 pt-2 grid grid-cols-1 gap-4'>
+          <div className='px-4 pb-4 pt-2 grid grid-cols-1 gap-5'>
             {completedWOs.map((wo) => (
               <CompletedWOCard
                 key={wo.Key}

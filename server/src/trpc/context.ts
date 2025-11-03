@@ -21,4 +21,5 @@ export const createContext = ({
   }
   return { req, res, user };
 };
+
 export type Context = Awaited<ReturnType<typeof createContext>>;
