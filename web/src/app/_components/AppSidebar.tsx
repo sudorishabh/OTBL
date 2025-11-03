@@ -29,32 +29,32 @@ import { cn } from "@/lib/utils";
 const sidebarLinks = [
   {
     title: "Overview",
-    link: "/",
+    link: "/dashboard",
     icon: LayoutDashboard,
   },
   {
     title: "User Management",
-    link: "/user",
+    link: "/dashboard/user",
     icon: Users,
   },
   {
     title: "Offices",
-    link: "/office",
+    link: "/dashboard/office",
     icon: Building2,
   },
   {
     title: "Sites",
-    link: "/site",
+    link: "/dashboard/site",
     icon: Tent,
   },
   {
     title: "Activities",
-    link: "/activity",
+    link: "/dashboard/activity",
     icon: ChartNoAxesGantt,
   },
   {
     title: "Budget Categories",
-    link: "/budget-category",
+    link: "/dashboard/budget-category",
     icon: ReceiptIndianRupee,
   },
 ];
@@ -62,12 +62,12 @@ const sidebarLinks = [
 const footerLinks = [
   {
     title: "Profile",
-    link: "/profile",
+    link: "/dashboard/profile",
     icon: User,
   },
   {
     title: "Settings",
-    link: "/settings",
+    link: "/dashboard/settings",
     icon: Settings,
   },
 ];

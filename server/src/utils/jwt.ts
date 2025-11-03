@@ -3,7 +3,7 @@ import config from "../config/app-env";
 import type { JWTPayload } from "../trpc/context";
 
 export const signToken = (payload: JWTPayload): string => {
-  return jwt.sign(payload, config.JWT.SECRET as string, {
+  return jwt.sign(payload, config.JWT.SECRET, {
     expiresIn: config.JWT.EXPIRES_IN as string,
   });
 };

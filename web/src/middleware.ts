@@ -21,14 +21,15 @@ export default async function middleware(req: NextRequest) {
   const role = req.cookies.get("role")?.value;
 
   // Redirect unauthenticated users from protected routes
-  if (isProtectedRoute && !accessToken) {
-    const loginUrl = new URL("/login", req.nextUrl);
-    loginUrl.searchParams.set(
-      "return-url",
-      req.nextUrl.pathname + req.nextUrl.search
-    );
-    return NextResponse.redirect(loginUrl);
-  }
+
+  // if (isProtectedRoute && !accessToken) {
+  //   const loginUrl = new URL("/login", req.nextUrl);
+  //   loginUrl.searchParams.set(
+  //     "return-url",
+  //     req.nextUrl.pathname + req.nextUrl.search
+  //   );
+  //   return NextResponse.redirect(loginUrl);
+  // }
 
   // if (isPublicRoute && accessToken) {
   //   if (role === "applicant") {
