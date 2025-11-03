@@ -1,31 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { TRPC_ERROR_CODE_KEY } from "@trpc/server/rpc";
 import { z } from "zod";
-import { AppError } from "../utils/app-error";
-import { ErrorCode } from "../enums/error-codes";
-import { HTTPSTATUS } from "../utils/http-config";
-
-// Map HTTP status codes to tRPC error codes
-const httpStatusToTrpcCode = (statusCode: number): TRPC_ERROR_CODE_KEY => {
-  switch (statusCode) {
-    case HTTPSTATUS.BAD_REQUEST:
-      return "BAD_REQUEST";
-    case HTTPSTATUS.UNAUTHORIZED:
-      return "UNAUTHORIZED";
-    case HTTPSTATUS.FORBIDDEN:
-      return "FORBIDDEN";
-    case HTTPSTATUS.NOT_FOUND:
-      return "NOT_FOUND";
-    case HTTPSTATUS.CONFLICT:
-      return "CONFLICT";
-    case HTTPSTATUS.UNPROCESSABLE_ENTITY:
-      return "UNPROCESSABLE_CONTENT";
-    case HTTPSTATUS.TOO_MANY_REQUESTS:
-      return "TOO_MANY_REQUESTS";
-    default:
-      return "INTERNAL_SERVER_ERROR";
-  }
-};
 
 // Transform various error types to TRPCError
 export const transformError = (error: unknown): TRPCError => {
@@ -51,19 +25,7 @@ export const transformError = (error: unknown): TRPCError => {
     });
   }
 
-  // Handle custom AppError
-  if (error instanceof AppError) {
-    return new TRPCError({
-      code: httpStatusToTrpcCode(error.statusCode),
-      message: error.message,
-      cause: {
-        errorCode: error.errorCode,
-        originalError: error,
-      },
-    });
-  }
-
-  // Handle database constraint errors (example for PostgreSQL)
+  // Handle database constraint errors
   if (error instanceof Error) {
     // Handle unique constraint violations
     if (

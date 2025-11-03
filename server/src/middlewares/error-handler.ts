@@ -1,19 +1,6 @@
-import { z } from "zod";
-import { ErrorRequestHandler, Response } from "express";
+import { ErrorRequestHandler } from "express";
 import { HTTPSTATUS } from "../utils/http-config";
-import { AppError } from "../utils/app-error";
 import { clearAuthenticationCookies, REFRESH_PATH } from "../utils/cookie";
-
-const formatZodError = (res: Response, error: z.ZodError) => {
-  const errors = error?.issues?.map((err) => ({
-    field: err.path.join("."),
-    message: err.message,
-  }));
-  return res.status(HTTPSTATUS.BAD_REQUEST).json({
-    message: "Validation failed",
-    errors: errors,
-  });
-};
 
 export const errorHandler: ErrorRequestHandler = (
   error,
@@ -27,23 +14,14 @@ export const errorHandler: ErrorRequestHandler = (
     clearAuthenticationCookies(res);
   }
 
+  // Handle JSON parsing errors
   if (error instanceof SyntaxError) {
     return res.status(HTTPSTATUS.BAD_REQUEST).json({
       message: "Invalid JSON format, please check your request body",
     });
   }
 
-  if (error instanceof z.ZodError) {
-    return formatZodError(res, error);
-  }
-
-  if (error instanceof AppError) {
-    return res.status(error.statusCode).json({
-      message: error.message,
-      errorCode: error.errorCode,
-    });
-  }
-
+  // Generic fallback for any unhandled errors
   return res.status(HTTPSTATUS.INTERNAL_SERVER_ERROR).json({
     message: "Internal Server Error",
     error: error?.message || "Unknown error occurred",
