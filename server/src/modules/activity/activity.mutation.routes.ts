@@ -1,10 +1,11 @@
 import { router, publicProcedure } from "../../trpc";
 import { addActivitySchema, editActivitySchma } from "./activity.schema";
-import { addActivity, editActivity } from "./activity.mutation.controller";
+
 import { toLowerAndTrim } from "../../utils/sanitize-string";
 import { db } from "../../db";
 import { ActivityTable } from "../../db/schema";
 import { TRPCError } from "@trpc/server";
+import { eq } from "drizzle-orm";
 
 export const activityMutationRouter = router({
   addActivity: publicProcedure

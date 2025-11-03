@@ -8,17 +8,27 @@ import { budgetCategoryMutationRouter } from "../modules/budget-category/budget-
 import { budgetCategoryQueryRoutes } from "../modules/budget-category/budget-category.query.routes";
 import { siteMutationRouter } from "../modules/site/site.mutation.routes";
 import { siteQueryRouter } from "../modules/site/site.query.routes";
+import { userMutationRouter } from "../modules/user/user.mutation.route";
+import { userQueryRouter } from "../modules/user/user.query.route";
 
 export const appRouter = router({
+  // User authentication & management
+  user: userMutationRouter,
+  userQuery: userQueryRouter,
+
+  // Office management
   officeMutation: officeMutationRouter,
   officeQuery: officeQueryRouter,
 
+  // Activity management
   activityMutation: activityMutationRouter,
   activityQuery: activityQueryRoutes,
 
+  // Budget category management
   budgetCategoryMutation: budgetCategoryMutationRouter,
   budgetCategoryQuery: budgetCategoryQueryRoutes,
 
+  // Site management
   siteMutation: siteMutationRouter,
   siteQuery: siteQueryRouter,
 });
