@@ -13,10 +13,12 @@ import {
 import { Input } from "@/components/ui/input";
 import CustomButton from "@/components/CustomButton";
 import { z } from "zod";
+import { trpc } from "@/lib/trpc";
+import toast from "react-hot-toast";
 
 const addUserSchema = z.object({
   name: z.string().min(1, { message: "Name is required" }),
-  email: z.string().email({ message: "Invalid email address" }),
+  email: z.email({ message: "Invalid email address" }),
   password: z
     .string()
     .min(6, { message: "Password must be at least 6 characters" })
@@ -25,7 +27,6 @@ const addUserSchema = z.object({
   role: z.enum(["admin", "manager", "staff", "viewer", "operator"], {
     message: "Role is required",
   }),
-  status: z.enum(["active", "inactive"]),
 });
 
 interface Props {
@@ -62,7 +63,15 @@ const AddUserDialog = ({ open, setOpen, isEditInfo, setIsEditInfo }: Props) => {
       password: "",
       contact_number: "",
       role: "staff",
-      status: "active",
+    },
+  });
+
+  const registerMutation = trpc.userMutation.registerByAdmin.useMutation({
+    onSuccess: () => {
+      toast.success("User registered successfully");
+    },
+    onError: (error) => {
+      toast.error(`Failed to register user: ${error.message}`);
     },
   });
 
@@ -73,12 +82,13 @@ const AddUserDialog = ({ open, setOpen, isEditInfo, setIsEditInfo }: Props) => {
   // const editUser = trpc.userMutation.editUser.useMutation();
 
   async function onSubmit(values: z.infer<typeof addUserSchema>) {
-    console.log("Submit values:", values);
-    // if (isEditMode) {
-    //   await editUser.mutateAsync({ id: isEditInfo?.id, ...values });
-    // } else {
-    //   await addUser.mutateAsync(values);
-    // }
+    if (isEditMode) {
+      // Edit user logic here
+      // await editUser.mutateAsync({ id: isEditInfo!.id, ...values });
+    } else {
+      // Add user logic here
+      await registerMutation.mutateAsync(values);
+    }
     setOpen(false);
     form.reset();
   }
@@ -90,7 +100,6 @@ const AddUserDialog = ({ open, setOpen, isEditInfo, setIsEditInfo }: Props) => {
         email: isEditInfo.email ?? "",
         contact_number: isEditInfo.contact_number ?? "",
         role: isEditInfo.role as any,
-        status: isEditInfo.status as any,
         password: undefined,
       });
     } else {
@@ -100,7 +109,6 @@ const AddUserDialog = ({ open, setOpen, isEditInfo, setIsEditInfo }: Props) => {
         password: "",
         contact_number: "",
         role: "staff",
-        status: "active",
       });
     }
   }, [isEditInfo]);
@@ -214,25 +222,6 @@ const AddUserDialog = ({ open, setOpen, isEditInfo, setIsEditInfo }: Props) => {
                     <option value='staff'>Staff</option>
                     <option value='viewer'>Viewer</option>
                     <option value='operator'>Operator</option>
-                  </select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name='status'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Status</FormLabel>
-                <FormControl>
-                  <select
-                    {...field}
-                    className='flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'>
-                    <option value='active'>Active</option>
-                    <option value='inactive'>Inactive</option>
                   </select>
                 </FormControl>
                 <FormMessage />

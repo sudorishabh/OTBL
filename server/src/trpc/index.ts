@@ -2,6 +2,8 @@ import { TRPCError } from "@trpc/server";
 import { transformError } from "./error-transformer";
 import { t } from "./context";
 import { loggingMiddleware } from "./logging-middleware";
+import { throwUnauthorized } from "../utils/trpc-errors";
+import { ErrorCode } from "../enums/error-codes";
 
 export const router = t.router;
 
@@ -22,8 +24,22 @@ export const publicProcedure = t.procedure
 
 // Authentication middleware
 const isAuthed = t.middleware(({ ctx, next }) => {
-  if (!ctx.user) throw new TRPCError({ code: "UNAUTHORIZED" });
-  return next({ ctx: { user: ctx.user } });
+  // Check if user exists in context
+  if (!ctx.user) {
+    throwUnauthorized(
+      "Authentication required. Please log in to access this resource."
+    );
+  }
+
+  // At this point, TypeScript knows ctx.user is not null
+  const user = ctx.user;
+
+  // Check if user has required properties
+  if (!user.sub) {
+    throwUnauthorized("Invalid authentication token. Please log in again.");
+  }
+
+  return next({ ctx: { user } });
 });
 
 // Protected procedure - requires authentication
