@@ -13,6 +13,13 @@ const Provider = ({ children }: { children: React.ReactNode }) => {
       links: [
         httpBatchLink({
           url: "http://localhost:7200/trpc",
+          // Ensure cookies are sent/received across origins
+          fetch: async (input, init) => {
+            return fetch(input, {
+              ...init,
+              credentials: "include",
+            });
+          },
         }),
       ],
     })

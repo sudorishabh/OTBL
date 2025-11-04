@@ -1,6 +1,6 @@
-import { router, publicProcedure } from "../../trpc";
-import { db } from "../../db";
-import { ActivityTable } from "../../db/schema";
+import { router, publicProcedure } from "@/trpc";
+import { db } from "@/db";
+import { ActivityTable } from "@/db/schema";
 
 export const activityQueryRoutes = router({
   getActivities: publicProcedure.query(async () => {

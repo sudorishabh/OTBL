@@ -1,9 +1,9 @@
 // src/routers/auth.ts
-import { router, publicProcedure, protectedProcedure } from "../../trpc";
+import { router, publicProcedure, protectedProcedure } from "@/trpc";
 import { z } from "zod";
 // import jwt from "jsonwebtoken";
 import { TRPCError } from "@trpc/server";
-import { db } from "../../db";
+import { db } from "@/db";
 import {
   OfficeTable,
   SiteActivityExpenseTable,
@@ -11,7 +11,7 @@ import {
   SiteTable,
   WorkOrderSiteTable,
   WorkOrderTable,
-} from "../../db/schema";
+} from "@/db/schema";
 import { eq, desc, count } from "drizzle-orm";
 import {
   addOfficeSchema,

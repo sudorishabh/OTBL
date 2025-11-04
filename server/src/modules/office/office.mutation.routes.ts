@@ -1,16 +1,16 @@
 // src/routers/auth.ts
-import { router, publicProcedure, protectedProcedure } from "../../trpc";
+import { router, publicProcedure, protectedProcedure } from "@/trpc";
 import { z } from "zod";
 import jwt from "jsonwebtoken";
 import { TRPCError } from "@trpc/server";
-import { db } from "../../db";
-import { OfficeTable, WorkOrderTable } from "../../db/schema";
+import { db } from "@/db";
+import { OfficeTable, WorkOrderTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { addOfficeSchema, editOfficeSchema } from "./office.schema";
 import {
   throwNotFound,
   handleDatabaseOperation,
-} from "../../utils/trpc-errors";
+} from "@/utils/trpc-errors";
 
 export const officeMutationRouter = router({
   // Public: returns JWT on valid credentials
