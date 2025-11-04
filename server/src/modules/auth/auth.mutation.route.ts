@@ -10,9 +10,10 @@ import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import { signToken, signRefreshToken } from "@/utils/jwt";
 import { setAuthenticationCookies } from "@/utils/cookie";
+import { register } from "module";
 
 export const authMutationRouter = router({
-  // Public: returns JWT on valid credentials and also sets httpOnly cookies
+  // Public
   login: publicProcedure.input(loginSchema).mutation(async ({ input, ctx }) => {
     const { email, password } = input;
 
@@ -51,7 +52,6 @@ export const authMutationRouter = router({
     const accessToken = signToken(payload);
     const refreshToken = signRefreshToken(payload);
 
-    // Set tokens in httpOnly cookies (Express response available via ctx.res)
     setAuthenticationCookies({
       res: ctx.res,
       accessToken,
@@ -60,15 +60,37 @@ export const authMutationRouter = router({
 
     return {
       success: true,
-      // Still return tokens for flexibility (client can ignore and rely on cookies)
-      accessToken,
-      refreshToken,
       user: {
         id: user.id,
         name: user.name,
         email: user.email,
         role: user.role,
       },
+    };
+  }),
+
+  // Logout - Clear cookies
+  logout: publicProcedure.mutation(async ({ ctx }) => {
+    // Clear authentication cookies
+    ctx.res.cookie("accessToken", "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 0,
+      path: "/",
+    });
+
+    ctx.res.cookie("refreshToken", "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 0,
+      path: "/",
+    });
+
+    return {
+      success: true,
+      message: "Logged out successfully",
     };
   }),
 });

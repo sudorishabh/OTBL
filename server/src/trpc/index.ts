@@ -1,16 +1,11 @@
-import { initTRPC, TRPCError } from "@trpc/server";
-import type { Context } from "./context";
-import { transformError, errorFormatter } from "./error-transformer";
+import { TRPCError } from "@trpc/server";
+import { transformError } from "./error-transformer";
+import { t } from "./context";
 import { loggingMiddleware } from "./logging-middleware";
 
-export const t = initTRPC.context<Context>().create({
-  errorFormatter,
-});
-
-// export { t };
 export const router = t.router;
 
-// Enhanced error handling middleware
+// Error handling middleware
 const errorHandlingMiddleware = t.middleware(async ({ next }) => {
   try {
     return await next();

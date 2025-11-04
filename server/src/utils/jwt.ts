@@ -4,13 +4,13 @@ import type { JWTPayload } from "../trpc/context";
 
 export const signToken = (payload: JWTPayload): string => {
   return jwt.sign(payload, config.JWT.SECRET, {
-    expiresIn: config.JWT.EXPIRES_IN as string,
+    expiresIn: config.JWT.EXPIRES_IN,
   });
 };
 
 export const signRefreshToken = (payload: JWTPayload): string => {
-  return jwt.sign(payload, config.JWT.REFRESH_SECRET as string, {
-    expiresIn: config.JWT.REFRESH_EXPIRES_IN as string,
+  return jwt.sign(payload, config.JWT.REFRESH_SECRET, {
+    expiresIn: config.JWT.REFRESH_EXPIRES_IN,
   });
 };
 

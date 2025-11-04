@@ -21,13 +21,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import Image from "next/image";
+import { trpc } from "@/lib/trpc";
+import { useRouter } from "next/navigation";
 
 // Validation schema
 const loginSchema = z.object({
   email: z
-    .string()
-    .min(1, "Email is required")
-    .email("Please enter a valid email address"),
+    .email("Please enter a valid email address")
+    .min(1, "Email is required"),
   password: z
     .string()
     .min(1, "Password is required")
@@ -37,6 +38,8 @@ const loginSchema = z.object({
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 const LoginPage = () => {
+  const router = useRouter();
+
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -45,9 +48,18 @@ const LoginPage = () => {
     },
   });
 
+  const loginMutation = trpc.authMutation.login.useMutation();
+
   const onSubmit = (data: LoginFormValues) => {
-    console.log("Login data:", data);
-    // Handle login logic here
+    loginMutation.mutate(data, {
+      onSuccess: () => {
+        // Redirect to dashboard or desired page after successful login
+        router.push("/dashboard");
+      },
+      onError: (error: { message: string }) => {
+        alert(`Login failed: ${error.message}`);
+      },
+    });
   };
 
   return (

@@ -176,8 +176,9 @@ export const UserOfficesTable = mysqlTable("user_offices", {
     .notNull()
     .references(() => OfficeTable.id, { onDelete: "cascade" }),
   // who assigned this user to the office (should be an admin)
-  assigned_by: int("assigned_by")
-    .references(() => userTable.id, { onDelete: "set null" }),
+  assigned_by: int("assigned_by").references(() => userTable.id, {
+    onDelete: "set null",
+  }),
   // role of the user for this office (manager/operator)
   role: varchar("role", {
     length: 50,

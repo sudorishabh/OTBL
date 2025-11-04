@@ -1,9 +1,10 @@
 "use client";
 import { useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { trpc, getTrpcClient } from "@/lib/trpc";
+import { trpc } from "@/lib/trpc";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { httpBatchLink } from "@trpc/client";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 const Provider = ({ children }: { children: React.ReactNode }) => {
   const [queryClient] = useState(() => new QueryClient());
@@ -13,7 +14,6 @@ const Provider = ({ children }: { children: React.ReactNode }) => {
       links: [
         httpBatchLink({
           url: "http://localhost:7200/trpc",
-          // Ensure cookies are sent/received across origins
           fetch: async (input, init) => {
             return fetch(input, {
               ...init,
@@ -29,7 +29,9 @@ const Provider = ({ children }: { children: React.ReactNode }) => {
       client={trpcClient}
       queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
-        <SidebarProvider>{children}</SidebarProvider>
+        <AuthProvider>
+          <SidebarProvider>{children}</SidebarProvider>
+        </AuthProvider>
       </QueryClientProvider>
     </trpc.Provider>
   );
