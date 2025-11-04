@@ -13,16 +13,16 @@ export const ProtectedRoute = ({
   children,
   allowedRoles,
 }: ProtectedRouteProps) => {
-  const { user, isLoading, isAuthenticated } = useAuthContext();
+  const { user, isUserLoading, isAuthenticated } = useAuthContext();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (!isUserLoading && !isAuthenticated) {
       router.push("/login");
     }
 
     if (
-      !isLoading &&
+      !isUserLoading &&
       isAuthenticated &&
       allowedRoles &&
       user &&
@@ -30,9 +30,9 @@ export const ProtectedRoute = ({
     ) {
       router.push("/unauthorized");
     }
-  }, [isLoading, isAuthenticated, user, allowedRoles, router]);
+  }, [isUserLoading, isAuthenticated, user, allowedRoles, router]);
 
-  if (isLoading) {
+  if (isUserLoading) {
     return <PageLoading />;
   }
 

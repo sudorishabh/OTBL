@@ -29,32 +29,32 @@ import { cn } from "@/lib/utils";
 const sidebarLinks = [
   {
     title: "Overview",
-    link: "/dashboard",
+    link: "/",
     icon: LayoutDashboard,
   },
   {
     title: "User Management",
-    link: "/dashboard/user",
+    link: "/user",
     icon: Users,
   },
   {
     title: "Offices",
-    link: "/dashboard/office",
+    link: "/office",
     icon: Building2,
   },
   {
     title: "Sites",
-    link: "/dashboard/site",
+    link: "/site",
     icon: Tent,
   },
   {
     title: "Activities",
-    link: "/dashboard/activity",
+    link: "/activity",
     icon: ChartNoAxesGantt,
   },
   {
     title: "Budget Categories",
-    link: "/dashboard/budget-category",
+    link: "/budget-category",
     icon: ReceiptIndianRupee,
   },
 ];
@@ -62,19 +62,25 @@ const sidebarLinks = [
 const footerLinks = [
   {
     title: "Profile",
-    link: "/dashboard/profile",
+    link: "/profile",
     icon: User,
   },
   {
     title: "Settings",
-    link: "/dashboard/settings",
+    link: "/settings",
     icon: Settings,
   },
 ];
 
 function AppSidebar() {
-  const pathname = usePathname();
+  let pathname = usePathname();
   const { state } = useSidebar();
+
+  if (!pathname.startsWith("/dashboard")) {
+    return null;
+  } else {
+    pathname = pathname.replace("/dashboard", "") || "/";
+  }
 
   return (
     <Sidebar
@@ -125,7 +131,7 @@ function AppSidebar() {
                         : "!text-gray-300 hover:bg-emerald-600/65 focus:!bg-transparent"
                     )}>
                     <Link
-                      href={item.link}
+                      href={`/dashboard${item.link}`}
                       className='flex items-center gap-3'>
                       <item.icon className={cn("h-4 w-4")} />
                       <span
