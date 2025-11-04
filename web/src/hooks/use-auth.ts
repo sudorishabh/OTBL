@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useRouter } from "next/navigation";
+import { set } from "zod";
 
 type User = {
   id: number;
@@ -14,7 +15,7 @@ type User = {
 export const useAuth = () => {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isUserLoading, setUserIsLoading] = useState(true);
 
   const { data, isLoading: isQueryLoading } = trpc.authQuery.me.useQuery(
     undefined,
@@ -33,7 +34,7 @@ export const useAuth = () => {
       } else {
         setUser(null);
       }
-      setIsLoading(false);
+      setUserIsLoading(false);
     }
   }, [data, isQueryLoading]);
 
@@ -45,7 +46,8 @@ export const useAuth = () => {
 
   return {
     user,
-    isLoading,
+    setUser,
+    isUserLoading,
     isAuthenticated: !!user,
     logout,
   };

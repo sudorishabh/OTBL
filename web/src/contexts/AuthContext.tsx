@@ -12,7 +12,8 @@ type User = {
 
 type AuthContextType = {
   user: User | null;
-  isLoading: boolean;
+  setUser: (user: User | null) => void;
+  isUserLoading: boolean;
   isAuthenticated: boolean;
   logout: () => Promise<void>;
 };

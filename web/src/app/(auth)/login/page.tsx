@@ -23,6 +23,7 @@ import {
 import Image from "next/image";
 import { trpc } from "@/lib/trpc";
 import { useRouter } from "next/navigation";
+import { useAuthContext } from "@/contexts/AuthContext";
 
 // Validation schema
 const loginSchema = z.object({
@@ -39,6 +40,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 const LoginPage = () => {
   const router = useRouter();
+  const { setUser } = useAuthContext();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -50,11 +52,20 @@ const LoginPage = () => {
 
   const loginMutation = trpc.authMutation.login.useMutation();
 
+  type User = {
+    id: number;
+    name: string;
+    email: string;
+    role: string;
+    status: string;
+  };
+
   const onSubmit = (data: LoginFormValues) => {
     loginMutation.mutate(data, {
-      onSuccess: () => {
+      onSuccess: (data: { user: User }) => {
         // Redirect to dashboard or desired page after successful login
         router.push("/dashboard");
+        setUser(data.user);
       },
       onError: (error: { message: string }) => {
         alert(`Login failed: ${error.message}`);

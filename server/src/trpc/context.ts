@@ -5,10 +5,6 @@ import { initTRPC } from "@trpc/server";
 export type JWTPayload = { sub: string; email?: string; role?: string };
 import { errorFormatter } from "./error-transformer";
 
-export const t = initTRPC.context<Context>().create({
-  errorFormatter,
-});
-
 export const createContext = ({
   req,
   res,
@@ -42,3 +38,7 @@ export const createContext = ({
 };
 
 export type Context = Awaited<ReturnType<typeof createContext>>;
+
+export const t = initTRPC.context<Context>().create({
+  errorFormatter,
+});

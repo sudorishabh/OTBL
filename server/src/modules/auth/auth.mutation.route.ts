@@ -9,17 +9,29 @@ import { userTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcrypt";
 import { signToken, signRefreshToken } from "@/utils/jwt";
-import { setAuthenticationCookies } from "@/utils/cookie";
+import {
+  setAuthenticationCookies,
+  clearAuthenticationCookies,
+} from "@/utils/cookie";
 import { register } from "module";
 
 export const authMutationRouter = router({
-  // Public
   login: publicProcedure.input(loginSchema).mutation(async ({ input, ctx }) => {
     const { email, password } = input;
 
-    // Fetch user from database
     const existingUser = await handleDatabaseOperation(
-      () => db.select().from(userTable).where(eq(userTable.email, email)),
+      () =>
+        db
+          .select({
+            id: userTable.id,
+            name: userTable.name,
+            email: userTable.email,
+            role: userTable.role,
+            status: userTable.status,
+            password_hash: userTable.password_hash,
+          })
+          .from(userTable)
+          .where(eq(userTable.email, email)),
       "Failed to fetch user"
     );
 
@@ -65,28 +77,15 @@ export const authMutationRouter = router({
         name: user.name,
         email: user.email,
         role: user.role,
+        status: user.status,
       },
     };
   }),
 
   // Logout - Clear cookies
   logout: publicProcedure.mutation(async ({ ctx }) => {
-    // Clear authentication cookies
-    ctx.res.cookie("accessToken", "", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 0,
-      path: "/",
-    });
-
-    ctx.res.cookie("refreshToken", "", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 0,
-      path: "/",
-    });
+    // Clear authentication cookies using the helper function
+    clearAuthenticationCookies(ctx.res);
 
     return {
       success: true,

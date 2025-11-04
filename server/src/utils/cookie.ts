@@ -12,8 +12,8 @@ export const REFRESH_PATH = `${config.BASE_PATH}/auth/refresh`;
 
 const defaults: CookieOptions = {
   httpOnly: true,
-  //secure: config.NODE_ENV === "production" ? true : false,
-  //sameSite: config.NODE_ENV === "production" ? "strict" : "lax",
+  secure: process.env.NODE_ENV === "production" ? true : false,
+  sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
 };
 
 export const getRefreshTokenCookieOptions = (): CookieOptions => {
@@ -21,8 +21,9 @@ export const getRefreshTokenCookieOptions = (): CookieOptions => {
   const expires = calculateExpirationDate(expiresIn);
   return {
     ...defaults,
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in milliseconds
     expires,
-    path: REFRESH_PATH,
+    path: "/", // Changed from REFRESH_PATH to "/" so cookie is available on all routes
   };
 };
 
@@ -31,6 +32,7 @@ export const getAccessTokenCookieOptions = (): CookieOptions => {
   const expires = calculateExpirationDate(expiresIn);
   return {
     ...defaults,
+    maxAge: 30 * 60 * 1000, // 30 minutes in milliseconds
     expires,
     path: "/",
   };
@@ -47,5 +49,5 @@ export const setAuthenticationCookies = ({
 
 export const clearAuthenticationCookies = (res: Response): Response =>
   res.clearCookie("accessToken").clearCookie("refreshToken", {
-    path: REFRESH_PATH,
+    path: "/", // Changed from REFRESH_PATH to match the cookie path
   });

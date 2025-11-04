@@ -8,7 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 
 const Provider = ({ children }: { children: React.ReactNode }) => {
   const [queryClient] = useState(() => new QueryClient());
-  // const [client] = useState(() => getTrpcClient());
+
   const [trpcClient] = useState(() =>
     trpc.createClient({
       links: [

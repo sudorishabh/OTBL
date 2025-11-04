@@ -10,9 +10,9 @@ import {
 } from "@/components/ui/card";
 
 export default function DashboardPage() {
-  const { user, logout, isLoading } = useAuthContext();
+  const { user, logout, isUserLoading } = useAuthContext();
 
-  if (isLoading) {
+  if (isUserLoading) {
     return (
       <div className='flex items-center justify-center min-h-screen'>
         <p>Loading...</p>

@@ -12,9 +12,7 @@ import { signToken, signRefreshToken, verifyRefreshToken } from "@/utils/jwt";
 import { setAuthenticationCookies } from "@/utils/cookie";
 
 export const authQueryRouter = router({
-  // Public - Check if user is authenticated
   me: publicProcedure.query(async ({ ctx }) => {
-    // Try to get user from context (from access token)
     if (ctx.user) {
       const existingUser = await handleDatabaseOperation(
         () =>

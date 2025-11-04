@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { t } from "../trpc";
+import { t } from "@/trpc/context";
 
 // Role hierarchy for permission checking
 const roleHierarchy = {
