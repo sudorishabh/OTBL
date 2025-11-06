@@ -2,7 +2,7 @@
 
 import { router, publicProcedure, protectedProcedure } from "../../trpc";
 import { db } from "../../db";
-import { OfficeTable } from "../../db/schema";
+import { officeTable } from "../../db/schema";
 import { eq } from "drizzle-orm";
 import { addOfficeSchema, editOfficeSchema } from "./office.schema";
 import { isManager, isAdmin } from "../../middlewares/authorization";
@@ -22,7 +22,7 @@ export const officeMutationRouterExample = router({
       const createdBy = parseInt(ctx.user.sub);
 
       await handleDatabaseOperation(
-        () => db.insert(OfficeTable).values(input),
+        () => db.insert(officeTable).values(input),
         "Failed to create office"
       );
 
@@ -41,7 +41,7 @@ export const officeMutationRouterExample = router({
 
       // Check if office exists
       const existingOffice = await handleDatabaseOperation(
-        () => db.select().from(OfficeTable).where(eq(OfficeTable.id, id)),
+        () => db.select().from(officeTable).where(eq(officeTable.id, id)),
         "Failed to check office existence"
       );
 
@@ -51,7 +51,7 @@ export const officeMutationRouterExample = router({
 
       // Update the office
       await handleDatabaseOperation(
-        () => db.update(OfficeTable).set(rest).where(eq(OfficeTable.id, id)),
+        () => db.update(officeTable).set(rest).where(eq(officeTable.id, id)),
         "Failed to update office"
       );
 
@@ -68,7 +68,7 @@ export const officeMutationRouterExample = router({
     .mutation(async ({ input }) => {
       // Check if office exists
       const existingOffice = await handleDatabaseOperation(
-        () => db.select().from(OfficeTable).where(eq(OfficeTable.id, input.id)),
+        () => db.select().from(officeTable).where(eq(officeTable.id, input.id)),
         "Failed to check office existence"
       );
 
@@ -78,7 +78,7 @@ export const officeMutationRouterExample = router({
 
       // Delete the office (cascade will handle related records)
       await handleDatabaseOperation(
-        () => db.delete(OfficeTable).where(eq(OfficeTable.id, input.id)),
+        () => db.delete(officeTable).where(eq(officeTable.id, input.id)),
         "Failed to delete office"
       );
 
@@ -95,8 +95,8 @@ export const officeMutationRouterExample = router({
     .mutation(async ({ input }) => {
       const [office] = await db
         .select()
-        .from(OfficeTable)
-        .where(eq(OfficeTable.id, input.id));
+        .from(officeTable)
+        .where(eq(officeTable.id, input.id));
 
       if (!office) {
         throwNotFound("Office");
@@ -105,9 +105,9 @@ export const officeMutationRouterExample = router({
       const newStatus = office.status === "active" ? "inactive" : "active";
 
       await db
-        .update(OfficeTable)
+        .update(officeTable)
         .set({ status: newStatus })
-        .where(eq(OfficeTable.id, input.id));
+        .where(eq(officeTable.id, input.id));
 
       return {
         success: true,

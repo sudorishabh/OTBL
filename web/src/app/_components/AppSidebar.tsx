@@ -85,21 +85,18 @@ function AppSidebar() {
   return (
     <Sidebar
       collapsible='icon'
-      className='border-0'>
+      className='border-0 w-60'>
       <SidebarHeader className='p-6 bg-cyan-900'>
-        <div className='flex justify-center items-center gap-3'>
+        <div className='flex flex-col justify-center items-center gap-2'>
           <Image
             src='/otbl-logo.png'
             alt='OTBL Logo'
-            width={200}
-            height={200}
-            className='h-7 w-13'
+            width={500}
+            height={500}
+            className='h-16 w-28'
           />
           {state !== "collapsed" && (
-            <div className='flex flex-col'>
-              <span className='text-sm  font-semibold text-gray-100'>OTBL</span>
-              <span className='text-xs text-gray-100'>Management System</span>
-            </div>
+            <span className='text-xs text-gray-100'>Management System</span>
           )}
         </div>
       </SidebarHeader>
@@ -112,7 +109,6 @@ function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarMenu className='mt-2'>
             {sidebarLinks.map((item) => {
-              console.log(item.link);
               const isActive =
                 item.link === "/"
                   ? pathname === item.link
@@ -125,7 +121,7 @@ function AppSidebar() {
                     isActive={isActive}
                     tooltip={item.title}
                     className={cn(
-                      "h-8 px-3 ",
+                      "h-7 pl-3 ",
                       isActive
                         ? "!bg-emerald-600 !text-gray-100 shadow"
                         : "!text-gray-300 hover:bg-emerald-600/65 focus:!bg-transparent"
@@ -136,7 +132,7 @@ function AppSidebar() {
                       <item.icon className={cn("h-4 w-4")} />
                       <span
                         className={cn(
-                          "text-sm",
+                          "text-xs",
                           isActive ? "font-semibold" : ""
                         )}>
                         {item.title}

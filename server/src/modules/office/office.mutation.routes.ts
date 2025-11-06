@@ -4,13 +4,10 @@ import { z } from "zod";
 import jwt from "jsonwebtoken";
 import { TRPCError } from "@trpc/server";
 import { db } from "@/db";
-import { OfficeTable, WorkOrderTable } from "@/db/schema";
+import { officeTable, workOrderTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { addOfficeSchema, editOfficeSchema } from "./office.schema";
-import {
-  throwNotFound,
-  handleDatabaseOperation,
-} from "@/utils/trpc-errors";
+import { throwNotFound, handleDatabaseOperation } from "@/utils/trpc-errors";
 
 export const officeMutationRouter = router({
   // Public: returns JWT on valid credentials
@@ -18,7 +15,7 @@ export const officeMutationRouter = router({
     .input(addOfficeSchema)
     .mutation(async ({ input }) => {
       await handleDatabaseOperation(
-        () => db.insert(OfficeTable).values(input),
+        () => db.insert(officeTable).values(input),
         "Failed to create office"
       );
 
@@ -34,7 +31,7 @@ export const officeMutationRouter = router({
 
       // Check if office exists
       const existingOffice = await handleDatabaseOperation(
-        () => db.select().from(OfficeTable).where(eq(OfficeTable.id, id)),
+        () => db.select().from(officeTable).where(eq(officeTable.id, id)),
         "Failed to check office existence"
       );
 
@@ -44,7 +41,7 @@ export const officeMutationRouter = router({
 
       // Update the office
       await handleDatabaseOperation(
-        () => db.update(OfficeTable).set(rest).where(eq(OfficeTable.id, id)),
+        () => db.update(officeTable).set(rest).where(eq(officeTable.id, id)),
         "Failed to update office"
       );
 

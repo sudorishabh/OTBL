@@ -3,14 +3,14 @@ import { z } from "zod";
 import jwt from "jsonwebtoken";
 import { TRPCError } from "@trpc/server";
 import { db } from "../../db";
-import { OfficeTable, SiteTable, WorkOrderTable } from "../../db/schema";
+import { officeTable, siteTable, workOrderTable } from "../../db/schema";
 import { eq } from "drizzle-orm";
 import { addSiteSchema, editSiteSchema } from "./site.schema";
 
 export const siteMutationRouter = router({
   addSite: publicProcedure.input(addSiteSchema).mutation(async ({ input }) => {
     try {
-      await db.insert(SiteTable).values(input);
+      await db.insert(siteTable).values(input);
 
       return {
         success: true,
@@ -29,8 +29,8 @@ export const siteMutationRouter = router({
       try {
         const existingSite = await db
           .select()
-          .from(SiteTable)
-          .where(eq(SiteTable.id, input.id));
+          .from(siteTable)
+          .where(eq(siteTable.id, input.id));
 
         if (existingSite.length === 0) {
           throw new TRPCError({
@@ -39,7 +39,7 @@ export const siteMutationRouter = router({
           });
         }
 
-        await db.update(SiteTable).set(input).where(eq(SiteTable.id, input.id));
+        await db.update(siteTable).set(input).where(eq(siteTable.id, input.id));
 
         return { success: true };
       } catch (error) {

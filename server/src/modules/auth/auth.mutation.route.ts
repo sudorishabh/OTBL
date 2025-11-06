@@ -28,7 +28,7 @@ export const authMutationRouter = router({
             email: userTable.email,
             role: userTable.role,
             status: userTable.status,
-            password_hash: userTable.password_hash,
+            password: userTable.password,
           })
           .from(userTable)
           .where(eq(userTable.email, email)),
@@ -48,9 +48,9 @@ export const authMutationRouter = router({
     }
 
     // Verify password
-    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+    // const isPasswordValid = await bcrypt.compare(password, user.password_hash);
 
-    if (!isPasswordValid) {
+    if (user.password !== password) {
       throwUnauthorized("Invalid email or password, please try again");
     }
 

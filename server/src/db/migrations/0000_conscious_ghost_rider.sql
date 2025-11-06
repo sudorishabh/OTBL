@@ -87,24 +87,14 @@ CREATE TABLE `sites` (
 	CONSTRAINT `sites_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
-CREATE TABLE `user_offices` (
-	`id` int AUTO_INCREMENT NOT NULL,
-	`user_id` int NOT NULL,
-	`office_id` int NOT NULL,
-	`assigned_by` int,
-	`role` varchar(50) NOT NULL,
-	`created_at` timestamp NOT NULL DEFAULT (now()),
-	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
-	CONSTRAINT `user_offices_id` PRIMARY KEY(`id`)
-);
---> statement-breakpoint
 CREATE TABLE `work_order_sites` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`work_order_id` int NOT NULL,
 	`site_id` int NOT NULL,
 	`start_date` timestamp NOT NULL,
 	`end_date` timestamp NOT NULL,
-	`handing_over_date` timestamp NOT NULL,
+	`metric_ton` decimal(50,2),
+	`metric_ton_rate` decimal(50,2),
 	`budget_amount` decimal(50,2),
 	`status` varchar(50) NOT NULL DEFAULT 'pending',
 	`created_at` timestamp NOT NULL DEFAULT (now()),
@@ -164,6 +154,17 @@ CREATE TABLE `clients` (
 	CONSTRAINT `clients_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
+CREATE TABLE `office_users` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`user_id` int NOT NULL,
+	`office_id` int NOT NULL,
+	`assigned_by` int,
+	`role` varchar(50) NOT NULL,
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `office_users_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
 CREATE TABLE `users` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`name` varchar(255) NOT NULL,
@@ -185,10 +186,10 @@ ALTER TABLE `site_activities` ADD CONSTRAINT `site_activities_wo_site_id_work_or
 ALTER TABLE `site_activities` ADD CONSTRAINT `site_activities_activity_id_activities_id_fk` FOREIGN KEY (`activity_id`) REFERENCES `activities`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `site_budgets` ADD CONSTRAINT `site_budgets_wo_site_id_work_order_sites_id_fk` FOREIGN KEY (`wo_site_id`) REFERENCES `work_order_sites`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `site_budgets` ADD CONSTRAINT `site_budgets_budget_category_id_budget_categories_id_fk` FOREIGN KEY (`budget_category_id`) REFERENCES `budget_categories`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `user_offices` ADD CONSTRAINT `user_offices_user_id_users_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `user_offices` ADD CONSTRAINT `user_offices_office_id_offices_id_fk` FOREIGN KEY (`office_id`) REFERENCES `offices`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `user_offices` ADD CONSTRAINT `user_offices_assigned_by_users_id_fk` FOREIGN KEY (`assigned_by`) REFERENCES `users`(`id`) ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `work_order_sites` ADD CONSTRAINT `work_order_sites_work_order_id_work_orders_id_fk` FOREIGN KEY (`work_order_id`) REFERENCES `work_orders`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `work_order_sites` ADD CONSTRAINT `work_order_sites_site_id_sites_id_fk` FOREIGN KEY (`site_id`) REFERENCES `sites`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `work_orders` ADD CONSTRAINT `work_orders_office_id_offices_id_fk` FOREIGN KEY (`office_id`) REFERENCES `offices`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE `client_contacts` ADD CONSTRAINT `client_contacts_client_id_clients_id_fk` FOREIGN KEY (`client_id`) REFERENCES `clients`(`id`) ON DELETE cascade ON UPDATE no action;
+ALTER TABLE `client_contacts` ADD CONSTRAINT `client_contacts_client_id_clients_id_fk` FOREIGN KEY (`client_id`) REFERENCES `clients`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `office_users` ADD CONSTRAINT `office_users_user_id_users_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `office_users` ADD CONSTRAINT `office_users_office_id_offices_id_fk` FOREIGN KEY (`office_id`) REFERENCES `offices`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `office_users` ADD CONSTRAINT `office_users_assigned_by_users_id_fk` FOREIGN KEY (`assigned_by`) REFERENCES `users`(`id`) ON DELETE set null ON UPDATE no action;

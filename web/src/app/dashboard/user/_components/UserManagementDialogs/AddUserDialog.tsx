@@ -16,17 +16,12 @@ import { z } from "zod";
 import { trpc } from "@/lib/trpc";
 import toast from "react-hot-toast";
 
-const addUserSchema = z.object({
-  name: z.string().min(1, { message: "Name is required" }),
-  email: z.email({ message: "Invalid email address" }),
-  password: z
-    .string()
-    .min(6, { message: "Password must be at least 6 characters" })
-    .optional(),
-  contact_number: z.string().max(15).optional(),
-  role: z.enum(["admin", "manager", "staff", "viewer", "operator"], {
-    message: "Role is required",
-  }),
+export const registerSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.email("Invalid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  contact_number: z.string().optional(),
+  role: z.enum(["admin", "manager", "staff", "viewer", "operator"]),
 });
 
 interface Props {
@@ -55,8 +50,8 @@ interface Props {
 }
 
 const AddUserDialog = ({ open, setOpen, isEditInfo, setIsEditInfo }: Props) => {
-  const form = useForm<z.infer<typeof addUserSchema>>({
-    resolver: zodResolver(addUserSchema),
+  const form = useForm<z.infer<typeof registerSchema>>({
+    resolver: zodResolver(registerSchema),
     defaultValues: {
       name: "",
       email: "",
@@ -75,16 +70,21 @@ const AddUserDialog = ({ open, setOpen, isEditInfo, setIsEditInfo }: Props) => {
     },
   });
 
+  const editUserMutation = trpc.userMutation.editUser.useMutation({
+    onSuccess: () => {
+      toast.success("User updated successfully");
+    },
+    onError: (error: any) => {
+      toast.error(`Failed to update user: ${error.message}`);
+    },
+  });
+
   const isEditMode = isEditInfo ? true : false;
 
-  // TODO: Replace with actual tRPC mutations
-  // const addUser = trpc.userMutation.addUser.useMutation();
-  // const editUser = trpc.userMutation.editUser.useMutation();
-
-  async function onSubmit(values: z.infer<typeof addUserSchema>) {
+  async function onSubmit(values: z.infer<typeof registerSchema>) {
     if (isEditMode) {
       // Edit user logic here
-      // await editUser.mutateAsync({ id: isEditInfo!.id, ...values });
+      await editUserMutation.mutateAsync({ id: isEditInfo!.id, ...values });
     } else {
       // Add user logic here
       await registerMutation.mutateAsync(values);

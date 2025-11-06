@@ -1,4 +1,5 @@
 import AppSidebar from "../_components/AppSidebar";
+import { SidebarInset } from "@/components/ui/sidebar";
 
 export default function Layout({
   children,
@@ -6,9 +7,9 @@ export default function Layout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className='flex'>
+    <>
       <AppSidebar />
-      <div className='w-full'>{children}</div>
-    </div>
+      <SidebarInset className='pl-60'>{children}</SidebarInset>
+    </>
   );
 }

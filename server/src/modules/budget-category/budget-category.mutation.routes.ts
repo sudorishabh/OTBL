@@ -1,7 +1,7 @@
 import { router, publicProcedure } from "../../trpc";
 import { TRPCError } from "@trpc/server";
 import { db } from "../../db";
-import { BudgetCategoryTable } from "../../db/schema";
+import { budgetCategoryTable } from "../../db/schema";
 import {
   addBudgetCategorySchema,
   editBudgetCategorySchema,
@@ -17,7 +17,7 @@ export const budgetCategoryMutationRouter = router({
       const description = toLowerAndTrim(input.description);
 
       try {
-        await db.insert(BudgetCategoryTable).values({
+        await db.insert(budgetCategoryTable).values({
           name,
           description,
         });
@@ -37,8 +37,8 @@ export const budgetCategoryMutationRouter = router({
       try {
         const exisitngBudgetCategory = await db
           .select()
-          .from(BudgetCategoryTable)
-          .where(eq(BudgetCategoryTable.id, input.id));
+          .from(budgetCategoryTable)
+          .where(eq(budgetCategoryTable.id, input.id));
 
         if (exisitngBudgetCategory.length === 0) {
           throw new TRPCError({
@@ -48,11 +48,11 @@ export const budgetCategoryMutationRouter = router({
         }
 
         await db
-          .update(BudgetCategoryTable)
+          .update(budgetCategoryTable)
           .set({
             description: input.description,
           })
-          .where(eq(BudgetCategoryTable.id, input.id));
+          .where(eq(budgetCategoryTable.id, input.id));
         return { success: true };
       } catch (error) {
         if (error instanceof TRPCError) {

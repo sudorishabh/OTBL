@@ -5,12 +5,12 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { db } from "@/db";
 import {
-  OfficeTable,
-  SiteActivityExpenseTable,
-  SiteBudgetTable,
-  SiteTable,
-  WorkOrderSiteTable,
-  WorkOrderTable,
+  officeTable,
+  siteActivityExpenseTable,
+  siteBudgetTable,
+  siteTable,
+  workOrderSiteTable,
+  workOrderTable,
 } from "@/db/schema";
 import { eq, desc, count } from "drizzle-orm";
 import {
@@ -23,7 +23,7 @@ import {
 
 export const officeQueryRouter = router({
   getOffices: publicProcedure.query(async () => {
-    const offices = await db.select().from(OfficeTable);
+    const offices = await db.select().from(officeTable);
 
     return offices;
   }),
@@ -37,15 +37,15 @@ export const officeQueryRouter = router({
       // Get total count
       const [totalResult] = await db
         .select({ count: count() })
-        .from(OfficeTable);
+        .from(officeTable);
 
       const total = totalResult.count;
 
       // Get paginated offices
       const offices = await db
         .select()
-        .from(OfficeTable)
-        .orderBy(desc(OfficeTable.created_at))
+        .from(officeTable)
+        .orderBy(desc(officeTable.created_at))
         .limit(limit)
         .offset(offset);
 
@@ -66,8 +66,8 @@ export const officeQueryRouter = router({
   getOffice: publicProcedure.input(getOfficeSchema).query(async ({ input }) => {
     const office = await db
       .select()
-      .from(OfficeTable)
-      .where(eq(OfficeTable.id, input.id));
+      .from(officeTable)
+      .where(eq(officeTable.id, input.id));
 
     if (!office || office.length === 0) {
       throw new TRPCError({ code: "NOT_FOUND", message: "Office not found" });
@@ -81,8 +81,8 @@ export const officeQueryRouter = router({
     .query(async ({ input }) => {
       const all = await db
         .select()
-        .from(WorkOrderTable)
-        .where(eq(WorkOrderTable.office_id, input.id));
+        .from(workOrderTable)
+        .where(eq(workOrderTable.office_id, input.id));
 
       const active = all.filter((wo) => wo.status === "pending");
       const completed = all.filter((wo) => wo.status === "completed");
@@ -95,9 +95,9 @@ export const officeQueryRouter = router({
     .query(async ({ input }) => {
       // Sites associated to office via work orders → work_order_sites
       const workOrders = await db
-        .select({ id: WorkOrderTable.id })
-        .from(WorkOrderTable)
-        .where(eq(WorkOrderTable.office_id, input.id));
+        .select({ id: workOrderTable.id })
+        .from(workOrderTable)
+        .where(eq(workOrderTable.office_id, input.id));
 
       const workOrderIds = workOrders.map((w) => w.id);
 
@@ -108,18 +108,18 @@ export const officeQueryRouter = router({
 
       if (workOrderIds.length > 0) {
         const woSites = await db
-          .select({ id: WorkOrderSiteTable.id })
-          .from(WorkOrderSiteTable)
-          .where(eq(WorkOrderSiteTable.work_order_id, workOrderIds[0]));
+          .select({ id: workOrderSiteTable.id })
+          .from(workOrderSiteTable)
+          .where(eq(workOrderSiteTable.work_order_id, workOrderIds[0]));
 
         // If multiple work orders, fetch all sites across them
         // Drizzle doesn't support IN with eq directly; do multiple queries if needed
         if (workOrderIds.length > 1) {
           for (let i = 1; i < workOrderIds.length; i++) {
             const more = await db
-              .select({ id: WorkOrderSiteTable.id })
-              .from(WorkOrderSiteTable)
-              .where(eq(WorkOrderSiteTable.work_order_id, workOrderIds[i]));
+              .select({ id: workOrderSiteTable.id })
+              .from(workOrderSiteTable)
+              .where(eq(workOrderSiteTable.work_order_id, workOrderIds[i]));
             woSites.push(...more);
           }
         }
@@ -129,12 +129,12 @@ export const officeQueryRouter = router({
         // Aggregate budgets and expenses from work_orders directly
         const woRows = await db
           .select({
-            status: WorkOrderTable.status,
-            budget_amount: WorkOrderTable.budget_amount,
-            expense_amount: WorkOrderTable.expense_amount,
+            status: workOrderTable.status,
+            budget_amount: workOrderTable.budget_amount,
+            expense_amount: workOrderTable.expense_amount,
           })
-          .from(WorkOrderTable)
-          .where(eq(WorkOrderTable.office_id, input.id));
+          .from(workOrderTable)
+          .where(eq(workOrderTable.office_id, input.id));
 
         for (const row of woRows) {
           if (row.status === "completed") completedWorkOrders += 1;

@@ -3,17 +3,19 @@ import { z } from "zod";
 // Registration schema
 export const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Invalid email address"),
+  email: z.email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
   contact_number: z.string().optional(),
-  role: z
-    .enum(["admin", "manager", "staff", "viewer", "operator"])
-    .default("staff"),
+  role: z.enum(["admin", "manager", "staff", "viewer", "operator"]),
+});
+
+export const editUserSchema = registerSchema.extend({
+  id: z.string(),
 });
 
 // Login schema
 export const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
+  email: z.email("Invalid email address"),
   password: z.string().min(1, "Password is required"),
 });
 

@@ -86,11 +86,12 @@ const UserTable = ({
             <TableHead>Role</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Offices</TableHead>
+            <TableHead>Password</TableHead>
             <TableHead className='text-right'>Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {users.length === 0 ? (
+          {users?.length === 0 ? (
             <TableRow>
               <TableCell
                 colSpan={7}
@@ -99,22 +100,26 @@ const UserTable = ({
               </TableCell>
             </TableRow>
           ) : (
-            users.map((user) => (
+            users?.map((user) => (
               <TableRow key={user.id}>
-                <TableCell className='font-medium'>{user.name}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>{user.contact_number || "-"}</TableCell>
-                <TableCell>
+                <TableCell className='text-xs font-medium'>
+                  {user.name}
+                </TableCell>
+                <TableCell className='text-xs'>{user.email}</TableCell>
+                <TableCell className='text-xs'>
+                  {user.contact_number || "-"}
+                </TableCell>
+                <TableCell className='text-xs'>
                   <Badge variant={getRoleBadgeVariant(user.role)}>
                     {user.role}
                   </Badge>
                 </TableCell>
-                <TableCell>
+                <TableCell className='text-xs'>
                   <Badge variant={getStatusBadgeVariant(user.status)}>
                     {user.status}
                   </Badge>
                 </TableCell>
-                <TableCell>
+                <TableCell className='text-xs'>
                   {user.offices.length > 0 ? (
                     <div className='flex flex-col gap-1'>
                       {user.offices.map((uo) => (
@@ -140,6 +145,7 @@ const UserTable = ({
                     </span>
                   )}
                 </TableCell>
+                <TableCell className='text-xs'>••••••••</TableCell>
                 <TableCell className='text-right'>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
