@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  Form,
   FormControl,
   FormField,
   FormItem,
@@ -38,6 +37,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 interface Props {
   form: any;
@@ -45,9 +45,13 @@ interface Props {
   isGetClientsLoading: boolean;
   clientMode: "existing" | "new";
 }
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
-const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: Props) => {
+const CreateWOStep1 = ({
+  form,
+  clientsData,
+  isGetClientsLoading,
+  clientMode,
+}: Props) => {
   return (
     <Card className='border-0 drop-shadow shadow-0 bg-gray-50'>
       <CardHeader className='pb-4'>
@@ -55,7 +59,7 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
           <div>
             <h3 className='text-lg font-semibold'>Work Order Details</h3>
             <p className='text-sm text-muted-foreground'>
-              Provide basic information about the work order
+              Provide complete information about the work order
             </p>
           </div>
         </div>
@@ -177,7 +181,7 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
                                 )}
                               </div>
                               <p className='text-sm text-muted-foreground'>
-                                Select from existing clients in the system
+                                Select from existing clients
                               </p>
                             </div>
                           </div>
@@ -221,7 +225,7 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
                                 )}
                               </div>
                               <p className='text-sm text-muted-foreground'>
-                                Add a new client while creating work order
+                                Add a new client
                               </p>
                             </div>
                           </div>
@@ -247,7 +251,13 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
                       value={field.value}>
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder={isGetClientsLoading ? 'Loading clients...' : 'Select a client'} />
+                          <SelectValue
+                            placeholder={
+                              isGetClientsLoading
+                                ? "Loading clients..."
+                                : "Select a client"
+                            }
+                          />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -269,7 +279,7 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
             {clientMode === "new" && (
               <div className='space-y-4 p-4 border rounded-lg bg-purple-50/50 dark:bg-purple-950/10'>
                 <h4 className='font-semibold text-sm'>New Client Details</h4>
-                
+
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                   <FormField
                     control={form.control}
@@ -278,7 +288,10 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
                       <FormItem>
                         <FormLabel>Client Name</FormLabel>
                         <FormControl>
-                          <Input placeholder='Client name' {...field} />
+                          <Input
+                            placeholder='Client name'
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -292,7 +305,10 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
                       <FormItem>
                         <FormLabel>GST Number</FormLabel>
                         <FormControl>
-                          <Input placeholder='GST number' {...field} />
+                          <Input
+                            placeholder='GST number'
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -307,7 +323,10 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
                     <FormItem>
                       <FormLabel>Address</FormLabel>
                       <FormControl>
-                        <Input placeholder='Address' {...field} />
+                        <Input
+                          placeholder='Address'
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -322,7 +341,10 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
                       <FormItem>
                         <FormLabel>City</FormLabel>
                         <FormControl>
-                          <Input placeholder='City' {...field} />
+                          <Input
+                            placeholder='City'
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -336,7 +358,10 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
                       <FormItem>
                         <FormLabel>State</FormLabel>
                         <FormControl>
-                          <Input placeholder='State' {...field} />
+                          <Input
+                            placeholder='State'
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -350,7 +375,10 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
                       <FormItem>
                         <FormLabel>Pincode</FormLabel>
                         <FormControl>
-                          <Input placeholder='Pincode' {...field} />
+                          <Input
+                            placeholder='Pincode'
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -366,7 +394,10 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
                       <FormItem>
                         <FormLabel>Contact Number</FormLabel>
                         <FormControl>
-                          <Input placeholder='Contact number' {...field} />
+                          <Input
+                            placeholder='Contact number'
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -380,7 +411,11 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input type='email' placeholder='Email' {...field} />
+                          <Input
+                            type='email'
+                            placeholder='Email'
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -476,8 +511,14 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
                               onSelect={(date) => {
                                 if (!date) return field.onChange("");
                                 const yyyy = date.getFullYear();
-                                const mm = String(date.getMonth() + 1).padStart(2, "0");
-                                const dd = String(date.getDate()).padStart(2, "0");
+                                const mm = String(date.getMonth() + 1).padStart(
+                                  2,
+                                  "0"
+                                );
+                                const dd = String(date.getDate()).padStart(
+                                  2,
+                                  "0"
+                                );
                                 field.onChange(`${yyyy}-${mm}-${dd}`);
                               }}
                             />
@@ -519,8 +560,14 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
                               onSelect={(date) => {
                                 if (!date) return field.onChange("");
                                 const yyyy = date.getFullYear();
-                                const mm = String(date.getMonth() + 1).padStart(2, "0");
-                                const dd = String(date.getDate()).padStart(2, "0");
+                                const mm = String(date.getMonth() + 1).padStart(
+                                  2,
+                                  "0"
+                                );
+                                const dd = String(date.getDate()).padStart(
+                                  2,
+                                  "0"
+                                );
                                 field.onChange(`${yyyy}-${mm}-${dd}`);
                               }}
                             />
@@ -562,8 +609,14 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
                               onSelect={(date) => {
                                 if (!date) return field.onChange("");
                                 const yyyy = date.getFullYear();
-                                const mm = String(date.getMonth() + 1).padStart(2, "0");
-                                const dd = String(date.getDate()).padStart(2, "0");
+                                const mm = String(date.getMonth() + 1).padStart(
+                                  2,
+                                  "0"
+                                );
+                                const dd = String(date.getDate()).padStart(
+                                  2,
+                                  "0"
+                                );
                                 field.onChange(`${yyyy}-${mm}-${dd}`);
                               }}
                             />
@@ -637,30 +690,28 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
               />
             </div>
 
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-              <FormField
-                control={form.control}
-                name='metric_ton_rate'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className='flex items-center gap-2'>
-                      <IndianRupee className='h-4 w-4' />
-                      Metric Ton Rate (Optional)
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        type='number'
-                        step='0.01'
-                        placeholder='0.00'
-                        className='bg-white'
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+            <FormField
+              control={form.control}
+              name='metric_ton_rate'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className='flex items-center gap-2'>
+                    <IndianRupee className='h-4 w-4' />
+                    Metric Ton Rate (Optional)
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      type='number'
+                      step='0.01'
+                      placeholder='0.00'
+                      className='bg-white'
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <FormField
               control={form.control}
@@ -685,7 +736,7 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
             />
           </div>
 
-          {/* Site Mode Selection - Moved from earlier position */}
+          {/* Site Mode Selection */}
           <div className='space-y-8'>
             <div className='flex items-center gap-2 mb-8'>
               <div className='p-2 rounded-lg bg-green-100'>
@@ -744,7 +795,7 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
                                 )}
                               </div>
                               <p className='text-sm text-muted-foreground'>
-                                Link this work order to sites that already exist
+                                Link to existing sites
                               </p>
                             </div>
                           </div>
@@ -788,26 +839,11 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
                                 )}
                               </div>
                               <p className='text-sm text-muted-foreground'>
-                                Create new sites while creating work order
+                                Create new sites
                               </p>
                             </div>
                           </div>
                         </CardContent>
-                      </Card>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-export default CreateWOStep1;
                       </Card>
                     </div>
                   </FormControl>

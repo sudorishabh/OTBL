@@ -18,6 +18,11 @@ export default async function middleware(req: NextRequest) {
   const accessToken = req.cookies.get("accessToken")?.value;
   const refreshToken = req.cookies.get("refreshToken")?.value;
 
+  // Redirect authenticated users from "/" to dashboard
+  if (path === "/" && (accessToken || refreshToken)) {
+    return NextResponse.redirect(new URL("/dashboard", req.nextUrl));
+  }
+
   // Redirect unauthenticated users from protected routes
   if (isProtectedRoute && !accessToken && !refreshToken) {
     const loginUrl = new URL("/login", req.nextUrl);

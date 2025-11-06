@@ -23,14 +23,6 @@ const CreateWOStepper = ({ step }: Props) => {
       isActive: step === 2,
       isCompleted: step > 2,
     },
-    {
-      number: 3,
-      title: "Budget",
-      description: "Select or create budgets",
-      icon: IndianRupee,
-      isActive: step === 3,
-      isCompleted: step > 3,
-    },
   ];
 
   return (

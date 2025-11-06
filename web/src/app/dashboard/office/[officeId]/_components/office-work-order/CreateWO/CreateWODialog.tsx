@@ -7,11 +7,9 @@ import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
-import CreateWOStep1 from "./Steps/CreateWOStep1";
+import CreateWOStep1 from "./Steps/CreateWOStep1New";
 import CreateWOStep2 from "./Steps/CreateWOStep2";
-import CreateWOStep3 from "./Steps/CreateWOStep3";
 import CreateWOStepper from "./CreateWOStepper";
-import { workOrderFormSchema } from "@/app/office/_schemas";
 import CustomForm from "@/components/CustomForm";
 import {
   MapPin,
@@ -21,6 +19,8 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import CreateWOFooter from "./CreateWOFooter";
+import { workOrderFormSchema } from "@/app/dashboard/office/_components/AddOfficeDialog";
+import { useParams } from "next/navigation";
 
 interface Props {
   open: boolean;
@@ -31,17 +31,43 @@ type WorkOrderFormValues = z.infer<typeof workOrderFormSchema>;
 
 const CreateWODialog = ({ open, setOpen }: Props) => {
   const [step, setStep] = useState<number>(1);
+  const params = useParams();
+  const officeId = params?.officeId ? Number(params.officeId) : 0;
+
   const getSites = trpc.siteQuery.getSites.useQuery();
+  const getClients = trpc.clientQuery.getClients.useQuery();
+  const createWorkOrder = trpc.workOrderMutation.createWorkOrder.useMutation({
+    onSuccess: () => {
+      alert("Work order created successfully!");
+      setOpen(false);
+      form.reset();
+    },
+    onError: (error: any) => {
+      alert(`Error creating work order: ${error.message}`);
+    },
+  });
 
   const sitesData = getSites?.data;
   const isGetSitesLoading = getSites.isLoading;
+
+  const clientsData = getClients?.data;
+  const isGetClientsLoading = getClients.isLoading;
 
   const form = useForm<WorkOrderFormValues>({
     resolver: zodResolver(workOrderFormSchema) as any,
     defaultValues: {
       code: "",
       title: "",
-      date: "",
+      clientMode: "existing",
+      client_id: undefined,
+      newClient: undefined,
+      start_date: "",
+      end_date: "",
+      handing_over_date: "",
+      agreement_number: "",
+      agreement_url: "",
+      metric_ton: "",
+      metric_ton_rate: "",
       description: "",
       budget_amount: "",
       expense_amount: "0",
@@ -49,8 +75,6 @@ const CreateWODialog = ({ open, setOpen }: Props) => {
       siteMode: "existing",
       site_ids: [],
       newSites: undefined,
-      selectedSiteBudgets: [],
-      newSiteBudgets: [],
     },
   });
 
@@ -64,23 +88,75 @@ const CreateWODialog = ({ open, setOpen }: Props) => {
   });
 
   const onSubmit = (values: WorkOrderFormValues) => {
-    console.log(values);
-    // Submit will be wired when backend mutation exists
-    // setOpen(false);
+    console.log("Form values:", values);
+
+    // Transform form data to API format
+    const workOrderData: any = {
+      code: values.code,
+      title: values.title,
+      office_id: officeId,
+
+      // Client data
+      client_id:
+        values.clientMode === "existing" ? Number(values.client_id) : undefined,
+      newClient: values.clientMode === "new" ? values.newClient : undefined,
+
+      // Dates
+      start_date: values.start_date,
+      end_date: values.end_date,
+      handing_over_date: values.handing_over_date,
+
+      // Agreement
+      agreement_number: values.agreement_number,
+      agreement_url: values.agreement_url || undefined,
+
+      // Metrics
+      metric_ton: values.metric_ton ? Number(values.metric_ton) : undefined,
+      metric_ton_rate: values.metric_ton_rate
+        ? Number(values.metric_ton_rate)
+        : undefined,
+
+      // Budget and description
+      description: values.description,
+      budget_amount: Number(values.budget_amount),
+      expense_amount: Number(values.expense_amount || 0),
+      status: values.status,
+
+      // Sites
+      existingSiteIds:
+        values.siteMode === "existing"
+          ? values.site_ids?.map((id) => Number(id))
+          : undefined,
+      newSites: values.siteMode === "new" ? values.newSites : undefined,
+
+      // Work order sites with budgets (optional - can be added later)
+      workOrderSites: undefined, // TODO: Map from selectedSiteBudgets/newSiteBudgets
+    };
+
+    console.log("Submitting work order:", workOrderData);
+    createWorkOrder.mutate(workOrderData);
   };
 
   const siteMode = form.watch("siteMode");
+  const clientMode = form.watch("clientMode");
 
-  // Clear opposite fields when switching modes
+  // Clear opposite fields when switching client modes
+  useEffect(() => {
+    if (clientMode === "existing") {
+      form.setValue("newClient", undefined, { shouldValidate: false });
+    } else if (clientMode === "new") {
+      form.setValue("client_id", undefined, { shouldValidate: false });
+    }
+  }, [clientMode, form]);
+
+  // Clear opposite fields when switching site modes
   useEffect(() => {
     if (siteMode === "existing") {
       form.setValue("newSites", undefined, { shouldValidate: false });
-      form.setValue("newSiteBudgets", [], { shouldValidate: false });
     } else if (siteMode === "new") {
       form.setValue("site_ids", undefined as unknown as string[], {
         shouldValidate: false,
       });
-      form.setValue("selectedSiteBudgets", [], { shouldValidate: false });
       if (
         !form.getValues("newSites") ||
         form.getValues("newSites")?.length === 0
@@ -120,7 +196,14 @@ const CreateWODialog = ({ open, setOpen }: Props) => {
 
             {/* Step Content */}
             <div className='space-y-6'>
-              {step === 1 && <CreateWOStep1 form={form} />}
+              {step === 1 && (
+                <CreateWOStep1
+                  form={form}
+                  clientsData={clientsData}
+                  isGetClientsLoading={isGetClientsLoading}
+                  clientMode={clientMode}
+                />
+              )}
 
               {step === 2 && (
                 <CreateWOStep2
@@ -131,14 +214,6 @@ const CreateWODialog = ({ open, setOpen }: Props) => {
                   newSiteFields={newSiteFields}
                   append={append}
                   remove={remove}
-                />
-              )}
-
-              {step === 3 && (
-                <CreateWOStep3
-                  form={form}
-                  siteMode={siteMode}
-                  sitesData={sitesData}
                 />
               )}
             </div>

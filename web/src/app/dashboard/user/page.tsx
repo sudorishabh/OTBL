@@ -42,6 +42,8 @@ const User = () => {
   const getAllUsersQuery = trpc.userQuery.getAll.useQuery();
   const allUsers = getAllUsersQuery?.data || [];
 
+  console.log("All Users:", allUsers);
+
   // Advanced filtering with search and multiple criteria
   const filteredUsers = useMemo(() => {
     return allUsers.filter((user: any) => {

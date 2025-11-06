@@ -28,8 +28,8 @@ interface Office {
 interface UserOffice {
   id: number;
   office_id: number;
+  name: string;
   role: string;
-  office: Office;
 }
 
 interface User {
@@ -129,7 +129,7 @@ const UserTable = ({
                           <Badge
                             variant='outline'
                             className='text-xs'>
-                            {uo.office.name}
+                            {uo.name || "Unknown Office"}
                           </Badge>
                           <Badge
                             variant='secondary'

@@ -18,9 +18,6 @@ const CreateWOFooter = ({ setStep, step, closeDialog, form }: Props) => {
     case 2:
       backBtnText = "Back to Details";
       break;
-    case 3:
-      backBtnText = "Back to Sites";
-      break;
   }
 
   const siteMode = form.watch("siteMode");
@@ -29,19 +26,18 @@ const CreateWOFooter = ({ setStep, step, closeDialog, form }: Props) => {
     const isValidStep1 = await form.trigger([
       "code",
       "title",
-      "date",
+      "clientMode",
+      "client_id",
+      "newClient",
+      "start_date",
+      "end_date",
+      "handing_over_date",
+      "agreement_number",
       "description",
       "budget_amount",
       "siteMode",
     ]);
     if (isValidStep1) setStep(2);
-  };
-
-  const goNextFrom2 = async () => {
-    const isValidStep2 = await form.trigger([
-      siteMode === "existing" ? "site_ids" : "newSites",
-    ]);
-    if (isValidStep2) setStep(3);
   };
 
   return (
@@ -50,7 +46,7 @@ const CreateWOFooter = ({ setStep, step, closeDialog, form }: Props) => {
         <div className='flex items-center justify-between'>
           <div className='flex items-center gap-2 text-sm text-muted-foreground'>
             <CheckCircle2 className='h-4 w-4' />
-            <span>Step {step} of 3</span>
+            <span>Step {step} of 2</span>
           </div>
 
           <div className='flex items-center gap-3'>
@@ -78,15 +74,7 @@ const CreateWOFooter = ({ setStep, step, closeDialog, form }: Props) => {
                 type='button'
                 onClick={goNext}
                 className='px-6 flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700'>
-                Continue to Site
-                <ArrowRight className='h-4 w-4' />
-              </Button>
-            ) : step === 2 ? (
-              <Button
-                type='button'
-                onClick={goNextFrom2}
-                className='px-6 flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700'>
-                Continue to Budget
+                Continue to Sites
                 <ArrowRight className='h-4 w-4' />
               </Button>
             ) : (

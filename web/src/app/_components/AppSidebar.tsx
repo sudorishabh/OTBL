@@ -21,6 +21,7 @@ import {
   ChartNoAxesGantt,
   Tent,
   Users,
+  Webhook,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
@@ -57,6 +58,11 @@ const sidebarLinks = [
     link: "/budget-category",
     icon: ReceiptIndianRupee,
   },
+  {
+    title: "Clients",
+    link: "/client",
+    icon: Webhook,
+  },
 ];
 
 const footerLinks = [
@@ -71,6 +77,41 @@ const footerLinks = [
     icon: Settings,
   },
 ];
+
+interface SidebarMenuListProps {
+  item: {
+    title: string;
+    link: string;
+    icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  };
+  isActive: boolean;
+}
+
+const SidebarMenuList = ({ item, isActive }: SidebarMenuListProps) => {
+  return (
+    <SidebarMenuItem key={item.title}>
+      <SidebarMenuButton
+        asChild
+        isActive={isActive}
+        tooltip={item.title}
+        className={cn(
+          "h-7 pl-3 ",
+          isActive
+            ? "!bg-emerald-600 !text-gray-100 shadow"
+            : "!text-gray-300 hover:bg-emerald-600/65 focus:!bg-transparent"
+        )}>
+        <Link
+          href={`/dashboard${item.link}`}
+          className='flex items-center gap-3'>
+          <item.icon className={cn("h-4 w-4")} />
+          <span className={cn("text-xs", isActive ? "font-semibold" : "")}>
+            {item.title}
+          </span>
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+};
 
 function AppSidebar() {
   let pathname = usePathname();
@@ -115,31 +156,11 @@ function AppSidebar() {
                   : pathname.startsWith(item.link);
 
               return (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive}
-                    tooltip={item.title}
-                    className={cn(
-                      "h-7 pl-3 ",
-                      isActive
-                        ? "!bg-emerald-600 !text-gray-100 shadow"
-                        : "!text-gray-300 hover:bg-emerald-600/65 focus:!bg-transparent"
-                    )}>
-                    <Link
-                      href={`/dashboard${item.link}`}
-                      className='flex items-center gap-3'>
-                      <item.icon className={cn("h-4 w-4")} />
-                      <span
-                        className={cn(
-                          "text-xs",
-                          isActive ? "font-semibold" : ""
-                        )}>
-                        {item.title}
-                      </span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                <SidebarMenuList
+                  key={item.title}
+                  item={item}
+                  isActive={isActive}
+                />
               );
             })}
           </SidebarMenu>
@@ -155,31 +176,11 @@ function AppSidebar() {
             {footerLinks.map((item) => {
               const isActive = pathname === item.link;
               return (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={isActive}
-                    tooltip={item.title}
-                    className={cn(
-                      "h-8 px-3 ",
-                      isActive
-                        ? "!bg-emerald-600 !text-gray-100 shadow"
-                        : "!text-gray-300 hover:bg-emerald-600/65 focus:!bg-transparent"
-                    )}>
-                    <Link
-                      href={item.link}
-                      className='flex items-center gap-3'>
-                      <item.icon className={cn("h-4 w-4")} />
-                      <span
-                        className={cn(
-                          "text-sm",
-                          isActive ? "font-semibold" : ""
-                        )}>
-                        {item.title}
-                      </span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                <SidebarMenuList
+                  key={item.title}
+                  item={item}
+                  isActive={isActive}
+                />
               );
             })}
           </SidebarMenu>

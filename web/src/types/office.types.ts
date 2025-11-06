@@ -9,5 +9,18 @@ export interface Office {
   name: string;
   pincode: string;
   state: string;
+  gst_number: string;
   updated_at: string;
+  manager?: {
+    id: number;
+    name: string;
+    email: string;
+    role: string;
+  };
+  operators?: Array<{
+    id: number;
+    name: string;
+    email: string;
+    role: string;
+  }>;
 }

@@ -6,11 +6,15 @@ import {
   ArrowRight,
   PhoneIcon,
   MailIcon,
+  FileText,
+  UserCheck,
+  Users,
 } from "lucide-react";
 import { format } from "date-fns";
 import { Office } from "@/types/office.types";
 import { useRouter } from "next/navigation";
 import { capitalFirstLetter } from "@/utils/capitalFirstLetter";
+import { Badge } from "@/components/ui/badge";
 
 interface OfficeCardProps {
   office: Office;
@@ -22,7 +26,7 @@ const OfficeCard: React.FC<OfficeCardProps> = ({ office }) => {
   return (
     <div
       className='bg-white rounded-xl cursor-pointer border-2 border-gray-50 shadow-sm hover:shadow-lg hover:border-cyan-900/25 transition-all duration-300 overflow-hidden group'
-      onClick={() => router.push(`/office/${office.id}`)}>
+      onClick={() => router.push(`/dashboard/office/${office.id}`)}>
       {/* Main Content - Horizontal Layout */}
 
       <div className='flex flex-col gap-4'>
@@ -60,6 +64,12 @@ const OfficeCard: React.FC<OfficeCardProps> = ({ office }) => {
               <p className='text-xs text-gray-700'>
                 {office.city}, {office.state} - {office.pincode}
               </p>
+              {office.gst_number && (
+                <div className='flex items-center gap-1 text-xs text-gray-600'>
+                  <FileText className='size-3' />
+                  <span className='font-medium'>GST:</span> {office.gst_number}
+                </div>
+              )}
             </div>
           </div>
 
@@ -76,7 +86,9 @@ const OfficeCard: React.FC<OfficeCardProps> = ({ office }) => {
             <div className='ml-1 space-y-2'>
               <p className='text-xs font-medium text-gray-700'>
                 {office.contact_person}
-                <span className='text-gray-500 text-xs'>(Primary Contact)</span>
+                <span className='text-gray-500 text-xs ml-1'>
+                  (Primary Contact)
+                </span>
               </p>
               <div>
                 <a
@@ -96,6 +108,47 @@ const OfficeCard: React.FC<OfficeCardProps> = ({ office }) => {
             </div>
           </div>
         </div>
+
+        {/* Staff Section */}
+        {(office.manager ||
+          (office.operators && office.operators.length > 0)) && (
+          <div className='px-4 pb-4 space-y-3'>
+            {office.manager && (
+              <div className='flex items-center gap-2'>
+                <UserCheck className='size-4 text-[#035864]' />
+                <span className='text-xs font-semibold text-gray-600'>
+                  Manager:
+                </span>
+                <Badge
+                  variant='outline'
+                  className='text-xs'>
+                  {office.manager.name}
+                </Badge>
+              </div>
+            )}
+
+            {office.operators && office.operators.length > 0 && (
+              <div className='flex items-start gap-2'>
+                <Users className='size-4 text-[#035864] mt-0.5' />
+                <div className='flex-1'>
+                  <span className='text-xs font-semibold text-gray-600'>
+                    Operators ({office.operators.length}):
+                  </span>
+                  <div className='flex flex-wrap gap-1 mt-1'>
+                    {office.operators.map((operator) => (
+                      <Badge
+                        key={operator.id}
+                        variant='secondary'
+                        className='text-xs'>
+                        {operator.name}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

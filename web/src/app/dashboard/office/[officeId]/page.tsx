@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import Wrapper from "@/components/Wrapper";
 import { trpc } from "@/lib/trpc";
 import PageFetchingData from "@/components/PageFetchingData";
-import { PencilLine } from "lucide-react";
+import { PencilLine, Users } from "lucide-react";
 import { capitalFirstLetter } from "@/utils/capitalFirstLetter";
 import { useRouter } from "next/navigation";
 import CustomButton from "@/components/CustomButton";
@@ -11,6 +11,7 @@ import OfficeDetailsCard from "./_components/OfficeDetailsCard";
 import OfficeStats from "./_components/office-stats/OfficeStats";
 import OfficeWOComp from "./_components/office-work-order/OfficeWOComp";
 import EditOfficeDetailsDialog from "./_components/EditOfficeDetailsDialog";
+import ManageOfficeUsersDialog from "./_components/ManageOfficeUsersDialog";
 
 type PageProps = {
   params: Promise<{ officeId: string }>;
@@ -18,6 +19,8 @@ type PageProps = {
 
 const Office = ({ params }: PageProps) => {
   const [isEditOffieDialog, setIsEditOfficeDialog] = useState<boolean>(false);
+  const [isManageUsersDialog, setIsManageUsersDialog] =
+    useState<boolean>(false);
 
   const { officeId } = React.use(params);
 
@@ -28,21 +31,12 @@ const Office = ({ params }: PageProps) => {
     { enabled: !!officeId }
   );
 
-  const workOrdersQuery = trpc.officeQuery.getOfficeWorkOrders.useQuery(
-    { id: Number(officeId) },
-    { enabled: !!officeId }
-  );
-
   const statsQuery = trpc.officeQuery.getOfficeStats.useQuery(
     { id: Number(officeId) },
     { enabled: !!officeId }
   );
 
-  if (
-    officeQuery.isLoading ||
-    workOrdersQuery.isLoading ||
-    statsQuery.isLoading
-  ) {
+  if (officeQuery.isLoading || statsQuery.isLoading) {
     return <PageFetchingData title='Loading office data' />;
   }
 
@@ -57,7 +51,6 @@ const Office = ({ params }: PageProps) => {
   }
 
   const office = officeQuery.data;
-  const workOrders = workOrdersQuery.data;
   const stats = statsQuery.data;
 
   return (
@@ -66,12 +59,20 @@ const Office = ({ params }: PageProps) => {
       description='Manage Office Info and Work Orders'
       backClick={() => router.push("/office")}
       button={
-        <CustomButton
-          text='Edit details'
-          variant='primary'
-          Icon={PencilLine}
-          onClick={() => setIsEditOfficeDialog(!isEditOffieDialog)}
-        />
+        <div className='flex gap-2'>
+          <CustomButton
+            text='Manage Users'
+            variant='secondary'
+            Icon={Users}
+            onClick={() => setIsManageUsersDialog(!isManageUsersDialog)}
+          />
+          <CustomButton
+            text='Edit details'
+            variant='primary'
+            Icon={PencilLine}
+            onClick={() => setIsEditOfficeDialog(!isEditOffieDialog)}
+          />
+        </div>
       }>
       {office ? (
         <div className='mt-4 space-y-6'>
@@ -90,6 +91,12 @@ const Office = ({ params }: PageProps) => {
         open={isEditOffieDialog}
         setOpen={setIsEditOfficeDialog}
         office={office}
+      />
+
+      <ManageOfficeUsersDialog
+        open={isManageUsersDialog}
+        setOpen={setIsManageUsersDialog}
+        officeId={Number(officeId)}
       />
     </Wrapper>
   );

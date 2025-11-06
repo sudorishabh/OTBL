@@ -11,6 +11,8 @@ import {
   siteTable,
   workOrderSiteTable,
   workOrderTable,
+  officeUserTable,
+  userTable,
 } from "@/db/schema";
 import { eq, desc, count } from "drizzle-orm";
 import {
@@ -19,6 +21,7 @@ import {
   getOfficeWorkOrderScema,
   getOfficeStatsSchema,
   getOfficesPaginatedSchema,
+  getOfficeUsersSchema,
 } from "./office.schema";
 
 export const officeQueryRouter = router({
@@ -49,10 +52,35 @@ export const officeQueryRouter = router({
         .limit(limit)
         .offset(offset);
 
+      // Get users for each office
+      const officesWithUsers = await Promise.all(
+        offices.map(async (office) => {
+          const users = await db
+            .select({
+              id: userTable.id,
+              name: userTable.name,
+              email: userTable.email,
+              role: officeUserTable.role,
+            })
+            .from(officeUserTable)
+            .innerJoin(userTable, eq(officeUserTable.user_id, userTable.id))
+            .where(eq(officeUserTable.office_id, office.id));
+
+          const manager = users.find((u) => u.role === "manager");
+          const operators = users.filter((u) => u.role === "operator");
+
+          return {
+            ...office,
+            manager,
+            operators,
+          };
+        })
+      );
+
       const hasMore = offset + offices.length < total;
 
       return {
-        offices,
+        offices: officesWithUsers,
         pagination: {
           page,
           limit,
@@ -148,6 +176,32 @@ export const officeQueryRouter = router({
         completedWorkOrders,
         totalBudgetAmount,
         totalExpenseAmount,
+      };
+    }),
+
+  getOfficeUsers: publicProcedure
+    .input(getOfficeUsersSchema)
+    .query(async ({ input }) => {
+      const users = await db
+        .select({
+          id: userTable.id,
+          name: userTable.name,
+          email: userTable.email,
+          contact_number: userTable.contact_number,
+          role: officeUserTable.role,
+          officeUserId: officeUserTable.id,
+        })
+        .from(officeUserTable)
+        .innerJoin(userTable, eq(officeUserTable.user_id, userTable.id))
+        .where(eq(officeUserTable.office_id, input.office_id));
+
+      const manager = users.find((u) => u.role === "manager");
+      const operators = users.filter((u) => u.role === "operator");
+
+      return {
+        manager,
+        operators,
+        allUsers: users,
       };
     }),
 

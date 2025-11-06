@@ -23,7 +23,7 @@ const ActiveWOCard = ({
   return (
     <div
       className='flex flex-col rounded-lg border px-3 py-3 bg-gray-50 hover:shadow transition-shadow cursor-pointer'
-      onClick={() => router.push(`/work-order/${id}`)}>
+      onClick={() => router.push(`/dashboard/work-order/${id}`)}>
       <div className='flex items-center justify-between'>
         <h2 className='font-semibold line-clamp-1 text-sm text-gray-700'>
           {title || "Untitled Work Order"}
