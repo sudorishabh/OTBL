@@ -80,12 +80,12 @@ const CategorizedUsers = ({
     const previewUsers = users?.slice(0, 3);
 
     return (
-      <Card className='flex flex-col h-full py-5 gap-4'>
-        <CardHeader>
+      <Card className='flex flex-col h-full py-4 gap-4'>
+        <CardHeader className='px-4'>
           <div className='flex items-center justify-between'>
             <div>
-              <CardTitle className='text-lg'>{title}</CardTitle>
-              <CardDescription>
+              <CardTitle>{title}</CardTitle>
+              <CardDescription className='mt-1'>
                 {users?.length} {users?.length === 1 ? "user" : "users"}
               </CardDescription>
             </div>
@@ -94,7 +94,7 @@ const CategorizedUsers = ({
             </div>
           </div>
         </CardHeader>
-        <CardContent className='flex-1'>
+        <CardContent className='flex-1 px-4'>
           {users.length > 0 ? (
             <div className='space-y-2'>
               <UserCardTable

@@ -22,6 +22,8 @@ import {
   Tent,
   Users,
   Webhook,
+  LogOutIcon,
+  LogOut,
 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
@@ -63,6 +65,11 @@ const sidebarLinks = [
     link: "/client",
     icon: Webhook,
   },
+  {
+    title: "Work Orders",
+    link: "/work-order",
+    icon: ReceiptIndianRupee,
+  },
 ];
 
 const footerLinks = [
@@ -75,6 +82,10 @@ const footerLinks = [
     title: "Settings",
     link: "/settings",
     icon: Settings,
+  },
+  {
+    title: "Logout",
+    icon: LogOut,
   },
 ];
 
@@ -166,7 +177,7 @@ function AppSidebar() {
           </SidebarMenu>
         </SidebarGroup>
 
-        <Separator className='my-4 bg-gray-400' />
+        <Separator className='bg-gray-400' />
 
         <SidebarGroup>
           <SidebarGroupLabel className='text-[11px] font-medium text-gray-300 uppercase tracking-wider'>

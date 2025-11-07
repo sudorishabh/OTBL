@@ -1,13 +1,7 @@
 "use client";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function DashboardPage() {
   const { user, logout, isUserLoading } = useAuthContext();
@@ -34,9 +28,6 @@ export default function DashboardPage() {
       <Card>
         <CardHeader>
           <CardTitle>Welcome back, {user?.name}!</CardTitle>
-          <CardDescription>
-            Your session is persisted even after page reload
-          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className='space-y-2'>
@@ -52,20 +43,6 @@ export default function DashboardPage() {
           </div>
         </CardContent>
       </Card>
-
-      <div className='mt-6'>
-        <Card>
-          <CardHeader>
-            <CardTitle>How Authentication Works</CardTitle>
-          </CardHeader>
-          <CardContent className='space-y-2'>
-            <p>✅ Your authentication is persisted using HTTP-only cookies</p>
-            <p>✅ Refresh tokens are automatically used to renew sessions</p>
-            <p>✅ You can reload the page and stay logged in</p>
-            <p>✅ Protected routes redirect to login if not authenticated</p>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 }

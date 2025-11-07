@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Trash2, Building2, MapPin } from "lucide-react";
+import { Edit, Trash2, Building2, MapPin, Eye, EyeOff } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,6 +41,7 @@ interface User {
   status: string;
   created_at: string;
   offices: UserOffice[];
+  password?: string;
 }
 
 interface Props {
@@ -60,6 +61,22 @@ const UserTable = ({
   onAssignSite,
   onViewWorkLocations,
 }: Props) => {
+  const [visiblePasswords, setVisiblePasswords] = useState<Set<number>>(
+    new Set()
+  );
+
+  const togglePasswordVisibility = (userId: number) => {
+    setVisiblePasswords((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(userId)) {
+        newSet.delete(userId);
+      } else {
+        newSet.add(userId);
+      }
+      return newSet;
+    });
+  };
+
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
       case "admin":
@@ -80,11 +97,11 @@ const UserTable = ({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Name</TableHead>
+            <TableHead className='pl-8'>Name</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Contact</TableHead>
             <TableHead>Role</TableHead>
-            <TableHead>Status</TableHead>
+            {/* <TableHead>Status</TableHead> */}
             <TableHead>Offices</TableHead>
             <TableHead>Password</TableHead>
             <TableHead className='text-right'>Actions</TableHead>
@@ -102,7 +119,12 @@ const UserTable = ({
           ) : (
             users?.map((user) => (
               <TableRow key={user.id}>
-                <TableCell className='text-xs font-medium'>
+                <TableCell className='text-xs font-medium flex items-center gap-2'>
+                  {user.status === "active" ? (
+                    <div className='text-green-500 h-3 w-3 rounded-full bg-green-500'></div>
+                  ) : (
+                    <div className='text-red-500 h-3 w-3 rounded-full bg-red-500'></div>
+                  )}
                   {user.name}
                 </TableCell>
                 <TableCell className='text-xs'>{user.email}</TableCell>
@@ -114,11 +136,11 @@ const UserTable = ({
                     {user.role}
                   </Badge>
                 </TableCell>
-                <TableCell className='text-xs'>
+                {/* <TableCell className='text-xs'>
                   <Badge variant={getStatusBadgeVariant(user.status)}>
                     {user.status}
                   </Badge>
-                </TableCell>
+                </TableCell> */}
                 <TableCell className='text-xs'>
                   {user.offices.length > 0 ? (
                     <div className='flex flex-col gap-1'>
@@ -145,7 +167,29 @@ const UserTable = ({
                     </span>
                   )}
                 </TableCell>
-                <TableCell className='text-xs'>••••••••</TableCell>
+                <TableCell className='text-xs'>
+                  <div className='group relative flex items-center gap-2'>
+                    <span className='font-mono'>
+                      {visiblePasswords.has(user.id)
+                        ? user.password || "N/A"
+                        : "••••••••"}
+                    </span>
+                    <button
+                      onClick={() => togglePasswordVisibility(user.id)}
+                      className='opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-gray-100 rounded'
+                      title={
+                        visiblePasswords.has(user.id)
+                          ? "Hide password"
+                          : "Show password"
+                      }>
+                      {visiblePasswords.has(user.id) ? (
+                        <EyeOff className='h-4 w-4 text-gray-600' />
+                      ) : (
+                        <Eye className='h-4 w-4 text-gray-600' />
+                      )}
+                    </button>
+                  </div>
+                </TableCell>
                 <TableCell className='text-right'>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>

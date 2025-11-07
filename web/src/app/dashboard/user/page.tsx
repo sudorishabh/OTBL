@@ -127,25 +127,9 @@ const User = () => {
         />
       }>
       {/* Filters and Search Bar */}
-      <div className='my-5 flex items-center gap-4'>
-        <UserFilters
-          filters={filters}
-          setFilters={setFilters}
-        />
-        <div className='relative flex-1 max-w-md bg-white'>
-          <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground' />
-          <Input
-            type='text'
-            placeholder='Search users by name, email, role, or contact...'
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className='pl-10'
-          />
-        </div>
-      </div>
 
       {/* Results count */}
-      <div className='mb-4 flex items-center justify-between'>
+      {/* <div className='mb-4 flex items-center justify-between'>
         <p className='text-sm text-muted-foreground'>
           Showing <span className='font-medium'>{filteredUsers?.length}</span>{" "}
           {filteredUsers?.length === 1 ? "user" : "users"}
@@ -155,20 +139,49 @@ const User = () => {
             <span> (filtered from {allUsers.length} total)</span>
           )}
         </p>
-      </div>
+      </div> */}
 
       {/* Tabs for Categorized and Show All */}
       <Tabs
         defaultValue='all'
         value={activeTab}
         onValueChange={setActiveTab}
-        className='w-full'>
-        <TabsList className='mb-4'>
-          <TabsTrigger value='all'>Show All</TabsTrigger>
-          <TabsTrigger value='categorized'>Categorized</TabsTrigger>
-        </TabsList>
-
+        className='w-full mt-8'>
+        <div className='flex justify-between items-center'>
+          <TabsList>
+            <TabsTrigger value='all'>Show All</TabsTrigger>
+            <TabsTrigger value='categorized'>Categorized</TabsTrigger>
+          </TabsList>
+          <div className='flex items-center justify-between'>
+            <p className='text-sm text-muted-foreground'>
+              Showing
+              <span className='font-medium'>{filteredUsers?.length}</span>{" "}
+              {filteredUsers?.length === 1 ? "user" : "users"}
+              {(searchQuery ||
+                filters.role !== "all" ||
+                filters.status !== "all") && (
+                <span> (filtered from {allUsers.length} total)</span>
+              )}
+            </p>
+          </div>
+        </div>
         <TabsContent value='all'>
+          <div className='my-5 flex items-center gap-4'>
+            <UserFilters
+              filters={filters}
+              setFilters={setFilters}
+            />
+            <div className='relative flex-1 max-w-md bg-white'>
+              <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground' />
+              <Input
+                type='text'
+                placeholder='Search users by name, email, role, or contact...'
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className='pl-10'
+              />
+            </div>
+          </div>
           <UserTable
             users={filteredUsers}
             onEdit={handleEditUser}
