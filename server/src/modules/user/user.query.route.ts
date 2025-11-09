@@ -184,4 +184,48 @@ export const userQueryRouter = router({
 
       return user;
     }),
+
+  // Get managers and operators for office assignment
+  getManagersAndOperators: protectedProcedure
+    .use(hasRole("admin"))
+    .query(async () => {
+      // Get all active users with manager, staff, or operator roles
+      const users = await handleDatabaseOperation(() =>
+        db
+          .select({
+            id: userTable.id,
+            name: userTable.name,
+            email: userTable.email,
+            contact_number: userTable.contact_number,
+            role: userTable.role,
+            status: userTable.status,
+          })
+          .from(userTable)
+          .where(
+            and(
+              eq(userTable.status, "active"),
+              or(
+                eq(userTable.role, ROLES.MANAGER),
+                eq(userTable.role, ROLES.STAFF),
+                eq(userTable.role, ROLES.OPERATOR)
+              )
+            )
+          )
+          .orderBy(asc(userTable.name))
+      );
+
+      // Separate managers and operators
+      const managers = users.filter(
+        (user) => user.role === ROLES.MANAGER || user.role === ROLES.STAFF
+      );
+
+      const operators = users.filter(
+        (user) => user.role === ROLES.OPERATOR || user.role === ROLES.STAFF
+      );
+
+      return {
+        managers,
+        operators,
+      };
+    }),
 });

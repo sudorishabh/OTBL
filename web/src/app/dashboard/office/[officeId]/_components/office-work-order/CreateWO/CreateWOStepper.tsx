@@ -1,5 +1,5 @@
 import React from "react";
-import { FileText, MapPin, CheckCircle2, IndianRupee } from "lucide-react";
+import { FileText, MapPin, CheckCircle2, Users } from "lucide-react";
 
 interface Props {
   step: number;
@@ -9,7 +9,7 @@ const CreateWOStepper = ({ step }: Props) => {
   const steps = [
     {
       number: 1,
-      title: "Details",
+      title: "Basic Details",
       description: "Work order information",
       icon: FileText,
       isActive: step === 1,
@@ -17,11 +17,19 @@ const CreateWOStepper = ({ step }: Props) => {
     },
     {
       number: 2,
-      title: "Site Assignment",
-      description: "Select or create sites",
-      icon: MapPin,
+      title: "Client",
+      description: "Select or create client",
+      icon: Users,
       isActive: step === 2,
       isCompleted: step > 2,
+    },
+    {
+      number: 3,
+      title: "Sites",
+      description: "Assign sites to work order",
+      icon: MapPin,
+      isActive: step === 3,
+      isCompleted: step > 3,
     },
   ];
 

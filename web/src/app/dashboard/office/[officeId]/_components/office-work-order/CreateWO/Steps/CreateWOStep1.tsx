@@ -30,6 +30,8 @@ import {
   FileCheck,
   Link as LinkIcon,
   Weight,
+  Mail,
+  Phone,
 } from "lucide-react";
 import {
   Select,
@@ -42,12 +44,25 @@ import {
 interface Props {
   form: any;
   clientsData: any;
+  clientsPagination?: any;
   isGetClientsLoading: boolean;
   clientMode: "existing" | "new";
+  onLoadMoreClients?: () => void;
+  onSearchClients?: (query: string) => void;
+  clientSearchQuery?: string;
 }
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
-const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: Props) => {
+const CreateWOStep1 = ({
+  form,
+  clientsData,
+  clientsPagination,
+  isGetClientsLoading,
+  clientMode,
+  onLoadMoreClients,
+  onSearchClients,
+  clientSearchQuery,
+}: Props) => {
   return (
     <Card className='border-0 drop-shadow shadow-0 bg-gray-50'>
       <CardHeader className='pb-4'>
@@ -235,41 +250,203 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
             />
 
             {clientMode === "existing" && (
-              <FormField
-                control={form.control}
-                name='client_id'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Select Client</FormLabel>
-                    <Select
-                      disabled={isGetClientsLoading}
-                      onValueChange={field.onChange}
-                      value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder={isGetClientsLoading ? 'Loading clients...' : 'Select a client'} />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {clientsData?.map((client: any) => (
-                          <SelectItem
-                            key={client.id}
-                            value={client.id.toString()}>
-                            {client.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
+              <div className='space-y-4'>
+                {/* Search Input */}
+                {onSearchClients && (
+                  <div className='relative'>
+                    <Input
+                      placeholder='Search clients by name, email, GST...'
+                      value={clientSearchQuery || ""}
+                      onChange={(e) => onSearchClients(e.target.value)}
+                      className='pl-10'
+                    />
+                    <Users className='absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground' />
+                  </div>
                 )}
-              />
+
+                <FormField
+                  control={form.control}
+                  name='client_id'
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Select Client</FormLabel>
+                      <Select
+                        disabled={isGetClientsLoading}
+                        onValueChange={field.onChange}
+                        value={field.value}>
+                        <FormControl>
+                          <SelectTrigger className='h-auto min-h-10'>
+                            <SelectValue
+                              placeholder={
+                                isGetClientsLoading
+                                  ? "Loading clients..."
+                                  : "Select a client"
+                              }
+                            />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className='max-h-[400px]'>
+                          {isGetClientsLoading ? (
+                            <div className='p-4 text-center text-sm text-muted-foreground'>
+                              Loading clients...
+                            </div>
+                          ) : clientsData && clientsData.length > 0 ? (
+                            clientsData.map((client: any) => (
+                              <SelectItem
+                                key={client.id}
+                                value={client.id.toString()}
+                                className='cursor-pointer'>
+                                <div className='flex flex-col gap-1 py-2'>
+                                  <div className='flex items-center gap-2'>
+                                    <span className='font-semibold text-base'>
+                                      {client.name}
+                                    </span>
+                                    {client.status === "active" && (
+                                      <Badge
+                                        variant='secondary'
+                                        className='bg-emerald-100 text-emerald-700 text-xs'>
+                                        Active
+                                      </Badge>
+                                    )}
+                                  </div>
+                                  <div className='flex flex-col gap-1 text-xs text-muted-foreground'>
+                                    {client.email && (
+                                      <div className='flex items-center gap-1'>
+                                        <Mail className='h-3 w-3' />
+                                        <span>{client.email}</span>
+                                      </div>
+                                    )}
+                                    {client.contact_number && (
+                                      <div className='flex items-center gap-1'>
+                                        <Phone className='h-3 w-3' />
+                                        <span>{client.contact_number}</span>
+                                      </div>
+                                    )}
+                                    {(client.city || client.state) && (
+                                      <div className='flex items-center gap-1'>
+                                        <MapPin className='h-3 w-3' />
+                                        <span>
+                                          {[client.city, client.state]
+                                            .filter(Boolean)
+                                            .join(", ")}
+                                        </span>
+                                      </div>
+                                    )}
+                                    {client.gst_number && (
+                                      <div className='text-xs'>
+                                        <span className='font-medium'>
+                                          GST:
+                                        </span>{" "}
+                                        {client.gst_number}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <div className='p-4 text-center text-sm text-muted-foreground'>
+                              No clients found. Create a new client instead.
+                            </div>
+                          )}
+                          {/* Load More Button */}
+                          {clientsPagination &&
+                            clientsPagination.hasMore &&
+                            onLoadMoreClients && (
+                              <div className='p-2 border-t'>
+                                <Button
+                                  type='button'
+                                  variant='ghost'
+                                  className='w-full text-sm'
+                                  onClick={onLoadMoreClients}
+                                  disabled={isGetClientsLoading}>
+                                  {isGetClientsLoading
+                                    ? "Loading..."
+                                    : `Load More (${clientsPagination.page}/${clientsPagination.totalPages})`}
+                                </Button>
+                              </div>
+                            )}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                      {field.value && clientsData && clientsData.length > 0 && (
+                        <div className='mt-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg border border-blue-200 dark:border-blue-800'>
+                          {(() => {
+                            const selectedClient = clientsData.find(
+                              (c: any) => c.id.toString() === field.value
+                            );
+                            if (!selectedClient) return null;
+                            return (
+                              <div className='space-y-2'>
+                                <div className='flex items-center justify-between'>
+                                  <h4 className='font-semibold text-sm text-blue-900 dark:text-blue-100'>
+                                    Selected Client
+                                  </h4>
+                                  <Badge
+                                    variant='secondary'
+                                    className='bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'>
+                                    {selectedClient.status}
+                                  </Badge>
+                                </div>
+                                <div className='grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-muted-foreground'>
+                                  {selectedClient.email && (
+                                    <div className='flex items-center gap-1.5'>
+                                      <Mail className='h-3.5 w-3.5 text-blue-600 dark:text-blue-400' />
+                                      <span className='truncate'>
+                                        {selectedClient.email}
+                                      </span>
+                                    </div>
+                                  )}
+                                  {selectedClient.contact_number && (
+                                    <div className='flex items-center gap-1.5'>
+                                      <Phone className='h-3.5 w-3.5 text-blue-600 dark:text-blue-400' />
+                                      <span>
+                                        {selectedClient.contact_number}
+                                      </span>
+                                    </div>
+                                  )}
+                                  {(selectedClient.city ||
+                                    selectedClient.state) && (
+                                    <div className='flex items-center gap-1.5 col-span-2'>
+                                      <MapPin className='h-3.5 w-3.5 text-blue-600 dark:text-blue-400' />
+                                      <span>
+                                        {[
+                                          selectedClient.address,
+                                          selectedClient.city,
+                                          selectedClient.state,
+                                          selectedClient.pincode,
+                                        ]
+                                          .filter(Boolean)
+                                          .join(", ")}
+                                      </span>
+                                    </div>
+                                  )}
+                                  {selectedClient.gst_number && (
+                                    <div className='col-span-2'>
+                                      <span className='font-medium text-blue-900 dark:text-blue-100'>
+                                        GST:
+                                      </span>{" "}
+                                      <span className='font-mono'>
+                                        {selectedClient.gst_number}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      )}
+                    </FormItem>
+                  )}
+                />
+              </div>
             )}
 
             {clientMode === "new" && (
               <div className='space-y-4 p-4 border rounded-lg bg-purple-50/50 dark:bg-purple-950/10'>
                 <h4 className='font-semibold text-sm'>New Client Details</h4>
-                
+
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                   <FormField
                     control={form.control}
@@ -278,7 +455,10 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
                       <FormItem>
                         <FormLabel>Client Name</FormLabel>
                         <FormControl>
-                          <Input placeholder='Client name' {...field} />
+                          <Input
+                            placeholder='Client name'
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -292,7 +472,10 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
                       <FormItem>
                         <FormLabel>GST Number</FormLabel>
                         <FormControl>
-                          <Input placeholder='GST number' {...field} />
+                          <Input
+                            placeholder='GST number'
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -307,7 +490,10 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
                     <FormItem>
                       <FormLabel>Address</FormLabel>
                       <FormControl>
-                        <Input placeholder='Address' {...field} />
+                        <Input
+                          placeholder='Address'
+                          {...field}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -322,7 +508,10 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
                       <FormItem>
                         <FormLabel>City</FormLabel>
                         <FormControl>
-                          <Input placeholder='City' {...field} />
+                          <Input
+                            placeholder='City'
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -336,7 +525,10 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
                       <FormItem>
                         <FormLabel>State</FormLabel>
                         <FormControl>
-                          <Input placeholder='State' {...field} />
+                          <Input
+                            placeholder='State'
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -350,7 +542,10 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
                       <FormItem>
                         <FormLabel>Pincode</FormLabel>
                         <FormControl>
-                          <Input placeholder='Pincode' {...field} />
+                          <Input
+                            placeholder='Pincode'
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -366,7 +561,10 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
                       <FormItem>
                         <FormLabel>Contact Number</FormLabel>
                         <FormControl>
-                          <Input placeholder='Contact number' {...field} />
+                          <Input
+                            placeholder='Contact number'
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -380,7 +578,11 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input type='email' placeholder='Email' {...field} />
+                          <Input
+                            type='email'
+                            placeholder='Email'
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -476,8 +678,14 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
                               onSelect={(date) => {
                                 if (!date) return field.onChange("");
                                 const yyyy = date.getFullYear();
-                                const mm = String(date.getMonth() + 1).padStart(2, "0");
-                                const dd = String(date.getDate()).padStart(2, "0");
+                                const mm = String(date.getMonth() + 1).padStart(
+                                  2,
+                                  "0"
+                                );
+                                const dd = String(date.getDate()).padStart(
+                                  2,
+                                  "0"
+                                );
                                 field.onChange(`${yyyy}-${mm}-${dd}`);
                               }}
                             />
@@ -519,8 +727,14 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
                               onSelect={(date) => {
                                 if (!date) return field.onChange("");
                                 const yyyy = date.getFullYear();
-                                const mm = String(date.getMonth() + 1).padStart(2, "0");
-                                const dd = String(date.getDate()).padStart(2, "0");
+                                const mm = String(date.getMonth() + 1).padStart(
+                                  2,
+                                  "0"
+                                );
+                                const dd = String(date.getDate()).padStart(
+                                  2,
+                                  "0"
+                                );
                                 field.onChange(`${yyyy}-${mm}-${dd}`);
                               }}
                             />
@@ -562,8 +776,14 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
                               onSelect={(date) => {
                                 if (!date) return field.onChange("");
                                 const yyyy = date.getFullYear();
-                                const mm = String(date.getMonth() + 1).padStart(2, "0");
-                                const dd = String(date.getDate()).padStart(2, "0");
+                                const mm = String(date.getMonth() + 1).padStart(
+                                  2,
+                                  "0"
+                                );
+                                const dd = String(date.getDate()).padStart(
+                                  2,
+                                  "0"
+                                );
                                 field.onChange(`${yyyy}-${mm}-${dd}`);
                               }}
                             />
@@ -793,21 +1013,6 @@ const CreateWOStep1 = ({ form, clientsData, isGetClientsLoading, clientMode }: P
                             </div>
                           </div>
                         </CardContent>
-                      </Card>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-export default CreateWOStep1;
                       </Card>
                     </div>
                   </FormControl>

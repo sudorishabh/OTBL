@@ -233,7 +233,7 @@ const UserTable = ({
                     )}
                   </TableCell>
                   <TableCell className='text-xs w-40 '>
-                    <div className='group relative flex items-center gap-2'>
+                    <div className=' relative flex items-center gap-2'>
                       <span className='font-mono line-clamp-1'>
                         {visiblePasswords.has(user.id)
                           ? user.password || "N/A"
@@ -241,28 +241,28 @@ const UserTable = ({
                       </span>
                       <button
                         onClick={() => togglePasswordVisibility(user.id)}
-                        className='opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-gray-100 rounded'
+                        className='p-1 hover:bg-gray-100 rounded cursor-pointer'
                         title={
                           visiblePasswords.has(user.id)
                             ? "Hide password"
                             : "Show password"
                         }>
                         {visiblePasswords.has(user.id) ? (
-                          <EyeOff className='h-4 w-4 text-gray-600' />
+                          <EyeOff className='h-4 w-4 text-gray-500' />
                         ) : (
-                          <Eye className='h-4 w-4 text-gray-600' />
+                          <Eye className='h-4 w-4 text-gray-500' />
                         )}
                       </button>
                       <button
                         onClick={() =>
                           copyPassword(user.id, user.password || "")
                         }
-                        className='opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-gray-100 rounded'
+                        className='p-1 hover:bg-gray-100 rounded cursor-pointer'
                         title='Copy password'>
                         {copiedPasswordId === user.id ? (
                           <Check className='h-4 w-4 text-green-600' />
                         ) : (
-                          <Copy className='h-4 w-4 text-gray-600' />
+                          <Copy className='h-4 w-4 text-gray-500' />
                         )}
                       </button>
                     </div>

@@ -38,6 +38,7 @@ export const workOrderSiteSchema = z.object({
   site_id: z.number().optional(), // Optional because it might be a new site
   start_date: z.string().or(z.date()),
   end_date: z.string().or(z.date()),
+  activity_type: z.enum(["insitu", "exsitu"]).optional(),
   metric_ton: z.number().optional(),
   metric_ton_rate: z.number().optional(),
   budget_amount: z.number().optional(),

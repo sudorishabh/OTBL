@@ -12,6 +12,7 @@ import OfficeStats from "./_components/office-stats/OfficeStats";
 import OfficeWOComp from "./_components/office-work-order/OfficeWOComp";
 import EditOfficeDetailsDialog from "./_components/EditOfficeDetailsDialog";
 import ManageOfficeUsersDialog from "./_components/ManageOfficeUsersDialog";
+import PageLoading from "@/components/PageLoading";
 
 type PageProps = {
   params: Promise<{ officeId: string }>;
@@ -37,7 +38,7 @@ const Office = ({ params }: PageProps) => {
   );
 
   if (officeQuery.isLoading || statsQuery.isLoading) {
-    return <PageFetchingData title='Loading office data' />;
+    return <PageLoading />;
   }
 
   if (officeQuery.isError) {

@@ -12,6 +12,8 @@ import { clientMutationRouter } from "@/modules/client/client.muatation.route";
 import { clientQueryRouter } from "@/modules/client/client.query.route";
 import { workOrderMutationRouter } from "@/modules/work-order/work-mutation.mutation.route";
 import { workOrderQueryRouter } from "@/modules/work-order/work-order.query.route";
+import { siteActivityMutationRouter } from "@/modules/site-activity/site-activity.mutation.router";
+import { siteActivityQueryRouter } from "@/modules/site-activity/site-activity.query.router";
 
 export const appRouter = router({
   // Auth
@@ -37,6 +39,10 @@ export const appRouter = router({
   // Work Order management
   workOrderMutation: workOrderMutationRouter,
   workOrderQuery: workOrderQueryRouter,
+
+  // Site Activity management
+  siteActivityMutation: siteActivityMutationRouter,
+  siteActivityQuery: siteActivityQueryRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -39,7 +39,7 @@ const CustomButton = ({
       break;
     case "secondary":
       varientStyle =
-        "bg-gray-100 text-gray-700 rounded-md cursor-pointer borde hover:bg-gray-200/60 shadow-sm transition-all duration-200 hover:shadow-sm gap-1.5 h-8.5 text-[0.813rem]";
+        "bg-gray-50 text-gray-700 rounded-md cursor-pointer borde hover:bg-gray-200/60 shadow-sm transition-all duration-200 hover:shadow-sm gap-1.5 h-8.5 text-[0.813rem]";
       break;
     case "outline":
       varientStyle =

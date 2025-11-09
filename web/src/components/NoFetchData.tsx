@@ -10,16 +10,16 @@ interface Props {
 const NoFetchData = ({ Icon, title, description }: Props) => {
   return (
     <div className='flex flex-col items-center justify-center min-h-80 p-8 mt-10 bg-gradient-to-b from-gray-50/50 to-white border border-gray-100/50 rounded shadow'>
-      <div className='flex items-center justify-center w-16 h-16 mb-6 bg-white rounded-full shadow-md border border-gray-100'>
+      <div className='flex items-center justify-center size-14 mb-6 bg-white  rounded-full shadow-md border border-gray-100'>
         <CustomIcon
           Insert={Icon}
-          size={32}
-          className='text-gray-600'
+          size={25}
+          className='text-gray-500'
         />
       </div>
 
-      <div className='text-center space-y-1 max-w-sm'>
-        <h3 className='text-xl font-semibold text-gray-900 tracking-tight'>
+      <div className='text-center max-w-sm'>
+        <h3 className='text-lg font-semibold text-gray-900 tracking-tight'>
           {title}
         </h3>
 

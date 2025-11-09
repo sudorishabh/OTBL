@@ -7,8 +7,9 @@ import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { trpc } from "@/lib/trpc";
-import CreateWOStep1 from "./Steps/CreateWOStep1New";
-import CreateWOStep2 from "./Steps/CreateWOStep2";
+import CreateWOStep1Basic from "./Steps/CreateWOStep1Basic";
+import CreateWOStep2Client from "./Steps/CreateWOStep2Client";
+import CreateWOStep3Sites from "./Steps/CreateWOStep3Sites";
 import CreateWOStepper from "./CreateWOStepper";
 import CustomForm from "@/components/CustomForm";
 import {
@@ -21,6 +22,7 @@ import {
 import CreateWOFooter from "./CreateWOFooter";
 import { workOrderFormSchema } from "@/app/dashboard/office/_components/AddOfficeDialog";
 import { useParams } from "next/navigation";
+import toast from "react-hot-toast";
 
 interface Props {
   open: boolean;
@@ -31,15 +33,22 @@ type WorkOrderFormValues = z.infer<typeof workOrderFormSchema>;
 
 const CreateWODialog = ({ open, setOpen }: Props) => {
   const [step, setStep] = useState<number>(1);
+  const [clientPage, setClientPage] = useState<number>(1);
+  const [clientSearchQuery, setClientSearchQuery] = useState<string>("");
   const params = useParams();
   const officeId = params?.officeId ? Number(params.officeId) : 0;
 
   const utils = trpc.useUtils();
   const getSites = trpc.siteQuery.getSites.useQuery();
-  const getClients = trpc.clientQuery.getClients.useQuery();
+  const getClients = trpc.clientQuery.getClients.useQuery({
+    page: clientPage,
+    limit: 50,
+    searchQuery: clientSearchQuery,
+    status: "active",
+  });
   const createWorkOrder = trpc.workOrderMutation.createWorkOrder.useMutation({
     onSuccess: () => {
-      alert("Work order created successfully!");
+      toast.success("Work order created successfully!");
       // Invalidate and refetch work order queries
       utils.officeQuery.getOfficeWorkOrders.invalidate({ id: officeId });
       utils.officeQuery.getOfficeStats.invalidate({ id: officeId });
@@ -47,14 +56,15 @@ const CreateWODialog = ({ open, setOpen }: Props) => {
       form.reset();
     },
     onError: (error: any) => {
-      alert(`Error creating work order: ${error.message}`);
+      toast.error(`Error creating work order: ${error.message}`);
     },
   });
 
   const sitesData = getSites?.data;
   const isGetSitesLoading = getSites.isLoading;
 
-  const clientsData = getClients?.data;
+  const clientsData = getClients?.data?.clients || [];
+  const clientsPagination = getClients?.data?.pagination;
   const isGetClientsLoading = getClients.isLoading;
 
   const form = useForm<WorkOrderFormValues>({
@@ -64,7 +74,16 @@ const CreateWODialog = ({ open, setOpen }: Props) => {
       title: "",
       clientMode: "existing",
       client_id: undefined,
-      newClient: undefined,
+      newClient: {
+        name: "",
+        address: "",
+        state: "",
+        city: "",
+        pincode: "",
+        gst_number: "",
+        contact_number: "",
+        email: "",
+      },
       start_date: "",
       end_date: "",
       handing_over_date: "",
@@ -78,7 +97,7 @@ const CreateWODialog = ({ open, setOpen }: Props) => {
       status: "pending",
       siteMode: "existing",
       site_ids: [],
-      newSites: undefined,
+      newSites: [],
       activity_type: undefined,
     },
   });
@@ -215,17 +234,23 @@ const CreateWODialog = ({ open, setOpen }: Props) => {
 
             {/* Step Content */}
             <div className='space-y-6'>
-              {step === 1 && (
-                <CreateWOStep1
+              {step === 1 && <CreateWOStep1Basic form={form} />}
+
+              {step === 2 && (
+                <CreateWOStep2Client
                   form={form}
                   clientsData={clientsData}
+                  clientsPagination={clientsPagination}
                   isGetClientsLoading={isGetClientsLoading}
                   clientMode={clientMode}
+                  onLoadMoreClients={() => setClientPage((prev) => prev + 1)}
+                  onSearchClients={setClientSearchQuery}
+                  clientSearchQuery={clientSearchQuery}
                 />
               )}
 
-              {step === 2 && (
-                <CreateWOStep2
+              {step === 3 && (
+                <CreateWOStep3Sites
                   form={form}
                   isGetSitesLoading={isGetSitesLoading}
                   siteMode={siteMode}

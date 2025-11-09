@@ -43,9 +43,12 @@ const AddUserDialog = ({ open, setOpen, isEditInfo, setIsEditInfo }: Props) => {
     },
   });
 
+  const trpcUtils = trpc.useUtils();
+
   const registerMutation = trpc.userMutation.registerByAdmin.useMutation({
     onSuccess: () => {
       toast.success("User registered successfully");
+      trpcUtils.userQuery.getUsers.invalidate();
     },
     onError: (error) => {
       toast.error(`Failed to register user: ${error.message}`);

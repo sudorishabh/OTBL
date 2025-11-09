@@ -239,16 +239,13 @@ const AddOfficeDialog = ({ open, setOpen }: Props) => {
     },
   });
 
-  // Get all users for manager and operator selection
-  const { data: users } = trpc.userQuery.getAll.useQuery();
+  // Get managers and operators for office assignment
+  const { data: staffData } = trpc.userQuery.getManagersAndOperators.useQuery();
 
-  // Filter users by role
-  const managers = users?.filter(
-    (user: any) => user.role === "manager" || user.role === "staff"
-  );
-  const operators = users?.filter(
-    (user: any) => user.role === "operator" || user.role === "staff"
-  );
+  console.log("Staff data fetched for office assignment:", staffData);
+
+  const managers = staffData?.managers;
+  const operators = staffData?.operators;
 
   const addOffice = trpc.officeMutation.addOffice.useMutation({
     onSuccess: () => {

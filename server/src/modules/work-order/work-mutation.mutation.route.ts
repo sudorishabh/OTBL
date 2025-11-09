@@ -143,6 +143,7 @@ export const workOrderMutationRouter = router({
               site_id: siteId,
               start_date: new Date(woSite.start_date),
               end_date: new Date(woSite.end_date),
+              activity_type: woSite.activity_type || null,
               metric_ton: woSite.metric_ton
                 ? woSite.metric_ton.toString()
                 : null,
@@ -166,6 +167,7 @@ export const workOrderMutationRouter = router({
               site_id: siteId,
               start_date: new Date(input.start_date),
               end_date: new Date(input.end_date),
+              activity_type: null,
               status: "pending",
             });
 
