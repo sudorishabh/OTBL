@@ -23,10 +23,11 @@ const Offices = () => {
     limit: officesQueryLimit,
   });
 
+  const isOfficesLoading = getOfficesPaginated.isLoading;
   const officesData = getOfficesPaginated.data;
 
   useEffect(() => {
-    if (officesData) {
+    if (officesData && !isOfficesLoading) {
       if (currentPage === 1) {
         setAllOffices(officesData.offices);
       } else {
@@ -40,9 +41,8 @@ const Offices = () => {
   };
 
   const isOffices = allOffices.length > 0;
-  const isOfficeLoading = getOfficesPaginated.isLoading && currentPage === 1;
 
-  if (isOfficeLoading) {
+  if (isOfficesLoading) {
     return <PageLoading />;
   }
 
@@ -78,7 +78,6 @@ const Offices = () => {
           {officesData?.pagination.hasMore && (
             <LoadMoreBtn
               onClick={handleLoadMore}
-              disabled={isOfficeLoading}
               loading={isOfficeLoading}
             />
           )}

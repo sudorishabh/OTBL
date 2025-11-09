@@ -9,7 +9,7 @@ export default function Layout({
   return (
     <>
       <AppSidebar />
-      <SidebarInset className='pl-60'>{children}</SidebarInset>
+      <SidebarInset className='pl-[14rem]'>{children}</SidebarInset>
     </>
   );
 }

@@ -6,8 +6,6 @@ import { TRPCError } from "@trpc/server";
 import { db } from "@/db";
 import {
   officeTable,
-  siteBudgetTable,
-  siteTable,
   workOrderSiteTable,
   workOrderTable,
   officeUserTable,
@@ -78,6 +76,8 @@ export const officeQueryRouter = router({
 
       const hasMore = offset + offices.length < total;
 
+      const totalPages = Math.ceil(total / limit);
+
       return {
         offices: officesWithUsers,
         pagination: {
@@ -85,7 +85,7 @@ export const officeQueryRouter = router({
           limit,
           total,
           hasMore,
-          totalPages: Math.ceil(total / limit),
+          totalPages,
         },
       };
     }),

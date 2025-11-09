@@ -1,5 +1,18 @@
 import { z } from "zod";
 
+// Get All Users paginated schema
+export const getAllUsersPaginatedSchema = z.object({
+  page: z.number().min(1, "Page number must be at least 1"),
+  limit: z
+    .number()
+    .min(1, "Limit must be at least 1")
+    .max(100, "Limit cannot exceed 100"),
+  searchQuery: z.string().optional(),
+  role: z.enum(["all", "manager", "staff", "viewer", "operator"]).optional(),
+  status: z.enum(["all", "active", "inactive"]).optional(),
+  userNamesOrder: z.enum(["asc", "desc", "latest", "oldest"]).optional(),
+});
+
 // Registration schema
 export const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),

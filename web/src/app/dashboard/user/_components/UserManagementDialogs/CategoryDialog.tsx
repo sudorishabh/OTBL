@@ -40,10 +40,10 @@ interface Props {
   description: string;
   users: User[];
   onEdit: (user: User) => void;
-  onDelete: (user: User) => void;
-  onAssignOffice: (user: User) => void;
-  onAssignSite: (user: User) => void;
-  onViewWorkLocations: (user: User) => void;
+  // onDelete: (user: User) => void;
+  // onAssignOffice: (user: User) => void;
+  // onAssignSite: (user: User) => void;
+  // onViewWorkLocations: (user: User) => void;
 }
 
 const CategoryDialog = ({
@@ -53,11 +53,11 @@ const CategoryDialog = ({
   description,
   users,
   onEdit,
-  onDelete,
-  onAssignOffice,
-  onAssignSite,
-  onViewWorkLocations,
-}: Props) => {
+}: // onDelete,
+// onAssignOffice,
+// onAssignSite,
+// onViewWorkLocations,
+Props) => {
   return (
     <Dialog
       open={open}
@@ -71,10 +71,11 @@ const CategoryDialog = ({
           <UserTable
             users={users}
             onEdit={onEdit}
-            onDelete={onDelete}
-            onAssignOffice={onAssignOffice}
-            onAssignSite={onAssignSite}
-            onViewWorkLocations={onViewWorkLocations}
+
+            // onDelete={onDelete}
+            // onAssignOffice={onAssignOffice}
+            // onAssignSite={onAssignSite}
+            // onViewWorkLocations={onViewWorkLocations}
           />
         </div>
       </DialogContent>

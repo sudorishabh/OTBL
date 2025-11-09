@@ -50,16 +50,16 @@ const sidebarLinks = [
     link: "/site",
     icon: Tent,
   },
-  {
-    title: "Activities",
-    link: "/activity",
-    icon: ChartNoAxesGantt,
-  },
-  {
-    title: "Budget Categories",
-    link: "/budget-category",
-    icon: ReceiptIndianRupee,
-  },
+  // {
+  //   title: "Activities",
+  //   link: "/activity",
+  //   icon: ChartNoAxesGantt,
+  // },
+  // {
+  //   title: "Budget Categories",
+  //   link: "/budget-category",
+  //   icon: ReceiptIndianRupee,
+  // },
   {
     title: "Clients",
     link: "/client",
@@ -137,7 +137,7 @@ function AppSidebar() {
   return (
     <Sidebar
       collapsible='icon'
-      className='border-0 w-60'>
+      className='border-0 w-[14rem]'>
       <SidebarHeader className='p-6 bg-cyan-900'>
         <div className='flex flex-col justify-center items-center gap-2'>
           <Image

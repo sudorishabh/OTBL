@@ -9,7 +9,7 @@ const PageLoading = () => {
       aria-busy='true'>
       <div className='flex flex-col items-center gap-4'>
         <div className='relative'>
-          <div className='size-9 rounded-full border-2 border-muted-foreground/20 border-t-primary animate-spin' />
+          <div className='size-8 rounded-full border-2 border-muted-foreground/20 border-t-primary animate-spin' />
         </div>
         <p className='text-sm text-muted-foreground'>Loading, please wait…</p>
       </div>

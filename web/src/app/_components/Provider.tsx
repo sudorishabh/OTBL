@@ -5,6 +5,7 @@ import { trpc } from "@/lib/trpc";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { httpBatchLink } from "@trpc/client";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { UserManagementProvider } from "@/contexts/UserManagementContext";
 
 const Provider = ({ children }: { children: React.ReactNode }) => {
   const [queryClient] = useState(() => new QueryClient());
@@ -30,7 +31,9 @@ const Provider = ({ children }: { children: React.ReactNode }) => {
       queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
-          <SidebarProvider>{children}</SidebarProvider>
+          <UserManagementProvider>
+            <SidebarProvider>{children}</SidebarProvider>
+          </UserManagementProvider>
         </AuthProvider>
       </QueryClientProvider>
     </trpc.Provider>

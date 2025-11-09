@@ -35,10 +35,10 @@ const Wrapper = ({
           )}
           <div>
             {title && (
-              <h1 className='text-xl font-bold text-gray-700'>{title}</h1>
+              <h1 className='text-xl font-bold text-cyan-800'>{title}</h1>
             )}
             {description && (
-              <p className='text-sm text-gray-500'>{description}</p>
+              <p className='text-sm text-gray-500 font-mediu'>{description}</p>
             )}
           </div>
         </div>

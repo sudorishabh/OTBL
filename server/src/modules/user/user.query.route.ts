@@ -1,12 +1,13 @@
 import { router, protectedProcedure } from "../../trpc";
 import { db } from "../../db";
 import { officeUserTable, userTable, officeTable } from "../../db/schema";
-import { eq, not } from "drizzle-orm";
+import { and, asc, count, desc, eq, like, not, or } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { hasRole } from "@/middlewares/authorization";
-import { off } from "process";
 import { handleDatabaseOperation } from "@/utils/trpc-errors";
+import { getAllUsersPaginatedSchema } from "./user.schema";
+import { ROLES } from "@/enums/user-roles";
 
 export const userQueryRouter = router({
   // Get current user profile
@@ -37,50 +38,124 @@ export const userQueryRouter = router({
     return user;
   }),
 
-  getAll: protectedProcedure.use(hasRole("admin")).query(async () => {
-    const users = await handleDatabaseOperation(() =>
-      db
-        .select({
-          id: userTable.id,
-          name: userTable.name,
-          email: userTable.email,
-          contact_number: userTable.contact_number,
-          role: userTable.role,
-          status: userTable.status,
-          created_at: userTable.created_at,
-          password: userTable.password,
-        })
-        .from(userTable)
-        .where(not(eq(userTable.role, "admin")))
-    );
+  // Get all users with pagination, search, and filters
+  getAll: protectedProcedure
+    .use(hasRole("admin"))
+    .input(getAllUsersPaginatedSchema)
+    .query(async ({ input }) => {
+      const { page, limit, searchQuery, role, status, userNamesOrder } = input;
 
-    // Fetch offices for each user with full office details
-    const usersWithOffices = await Promise.all(
-      users.map(async (user) => {
-        const offices = await handleDatabaseOperation(() =>
-          db
-            .select({
-              id: officeTable.id,
-              name: officeTable.name,
-              officeRole: officeUserTable.role,
-            })
-            .from(officeUserTable)
-            .innerJoin(
-              officeTable,
-              eq(officeUserTable.office_id, officeTable.id)
+      // Build the query conditions
+      let userQuery = not(eq(userTable.role, ROLES.ADMIN));
+
+      if (role && role !== "all") {
+        userQuery = and(userQuery, eq(userTable.role, role)) ?? userQuery;
+      }
+
+      if (status && status !== "all") {
+        userQuery = and(userQuery, eq(userTable.status, status)) ?? userQuery;
+      }
+
+      if (searchQuery && searchQuery.trim() !== "") {
+        userQuery =
+          and(
+            userQuery,
+            or(
+              like(userTable.name, `%${searchQuery}%`),
+              like(userTable.email, `%${searchQuery}%`),
+              like(userTable.contact_number, `%${searchQuery}%`)
             )
-            .where(eq(officeUserTable.user_id, user.id))
-        );
+          ) ?? userQuery;
+      }
 
+      const userOrder =
+        userNamesOrder === "asc"
+          ? asc(userTable.name)
+          : userNamesOrder === "desc"
+          ? desc(userTable.name)
+          : userNamesOrder === "latest"
+          ? desc(userTable.created_at)
+          : asc(userTable.created_at);
+
+      // Count total after applying filters
+      const [totalResult] = await handleDatabaseOperation(() =>
+        db.select({ count: count() }).from(userTable).where(userQuery)
+      );
+      const total = totalResult.count;
+
+      if (total === 0) {
         return {
-          ...user,
-          offices,
+          users: [],
+          pagination: {
+            page,
+            limit,
+            total,
+            hasMore: false,
+            totalPages: 0,
+          },
         };
-      })
-    );
+      }
 
-    return usersWithOffices;
-  }),
+      const offset = (page - 1) * limit;
+
+      const users = await handleDatabaseOperation(() =>
+        db
+          .select({
+            id: userTable.id,
+            name: userTable.name,
+            email: userTable.email,
+            contact_number: userTable.contact_number,
+            role: userTable.role,
+            status: userTable.status,
+            created_at: userTable.created_at,
+            password: userTable.password,
+          })
+          .from(userTable)
+          .where(userQuery)
+          .limit(limit)
+          .offset(offset)
+          .orderBy(userOrder)
+      );
+
+      // Fetch offices for each user with full office details
+      const usersWithOffices = await Promise.all(
+        users.map(async (user) => {
+          const offices = await handleDatabaseOperation(() =>
+            db
+              .select({
+                id: officeTable.id,
+                name: officeTable.name,
+                officeRole: officeUserTable.role,
+              })
+              .from(officeUserTable)
+              .innerJoin(
+                officeTable,
+                eq(officeUserTable.office_id, officeTable.id)
+              )
+              .where(eq(officeUserTable.user_id, user.id))
+          );
+
+          return {
+            ...user,
+            offices,
+          };
+        })
+      );
+
+      const totalPages = Math.ceil(totalResult.count / limit);
+
+      const hasMore = offset + users.length < totalResult.count;
+      return {
+        users: usersWithOffices,
+        pagination: {
+          page,
+          limit,
+          total,
+          hasMore,
+          totalPages,
+        },
+      };
+    }),
 
   // Get user by ID
   getById: protectedProcedure

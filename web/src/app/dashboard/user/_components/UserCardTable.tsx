@@ -46,20 +46,9 @@ interface User {
 interface Props {
   users: User[];
   onEdit: (user: User) => void;
-  onDelete: (user: User) => void;
-  onAssignOffice: (user: User) => void;
-  onAssignSite: (user: User) => void;
-  onViewWorkLocations: (user: User) => void;
 }
 
-const UserCardTable = ({
-  users,
-  onEdit,
-  onDelete,
-  onAssignOffice,
-  onAssignSite,
-  onViewWorkLocations,
-}: Props) => {
+const UserCardTable = ({ users, onEdit }: Props) => {
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
       case "admin":

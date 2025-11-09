@@ -40,20 +40,20 @@ interface User {
 interface Props {
   users: User[];
   onEdit: (user: User) => void;
-  onDelete: (user: User) => void;
-  onAssignOffice: (user: User) => void;
-  onAssignSite: (user: User) => void;
-  onViewWorkLocations: (user: User) => void;
+  // onDelete: (user: User) => void;
+  // onAssignOffice: (user: User) => void;
+  // onAssignSite: (user: User) => void;
+  // onViewWorkLocations: (user: User) => void;
 }
 
 const CategorizedUsers = ({
   users,
   onEdit,
-  onDelete,
-  onAssignOffice,
-  onAssignSite,
-  onViewWorkLocations,
-}: Props) => {
+}: // onDelete,
+// onAssignOffice,
+// onAssignSite,
+// onViewWorkLocations,
+Props) => {
   // State for dialog management
   const [openDialog, setOpenDialog] = useState<string | null>(null);
 
@@ -100,10 +100,10 @@ const CategorizedUsers = ({
               <UserCardTable
                 users={previewUsers}
                 onEdit={onEdit}
-                onDelete={onDelete}
-                onAssignOffice={onAssignOffice}
-                onAssignSite={onAssignSite}
-                onViewWorkLocations={onViewWorkLocations}
+                // onDelete={onDelete}
+                // onAssignOffice={onAssignOffice}
+                // onAssignSite={onAssignSite}
+                // onViewWorkLocations={onViewWorkLocations}
               />
               {users.length > 3 && (
                 <p className='text-xs text-muted-foreground text-center pt-2'>
@@ -165,10 +165,10 @@ const CategorizedUsers = ({
         description={`All users with manager role (${managerUsers.length} total)`}
         users={managerUsers}
         onEdit={onEdit}
-        onDelete={onDelete}
-        onAssignOffice={onAssignOffice}
-        onAssignSite={onAssignSite}
-        onViewWorkLocations={onViewWorkLocations}
+        // onDelete={onDelete}
+        // onAssignOffice={onAssignOffice}
+        // onAssignSite={onAssignSite}
+        // onViewWorkLocations={onViewWorkLocations}
       />
 
       <CategoryDialog
@@ -178,10 +178,10 @@ const CategorizedUsers = ({
         description={`All users with operator role (${operatorUsers.length} total)`}
         users={operatorUsers}
         onEdit={onEdit}
-        onDelete={onDelete}
-        onAssignOffice={onAssignOffice}
-        onAssignSite={onAssignSite}
-        onViewWorkLocations={onViewWorkLocations}
+        // onDelete={onDelete}
+        // onAssignOffice={onAssignOffice}
+        // onAssignSite={onAssignSite}
+        // onViewWorkLocations={onViewWorkLocations}
       />
 
       <CategoryDialog
@@ -191,10 +191,10 @@ const CategorizedUsers = ({
         description={`All users with staff role (${staffUsers.length} total)`}
         users={staffUsers}
         onEdit={onEdit}
-        onDelete={onDelete}
-        onAssignOffice={onAssignOffice}
-        onAssignSite={onAssignSite}
-        onViewWorkLocations={onViewWorkLocations}
+        // onDelete={onDelete}
+        // onAssignOffice={onAssignOffice}
+        // onAssignSite={onAssignSite}
+        // onViewWorkLocations={onViewWorkLocations}
       />
 
       <CategoryDialog
@@ -204,10 +204,10 @@ const CategorizedUsers = ({
         description={`All users with viewer role (${viewerUsers.length} total)`}
         users={viewerUsers}
         onEdit={onEdit}
-        onDelete={onDelete}
-        onAssignOffice={onAssignOffice}
-        onAssignSite={onAssignSite}
-        onViewWorkLocations={onViewWorkLocations}
+        // onDelete={onDelete}
+        // onAssignOffice={onAssignOffice}
+        // onAssignSite={onAssignSite}
+        // onViewWorkLocations={onViewWorkLocations}
       />
     </div>
   );

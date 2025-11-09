@@ -3,18 +3,17 @@ import CustomButton from "./CustomButton";
 
 interface Props {
   onClick: () => void;
-  disabled: boolean;
   loading: boolean;
 }
 
-const LoadMoreBtn = ({ disabled, loading, onClick }: Props) => {
+const LoadMoreBtn = ({ loading, onClick }: Props) => {
   return (
     <div className='flex justify-center pt-6'>
       <CustomButton
         text='Load More'
         variant='outline'
         onClick={onClick}
-        disabled={disabled}
+        disabled={loading}
         loading={loading}
       />
     </div>

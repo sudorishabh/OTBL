@@ -27,26 +27,8 @@ export const registerSchema = z.object({
 interface Props {
   open: boolean;
   setOpen: (open: boolean) => void;
-  isEditInfo: {
-    id: number;
-    name: string;
-    email: string;
-    contact_number?: string | null;
-    role: string;
-    status: string;
-    offices?: any[];
-  } | null;
-  setIsEditInfo: (
-    isEditInfo: {
-      id: number;
-      name: string;
-      email: string;
-      contact_number?: string | null;
-      role: string;
-      status: string;
-      offices?: any[];
-    } | null
-  ) => void;
+  isEditInfo: IUser | null;
+  setIsEditInfo: (isEditInfo: IUser | null) => void;
 }
 
 const AddUserDialog = ({ open, setOpen, isEditInfo, setIsEditInfo }: Props) => {
