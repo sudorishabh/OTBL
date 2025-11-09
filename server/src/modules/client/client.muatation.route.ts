@@ -11,6 +11,7 @@ import {
   deleteClientContactSchema,
   deleteClientSchema,
   addClientWithContactsSchema,
+  editClientWithContactsSchema,
 } from "./client.schema";
 
 export const clientMutationRouter = router({
@@ -243,6 +244,70 @@ export const clientMutationRouter = router({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to delete client contact",
+        });
+      }
+    }),
+
+  // Edit client with contacts in one transaction
+  editClientWithContacts: publicProcedure
+    .input(editClientWithContactsSchema)
+    .mutation(async ({ input }) => {
+      try {
+        const { clientId, client, contactsToAdd, contactsToRemove } = input;
+
+        // Check if client exists
+        const existingClient = await db
+          .select()
+          .from(clientTable)
+          .where(eq(clientTable.id, clientId));
+
+        if (existingClient.length === 0) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Client does not exist",
+          });
+        }
+
+        // Update client if there are changes
+        if (Object.keys(client).length > 0) {
+          await db
+            .update(clientTable)
+            .set(client)
+            .where(eq(clientTable.id, clientId));
+        }
+
+        // Remove contacts if specified
+        if (contactsToRemove && contactsToRemove.length > 0) {
+          for (const contactId of contactsToRemove) {
+            await db
+              .delete(clientContactTable)
+              .where(eq(clientContactTable.id, contactId));
+          }
+        }
+
+        // Add new contacts if specified
+        if (contactsToAdd && contactsToAdd.length > 0) {
+          const contactsWithClientId = contactsToAdd.map((contact) => ({
+            ...contact,
+            client_id: clientId,
+          }));
+
+          await db.insert(clientContactTable).values(contactsWithClientId);
+        }
+
+        return {
+          success: true,
+          clientId,
+          contactsAdded: contactsToAdd?.length || 0,
+          contactsRemoved: contactsToRemove?.length || 0,
+        };
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to edit client with contacts",
         });
       }
     }),

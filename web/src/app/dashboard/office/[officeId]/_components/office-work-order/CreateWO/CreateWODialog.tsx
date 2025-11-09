@@ -34,11 +34,15 @@ const CreateWODialog = ({ open, setOpen }: Props) => {
   const params = useParams();
   const officeId = params?.officeId ? Number(params.officeId) : 0;
 
+  const utils = trpc.useUtils();
   const getSites = trpc.siteQuery.getSites.useQuery();
   const getClients = trpc.clientQuery.getClients.useQuery();
   const createWorkOrder = trpc.workOrderMutation.createWorkOrder.useMutation({
     onSuccess: () => {
       alert("Work order created successfully!");
+      // Invalidate and refetch work order queries
+      utils.officeQuery.getOfficeWorkOrders.invalidate({ id: officeId });
+      utils.officeQuery.getOfficeStats.invalidate({ id: officeId });
       setOpen(false);
       form.reset();
     },
@@ -75,6 +79,7 @@ const CreateWODialog = ({ open, setOpen }: Props) => {
       siteMode: "existing",
       site_ids: [],
       newSites: undefined,
+      activity_type: undefined,
     },
   });
 
@@ -129,8 +134,22 @@ const CreateWODialog = ({ open, setOpen }: Props) => {
           : undefined,
       newSites: values.siteMode === "new" ? values.newSites : undefined,
 
-      // Work order sites with budgets (optional - can be added later)
-      workOrderSites: undefined, // TODO: Map from selectedSiteBudgets/newSiteBudgets
+      // Work order sites with activity type
+      workOrderSites:
+        values.siteMode === "existing" && values.site_ids
+          ? values.site_ids.map((siteId) => ({
+              site_id: Number(siteId),
+              start_date: values.start_date,
+              end_date: values.end_date,
+              activity_type: values.activity_type,
+            }))
+          : values.siteMode === "new" && values.newSites
+          ? values.newSites.map((_, index) => ({
+              start_date: values.start_date,
+              end_date: values.end_date,
+              activity_type: values.activity_type,
+            }))
+          : undefined,
     };
 
     console.log("Submitting work order:", workOrderData);

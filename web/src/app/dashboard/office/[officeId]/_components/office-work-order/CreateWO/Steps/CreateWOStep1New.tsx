@@ -27,7 +27,6 @@ import {
   Plus,
   Users,
   FileCheck,
-  Link as LinkIcon,
   Weight,
 } from "lucide-react";
 import {
@@ -450,27 +449,6 @@ const CreateWOStep1 = ({
                     <FormControl>
                       <Input
                         placeholder='AG-2024-001'
-                        className='bg-white'
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name='agreement_url'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className='flex items-center gap-2'>
-                      <LinkIcon className='h-4 w-4' />
-                      Agreement URL (Optional)
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder='https://...'
                         className='bg-white'
                         {...field}
                       />

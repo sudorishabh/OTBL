@@ -33,21 +33,7 @@ export const newClientSchema = z.object({
   email: z.string().email({ message: "Valid email is required" }),
 });
 
-// Schema for site budget allocation
-export const siteBudgetSchema = z.object({
-  budget_category_id: z.number(),
-  budget_amount: z.number().positive(),
-});
-
-// Schema for site activities to be added during work order creation
-export const siteActivitySchema = z.object({
-  activity_id: z.number(),
-  activity_description: z.string().optional(),
-  start_date: z.string().or(z.date()).optional(),
-  end_date: z.string().or(z.date()).optional(),
-});
-
-// Schema for work order site with budgets
+// Schema for work order site
 export const workOrderSiteSchema = z.object({
   site_id: z.number().optional(), // Optional because it might be a new site
   start_date: z.string().or(z.date()),
@@ -55,9 +41,6 @@ export const workOrderSiteSchema = z.object({
   metric_ton: z.number().optional(),
   metric_ton_rate: z.number().optional(),
   budget_amount: z.number().optional(),
-  activity_type: z.enum(["insitu", "exsitu"]).optional(),
-  budgets: z.array(siteBudgetSchema).optional(),
-  activities: z.array(siteActivitySchema).optional(), // Activities to add to this site
 });
 
 // Main schema for creating a work order

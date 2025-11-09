@@ -86,7 +86,7 @@ const WorkOrderPage = () => {
         </p>
       </div>
 
-      <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
+      {/* <div className='bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6'>
         <h2 className='font-semibold text-blue-900 mb-2'>
           Implementation Guide
         </h2>
@@ -106,14 +106,14 @@ const WorkOrderPage = () => {
           <code className='bg-blue-100 px-1'>ACTIVITY_QUICK_REFERENCE.md</code>{" "}
           for details
         </p>
-      </div>
+      </div> */}
 
-      <div className='grid gap-4'>
-        {/* Placeholder for Work Order components */}
+      {/* Placeholder for Work Order components */}
+      {/* <div className='grid gap-4'>
         <div className='border rounded-lg p-6 text-center text-gray-500'>
           <p>Work Order List Component - To be implemented</p>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

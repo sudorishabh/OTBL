@@ -6,8 +6,6 @@ import {
   clientTable,
   siteTable,
   workOrderSiteTable,
-  siteBudgetTable,
-  siteActivityTable,
 } from "../../db/schema";
 import { eq } from "drizzle-orm";
 import {
@@ -17,7 +15,7 @@ import {
 } from "./work-order.schema";
 
 export const workOrderMutationRouter = router({
-  // Create a new work order with sites and budgets
+  // Create a new work order with sites
   createWorkOrder: publicProcedure
     .input(createWorkOrderSchema)
     .mutation(async ({ input }) => {
@@ -29,9 +27,6 @@ export const workOrderMutationRouter = router({
             workOrderSites: input.workOrderSites?.map((site, idx) => ({
               index: idx,
               site_id: site.site_id,
-              activity_type: site.activity_type,
-              activities_count: site.activities?.length || 0,
-              activities: site.activities,
             })),
           },
           null,
@@ -127,7 +122,7 @@ export const workOrderMutationRouter = router({
           }
         }
 
-        // Step 4: Create work_order_sites entries with budgets
+        // Step 4: Create work_order_sites entries
         const workOrderSiteIds: number[] = [];
 
         if (input.workOrderSites && input.workOrderSites.length > 0) {
@@ -157,66 +152,11 @@ export const workOrderMutationRouter = router({
               budget_amount: woSite.budget_amount
                 ? woSite.budget_amount.toString()
                 : null,
-              activity_type: woSite.activity_type || null,
               status: "pending",
             });
 
             const woSiteId = woSiteResult[0].insertId;
             workOrderSiteIds.push(woSiteId);
-
-            // Create site budgets if provided
-            if (woSite.budgets && woSite.budgets.length > 0) {
-              const budgetValues = woSite.budgets.map((budget) => ({
-                wo_site_id: woSiteId,
-                budget_category_id: budget.budget_category_id,
-                budget_amount: budget.budget_amount.toString(),
-                expense_amount: "0",
-              }));
-
-              await db.insert(siteBudgetTable).values(budgetValues);
-            }
-
-            // Create site activities if provided
-            if (woSite.activities && woSite.activities.length > 0) {
-              console.log(
-                `📋 Creating ${woSite.activities.length} activities for site ${siteId}`
-              );
-
-              try {
-                const activityValues = woSite.activities.map((activity) => ({
-                  wo_site_id: woSiteId,
-                  activity_id: activity.activity_id,
-                  activity_description: activity.activity_description || null,
-                  start_date: activity.start_date
-                    ? new Date(activity.start_date)
-                    : null,
-                  end_date: activity.end_date
-                    ? new Date(activity.end_date)
-                    : null,
-                  status: "pending" as const,
-                }));
-
-                console.log(
-                  "Activity values to insert:",
-                  JSON.stringify(activityValues, null, 2)
-                );
-
-                const result = await db
-                  .insert(siteActivityTable)
-                  .values(activityValues);
-                console.log(
-                  `✅ Successfully created ${woSite.activities.length} site activities`
-                );
-              } catch (error) {
-                console.error("❌ Error creating site activities:", error);
-                throw new TRPCError({
-                  code: "INTERNAL_SERVER_ERROR",
-                  message: `Failed to create site activities: ${
-                    error instanceof Error ? error.message : "Unknown error"
-                  }`,
-                });
-              }
-            }
           }
         } else {
           // Simple case: just link sites without detailed info

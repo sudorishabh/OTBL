@@ -109,10 +109,13 @@ export const workOrderFormSchema = z
             .string()
             .min(1, { message: "Contact number is required" })
             .max(15),
-          email: z.string().email({ message: "Valid email is required" }),
+          email: z.email({ message: "Valid email is required" }),
         })
       )
       .optional(),
+
+    // Activity type for sites
+    activity_type: z.enum(["insitu", "exsitu"]).optional(),
   })
   .superRefine((val, ctx) => {
     // Validate client selection

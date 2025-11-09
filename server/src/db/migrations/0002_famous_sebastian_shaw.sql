@@ -1,1 +1,0 @@
-ALTER TABLE `work_order_sites` ADD `activity_type` varchar(50);

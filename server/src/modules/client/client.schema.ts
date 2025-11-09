@@ -67,3 +67,13 @@ export const addClientWithContactsSchema = z.object({
     .array(addClientContactSchema.omit({ client_id: true }))
     .optional(),
 });
+
+// Combined schema for editing client with contacts
+export const editClientWithContactsSchema = z.object({
+  clientId: z.number(),
+  client: addClientSchema.partial(),
+  contactsToAdd: z
+    .array(addClientContactSchema.omit({ client_id: true }))
+    .optional(),
+  contactsToRemove: z.array(z.number()).optional(),
+});

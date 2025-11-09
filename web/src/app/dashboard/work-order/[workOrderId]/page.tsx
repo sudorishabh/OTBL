@@ -53,9 +53,11 @@ const WorkOrder = ({ params }: PageProps) => {
 
   const { workOrder, sites, stats } = data;
 
-  // Transform sites data for the components
+  // Transform sites data for the components with wo_site_id and activity_type
   const sitesForSiteComponent = sites.map((s: any) => ({
     id: s.site.id!,
+    wo_site_id: s.wo_site_id!,
+    activity_type: s.activity_type || null,
     name: s.site.name!,
     address: s.site.address!,
     city: s.site.city!,
@@ -69,55 +71,116 @@ const WorkOrder = ({ params }: PageProps) => {
   }));
 
   // Transform site activities for the component
-  const siteActivities = sites.map((s: any) => ({
-    site_id: s.site.id!,
-    activities: s.budgets.map((budget: any) => {
-      const budgetActivities = s.activities.filter((act: any) =>
-        act.expenses.some((exp: any) => exp.site_budget_id === budget.id)
-      );
+  const siteActivities = sites.map((s: any) => {
+    // Group activities by budget category based on their expenses
+    const budgetCategoriesMap = new Map();
 
-      return {
+    // Initialize budget categories
+    s.budgets.forEach((budget: any) => {
+      budgetCategoriesMap.set(budget.budget_category_id, {
         id: budget.budget_category_id!,
         budget_category: {
           id: budget.budget_category_id!,
           name: budget.category_name!,
           description: budget.category_description!,
         },
-        activities: budgetActivities.map((act: any) => {
-          const activityExpenses = act.expenses.filter(
-            (exp: any) => exp.site_budget_id === budget.id
-          );
-          const activityBudget = activityExpenses.reduce(
-            (sum: number, exp: any) => sum + Number(exp.expense_amount || 0),
-            0
-          );
+        activities: [],
+      });
+    });
 
-          return {
-            id: act.site_activity_id!,
-            name: act.activity_name!,
-            description: act.activity_description || "",
-            status: act.status as "completed" | "pending" | "cancelled",
-            start_date: act.start_date!.toISOString(),
-            end_date: act.end_date!.toISOString(),
-            budget_amount: activityBudget.toString(),
-            expense_amount: act.total_expense.toString(),
-            utilization_percentage:
-              activityBudget > 0
-                ? (act.total_expense / activityBudget) * 100
-                : 0,
-            expenses: activityExpenses.map((exp: any) => ({
-              id: exp.id!,
-              amount: exp.expense_amount!.toString(),
-              description: exp.description!,
-              expense_date: exp.expense_date!.toISOString(),
-              category: exp.category!,
-              receipt_number: exp.receipt_number || "",
-            })),
-          };
-        }),
-      };
-    }),
-  }));
+    // If no budget categories exist, create a default "General" category
+    if (budgetCategoriesMap.size === 0) {
+      budgetCategoriesMap.set(0, {
+        id: 0,
+        budget_category: {
+          id: 0,
+          name: "General Activities",
+          description: "Activities without assigned budget category",
+        },
+        activities: [],
+      });
+    }
+
+    console.log("Site activities transformation:", {
+      siteId: s.site.id,
+      siteName: s.site.name,
+      totalActivities: s.activities?.length || 0,
+      budgetCategories: budgetCategoriesMap.size,
+      rawActivities: s.activities,
+    });
+
+    // Process all activities and assign them to budget categories
+    (s.activities || []).forEach((act: any) => {
+      console.log("Processing activity:", {
+        site_activity_id: act.site_activity_id,
+        activity_name: act.activity_name,
+        activity_sub_type: act.activity_sub_type,
+        activity_specific_data: act.activity_specific_data,
+      });
+
+      const activityExpenses = act.expenses || [];
+
+      // Determine which budget category this activity belongs to
+      // If activity has expenses, use the budget category from the first expense
+      // Otherwise, put it in the first available category
+      let budgetCategoryId = null;
+      if (activityExpenses.length > 0) {
+        budgetCategoryId = activityExpenses[0].budget_category_id;
+      }
+
+      // If we have a budget category, add to that category
+      if (budgetCategoryId && budgetCategoriesMap.has(budgetCategoryId)) {
+        const activityExpenseAmount = activityExpenses.reduce(
+          (sum: number, exp: any) => sum + Number(exp.expense_amount || 0),
+          0
+        );
+
+        budgetCategoriesMap.get(budgetCategoryId).activities.push({
+          id: act.site_activity_id!,
+          name: act.activity_name!,
+          description: act.activity_description || "",
+          status: act.status as "completed" | "pending" | "cancelled",
+          start_date: act.start_date || new Date().toISOString(),
+          end_date: act.end_date || new Date().toISOString(),
+          budget_amount: "0",
+          expense_amount: activityExpenseAmount.toString(),
+          utilization_percentage: 0,
+          activity_sub_type: act.activity_sub_type,
+          activity_specific_data: act.activity_specific_data || null,
+          expenses: activityExpenses.map((exp: any) => ({
+            id: exp.id!,
+            amount: exp.expense_amount!.toString(),
+            description: exp.description!,
+            expense_date: exp.expense_date!.toISOString(),
+            category: exp.category!,
+            receipt_number: exp.receipt_number || "",
+          })),
+        });
+      } else {
+        // Activity has no expenses or budget category, add to first budget category
+        const firstCategory = Array.from(budgetCategoriesMap.values())[0];
+        firstCategory.activities.push({
+          id: act.site_activity_id!,
+          name: act.activity_name!,
+          description: act.activity_description || "",
+          status: act.status as "completed" | "pending" | "cancelled",
+          start_date: act.start_date || new Date().toISOString(),
+          end_date: act.end_date || new Date().toISOString(),
+          budget_amount: "0",
+          expense_amount: "0",
+          utilization_percentage: 0,
+          activity_sub_type: act.activity_sub_type,
+          activity_specific_data: act.activity_specific_data || null,
+          expenses: [],
+        });
+      }
+    });
+
+    return {
+      site_id: s.site.id!,
+      activities: Array.from(budgetCategoriesMap.values()),
+    };
+  });
 
   // Transform site budgets for the component
   const siteBudgets = sites.map((s: any) => ({

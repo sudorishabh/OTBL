@@ -7,6 +7,8 @@ import SiteInfoDialog from "./SiteInfoDialog";
 interface Props {
   sites: Array<{
     id: number;
+    wo_site_id: number;
+    activity_type: "insitu" | "exsitu" | null;
     name: string;
     address: string;
     state: string;
@@ -164,7 +166,13 @@ const WorkOrderSites = ({ sites, siteActivities }: Props) => {
           open={isDialogOpen}
           setOpen={setIsDialogOpen}
           site={selectedSite}
+          woSiteId={selectedSite.wo_site_id}
+          activityType={selectedSite.activity_type}
           activities={getSiteActivities(selectedSite.id)}
+          onActivityAdded={() => {
+            // Refetch work order data when activity is added
+            window.location.reload();
+          }}
         />
       )}
     </>

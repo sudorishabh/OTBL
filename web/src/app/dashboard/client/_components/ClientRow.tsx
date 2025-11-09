@@ -10,6 +10,7 @@ import {
   User,
   Briefcase,
   Users,
+  Edit,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ import {
 
 interface ClientContact {
   id: number;
+  client_id: number;
   name: string;
   designation?: string;
   contact_number: string;
@@ -49,16 +51,21 @@ interface Client {
 interface ClientRowProps {
   client: Client;
   contacts?: ClientContact[];
+  onEdit?: (client: Client, contacts: ClientContact[]) => void;
 }
 
-const ClientRow: React.FC<ClientRowProps> = ({ client, contacts = [] }) => {
+const ClientRow: React.FC<ClientRowProps> = ({
+  client,
+  contacts = [],
+  onEdit,
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <>
       {/* Main Client Row */}
       <TableRow className='hover:bg-[#035864]/5 transition-colors'>
-        <TableCell className='font-medium'>
+        <TableCell className='font-medium text-xs'>
           <div className='flex items-center gap-3'>
             <div className='p-2 bg-[#00d57f]/10 rounded-lg'>
               <Building2 className='h-4 w-4 text-[#035864]' />
@@ -69,33 +76,31 @@ const ClientRow: React.FC<ClientRowProps> = ({ client, contacts = [] }) => {
             </div>
           </div>
         </TableCell>
-        <TableCell>
+        <TableCell className='text-xs'>
           <div className='flex items-center gap-2'>
             <Mail className='h-3.5 w-3.5 text-gray-400' />
-            <span className='text-sm text-gray-700'>{client.email}</span>
+            <span className=' text-gray-700'>{client.email}</span>
           </div>
           <div className='flex items-center gap-2 mt-1'>
             <Phone className='h-3.5 w-3.5 text-gray-400' />
-            <span className='text-sm text-gray-700'>
-              {client.contact_number}
-            </span>
+            <span className=' text-gray-700'>{client.contact_number}</span>
           </div>
         </TableCell>
         <TableCell>
-          <div className='flex items-start gap-2'>
+          <div className='flex items-start gap-2 text-xs'>
             <MapPin className='h-3.5 w-3.5 text-gray-400 mt-0.5 flex-shrink-0' />
-            <div className='text-sm text-gray-700'>
+            <div className=' text-gray-700'>
               <p>{client.address}</p>
-              <p className='text-xs text-gray-500 mt-0.5'>
+              <p className=' text-gray-500 mt-0.5'>
                 {client.city}, {client.state} - {client.pincode}
               </p>
             </div>
           </div>
         </TableCell>
         <TableCell>
-          <div className='flex items-center gap-2'>
+          <div className='flex items-center gap-2 text-xs'>
             <FileText className='h-3.5 w-3.5 text-gray-400' />
-            <span className='text-sm font-mono text-gray-700'>
+            <span className=' font-mono text-gray-700'>
               {client.gst_number}
             </span>
           </div>
@@ -112,21 +117,33 @@ const ClientRow: React.FC<ClientRowProps> = ({ client, contacts = [] }) => {
           </Badge>
         </TableCell>
         <TableCell>
-          <Button
-            variant='ghost'
-            size='sm'
-            onClick={() => setIsExpanded(!isExpanded)}
-            className='flex items-center gap-2 hover:bg-[#035864]/10'>
-            <Users className='h-4 w-4' />
-            <span className='text-sm font-medium'>
-              {contacts.length} Contact{contacts.length !== 1 ? "s" : ""}
-            </span>
-            {isExpanded ? (
-              <ChevronUp className='h-4 w-4' />
-            ) : (
-              <ChevronDown className='h-4 w-4' />
+          <div className='flex items-center gap-2'>
+            <Button
+              variant='ghost'
+              size='sm'
+              onClick={() => setIsExpanded(!isExpanded)}
+              className='flex items-center gap-2 hover:bg-[#035864]/10'>
+              <Users className='h-4 w-4' />
+              <span className='text-sm font-medium'>
+                {contacts.length} Contact{contacts.length !== 1 ? "s" : ""}
+              </span>
+              {isExpanded ? (
+                <ChevronUp className='h-4 w-4' />
+              ) : (
+                <ChevronDown className='h-4 w-4' />
+              )}
+            </Button>
+            {onEdit && (
+              <Button
+                variant='outline'
+                size='sm'
+                onClick={() => onEdit(client, contacts)}
+                className='flex items-center gap-2 hover:bg-[#035864]/10'>
+                <Edit className='h-4 w-4' />
+                <span className='text-sm font-medium'>Edit</span>
+              </Button>
             )}
-          </Button>
+          </div>
         </TableCell>
       </TableRow>
 

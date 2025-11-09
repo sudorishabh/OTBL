@@ -2,10 +2,6 @@
 import { router } from ".";
 import { officeMutationRouter } from "@/modules/office/office.mutation.routes";
 import { officeQueryRouter } from "@/modules/office/office.query.routes";
-import { activityMutationRouter } from "@/modules/activity/activity.mutation.routes";
-import { activityQueryRoutes } from "@/modules/activity/activity.query.routes";
-import { budgetCategoryMutationRouter } from "@/modules/budget-category/budget-category.mutation.routes";
-import { budgetCategoryQueryRoutes } from "@/modules/budget-category/budget-category.query.routes";
 import { siteMutationRouter } from "@/modules/site/site.mutation.routes";
 import { siteQueryRouter } from "@/modules/site/site.query.routes";
 import { userMutationRouter } from "@/modules/user/user.mutation.route";
@@ -29,14 +25,6 @@ export const appRouter = router({
   // Office management
   officeMutation: officeMutationRouter,
   officeQuery: officeQueryRouter,
-
-  // Activity management
-  activityMutation: activityMutationRouter,
-  activityQuery: activityQueryRoutes,
-
-  // Budget category management
-  budgetCategoryMutation: budgetCategoryMutationRouter,
-  budgetCategoryQuery: budgetCategoryQueryRoutes,
 
   // Site management
   siteMutation: siteMutationRouter,

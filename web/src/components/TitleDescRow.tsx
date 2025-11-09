@@ -11,12 +11,32 @@ interface IRowDetails {
   description: string;
   created_at: string;
   updated_at?: string;
+  activity_type?: "insitu" | "exsitu" | "general";
+  activity_sub_type?:
+    | "zero_day_activity"
+    | "zero_day_sample"
+    | "tph_activity"
+    | "oil_zapper_activity"
+    | "other"
+    | null;
 }
 
 interface Props {
   rowDetails: IRowDetails;
   setIsEditInfo: (
-    isEditInfo: { id: number; name: string; description: string } | null
+    isEditInfo: {
+      id: number;
+      name: string;
+      description: string;
+      activity_type?: "insitu" | "exsitu" | "general";
+      activity_sub_type?:
+        | "zero_day_activity"
+        | "zero_day_sample"
+        | "tph_activity"
+        | "oil_zapper_activity"
+        | "other"
+        | null;
+    } | null
   ) => void;
   isDialog: boolean;
   setIsDialog: (isDialog: boolean) => void;
@@ -33,6 +53,8 @@ const TitleDescRow = ({
       id: rowDetails.id,
       name: rowDetails.name,
       description: rowDetails.description,
+      activity_type: rowDetails.activity_type,
+      activity_sub_type: rowDetails.activity_sub_type,
     });
     setIsDialog(!isDialog);
   };
@@ -70,6 +92,29 @@ const TitleDescRow = ({
 
             {/* Metadata */}
             <div className='flex flex-wrap items-center gap-4 text-xs text-gray-500'>
+              {rowDetails.activity_type && (
+                <div className='flex items-center gap-1'>
+                  <span className='px-2 py-1 bg-blue-100 text-blue-700 rounded-md font-medium'>
+                    {rowDetails.activity_type === "insitu"
+                      ? "In-Situ"
+                      : rowDetails.activity_type === "exsitu"
+                      ? "Ex-Situ"
+                      : "General"}
+                  </span>
+                </div>
+              )}
+              {rowDetails.activity_sub_type && (
+                <div className='flex items-center gap-1'>
+                  <span className='px-2 py-1 bg-green-100 text-green-700 rounded-md font-medium text-xs'>
+                    {rowDetails.activity_sub_type
+                      .split("_")
+                      .map(
+                        (word) => word.charAt(0).toUpperCase() + word.slice(1)
+                      )
+                      .join(" ")}
+                  </span>
+                </div>
+              )}
               <div className='flex items-center gap-1'>
                 <Calendar className='w-3 h-3' />
                 <span>

@@ -8,7 +8,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Trash2, Building2, MapPin, Eye, EyeOff } from "lucide-react";
+import {
+  Edit,
+  Trash2,
+  Building2,
+  MapPin,
+  Eye,
+  EyeOff,
+  Copy,
+  Check,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -64,6 +73,7 @@ const UserTable = ({
   const [visiblePasswords, setVisiblePasswords] = useState<Set<number>>(
     new Set()
   );
+  const [copiedPasswordId, setCopiedPasswordId] = useState<number | null>(null);
 
   const togglePasswordVisibility = (userId: number) => {
     setVisiblePasswords((prev) => {
@@ -75,6 +85,16 @@ const UserTable = ({
       }
       return newSet;
     });
+  };
+
+  const copyPassword = async (userId: number, password: string) => {
+    try {
+      await navigator.clipboard.writeText(password);
+      setCopiedPasswordId(userId);
+      setTimeout(() => setCopiedPasswordId(null), 1000);
+    } catch (err) {
+      console.error("Failed to copy password:", err);
+    }
   };
 
   const getRoleBadgeVariant = (role: string) => {
@@ -132,7 +152,11 @@ const UserTable = ({
                   {user.contact_number || "-"}
                 </TableCell>
                 <TableCell className='text-xs'>
-                  <Badge variant={getRoleBadgeVariant(user.role)}>
+                  <Badge
+                    variant={getRoleBadgeVariant(user.role)}
+                    className={`${
+                      user.role === "manager" ? "bg-cyan-800" : ""
+                    }`}>
                     {user.role}
                   </Badge>
                 </TableCell>
@@ -167,9 +191,9 @@ const UserTable = ({
                     </span>
                   )}
                 </TableCell>
-                <TableCell className='text-xs'>
+                <TableCell className='text-xs w-40 '>
                   <div className='group relative flex items-center gap-2'>
-                    <span className='font-mono'>
+                    <span className='font-mono line-clamp-1'>
                       {visiblePasswords.has(user.id)
                         ? user.password || "N/A"
                         : "••••••••"}
@@ -186,6 +210,16 @@ const UserTable = ({
                         <EyeOff className='h-4 w-4 text-gray-600' />
                       ) : (
                         <Eye className='h-4 w-4 text-gray-600' />
+                      )}
+                    </button>
+                    <button
+                      onClick={() => copyPassword(user.id, user.password || "")}
+                      className='opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-gray-100 rounded'
+                      title='Copy password'>
+                      {copiedPasswordId === user.id ? (
+                        <Check className='h-4 w-4 text-green-600' />
+                      ) : (
+                        <Copy className='h-4 w-4 text-gray-600' />
                       )}
                     </button>
                   </div>

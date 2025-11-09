@@ -11,6 +11,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import CreateWOSiteCard from "../CreateWOSiteCard";
 import {
   Building2,
@@ -22,6 +29,7 @@ import {
   MapPin as LocationIcon,
   Hash as HashIcon,
   MapPin,
+  Layers,
 } from "lucide-react";
 
 interface NewSite {
@@ -87,6 +95,55 @@ const CreateWOStep2 = ({
       </CardHeader>
       <CardContent>
         <div className='space-y-6'>
+          {/* Activity Type Selection */}
+          <div className='space-y-4'>
+            <div className='flex items-center gap-2'>
+              <div className='p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30'>
+                <Layers className='h-4 w-4 text-purple-600 dark:text-purple-400' />
+              </div>
+              <h4 className='text-sm font-semibold text-gray-700 dark:text-gray-300'>
+                Activity Type
+              </h4>
+            </div>
+
+            <FormField
+              control={form.control}
+              name='activity_type'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Select Activity Type</FormLabel>
+                  <FormDescription>
+                    Choose the type of activity for the sites in this work order
+                  </FormDescription>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder='Select activity type' />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value='insitu'>
+                        <div className='flex items-center gap-2'>
+                          <div className='w-2 h-2 rounded-full bg-blue-500' />
+                          <span>In-Situ</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value='exsitu'>
+                        <div className='flex items-center gap-2'>
+                          <div className='w-2 h-2 rounded-full bg-green-500' />
+                          <span>Ex-Situ</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
           {siteMode === "existing" ? (
             <div className='space-y-4'>
               <div className='flex items-center gap-2 mb-4'>

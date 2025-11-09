@@ -5,6 +5,7 @@ import CustomButton from "@/components/CustomButton";
 import { Plus, Building2, Search, Users, UserPlus } from "lucide-react";
 import AddClientDialog from "./_components/AddClientDialog";
 import AddClientContactDialog from "./_components/AddClientContactDialog";
+import EditClientDialog from "./_components/EditClientDialog";
 import ClientRow from "./_components/ClientRow";
 import ClientContactsTable from "./_components/ClientContactsTable";
 import NoFetchData from "@/components/NoFetchData";
@@ -21,9 +22,39 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
 
+interface ClientContact {
+  id: number;
+  client_id: number;
+  name: string;
+  designation?: string;
+  contact_number: string;
+  email: string;
+  contact_type?: string;
+}
+
+interface Client {
+  id: number;
+  name: string;
+  address: string;
+  state: string;
+  city: string;
+  pincode: string;
+  gst_number: string;
+  contact_number: string;
+  email: string;
+  status: "active" | "inactive";
+  created_at?: string | Date;
+  updated_at?: string | Date;
+}
+
 const Client = () => {
   const [isAddClientDialog, setIsAddClientDialog] = useState(false);
   const [isAddContactDialog, setIsAddContactDialog] = useState(false);
+  const [isEditClientDialog, setIsEditClientDialog] = useState(false);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
+  const [selectedClientContacts, setSelectedClientContacts] = useState<
+    ClientContact[]
+  >([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("clients");
 
@@ -36,7 +67,7 @@ const Client = () => {
   const isLoading = getClientsQuery.isLoading || getContactsQuery.isLoading;
 
   const filteredClients = clients.filter(
-    (client) =>
+    (client: Client) =>
       client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       client.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
       client.gst_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -47,10 +78,16 @@ const Client = () => {
   const hasFilteredClients = filteredClients.length > 0;
 
   // Convert contacts to the format expected by AddClientDialog
-  const existingContactsForDialog = allContacts.map((contact) => ({
+  const existingContactsForDialog = allContacts.map((contact: any) => ({
     ...contact,
     id: contact.id.toString(),
   }));
+
+  const handleEditClient = (client: Client, contacts: ClientContact[]) => {
+    setSelectedClient(client);
+    setSelectedClientContacts(contacts);
+    setIsEditClientDialog(true);
+  };
 
   if (isLoading) {
     return <PageLoading />;
@@ -68,12 +105,12 @@ const Client = () => {
           variant='primary'
         />
       }>
-      <div className='space-y-4'>
+      <div className='space-y-4 mt-8'>
         {/* Stats Bar */}
         <div className='grid grid-cols-3 gap-3'>
           <div className='bg-white border border-gray-200 rounded-lg p-3'>
             <div className='flex items-center gap-2'>
-              <Building2 className='h-4 w-4 text-[#035864]' />
+              {/* <Building2 className='h-4 w-4 text-[#035864]' /> */}
               <div>
                 <p className='text-xs text-gray-500'>Total Clients</p>
                 <p className='text-lg font-semibold text-gray-900'>
@@ -84,18 +121,18 @@ const Client = () => {
           </div>
           <div className='bg-white border border-gray-200 rounded-lg p-3'>
             <div className='flex items-center gap-2'>
-              <Badge className='h-4 w-4 bg-green-500'></Badge>
+              {/* <Badge className='h-4 w-4 bg-green-500'></Badge> */}
               <div>
                 <p className='text-xs text-gray-500'>Active</p>
                 <p className='text-lg font-semibold text-gray-900'>
-                  {clients.filter((c) => c.status === "active").length}
+                  {clients.filter((c: Client) => c.status === "active").length}
                 </p>
               </div>
             </div>
           </div>
           <div className='bg-white border border-gray-200 rounded-lg p-3'>
             <div className='flex items-center gap-2'>
-              <Users className='h-4 w-4 text-[#035864]' />
+              {/* <Users className='h-4 w-4 text-[#035864]' /> */}
               <div>
                 <p className='text-xs text-gray-500'>Total Contacts</p>
                 <p className='text-lg font-semibold text-gray-900'>
@@ -192,15 +229,16 @@ const Client = () => {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {filteredClients.map((client) => {
+                        {filteredClients.map((client: Client) => {
                           const clientContacts = allContacts.filter(
-                            (contact) => contact.client_id === client.id
+                            (contact: any) => contact.client_id === client.id
                           );
                           return (
                             <ClientRow
                               key={client.id}
                               client={client}
                               contacts={clientContacts}
+                              onEdit={handleEditClient}
                             />
                           );
                         })}
@@ -250,6 +288,13 @@ const Client = () => {
         open={isAddContactDialog}
         setOpen={setIsAddContactDialog}
         clients={clients}
+      />
+
+      <EditClientDialog
+        open={isEditClientDialog}
+        setOpen={setIsEditClientDialog}
+        client={selectedClient}
+        existingContacts={selectedClientContacts}
       />
     </Wrapper>
   );

@@ -7,13 +7,8 @@ import {
   officeTable,
   workOrderSiteTable,
   siteTable,
-  siteBudgetTable,
-  budgetCategoryTable,
-  siteActivityTable,
-  activityTable,
-  siteActivityExpenseTable,
 } from "../../db/schema";
-import { eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import {
   getWorkOrderSchema,
   getWorkOrdersByOfficeSchema,
@@ -130,34 +125,9 @@ export const workOrderQueryRouter = router({
           .leftJoin(siteTable, eq(workOrderSiteTable.site_id, siteTable.id))
           .where(eq(workOrderSiteTable.work_order_id, id));
 
-        // Get budgets for each site
-        const sitesWithBudgets = await Promise.all(
-          woSites.map(async (woSite) => {
-            const budgets = await db
-              .select({
-                id: siteBudgetTable.id,
-                budget_category_id: siteBudgetTable.budget_category_id,
-                category_name: budgetCategoryTable.name,
-                budget_amount: siteBudgetTable.budget_amount,
-                expense_amount: siteBudgetTable.expense_amount,
-              })
-              .from(siteBudgetTable)
-              .leftJoin(
-                budgetCategoryTable,
-                eq(siteBudgetTable.budget_category_id, budgetCategoryTable.id)
-              )
-              .where(eq(siteBudgetTable.wo_site_id, woSite.id));
-
-            return {
-              ...woSite,
-              budgets,
-            };
-          })
-        );
-
         return {
           ...workOrder,
-          sites: sitesWithBudgets,
+          sites: woSites,
         };
       } catch (error) {
         if (error instanceof TRPCError) {
@@ -198,7 +168,8 @@ export const workOrderQueryRouter = router({
           })
           .from(workOrderTable)
           .leftJoin(clientTable, eq(workOrderTable.client_id, clientTable.id))
-          .where(eq(workOrderTable.office_id, office_id));
+          .where(eq(workOrderTable.office_id, office_id))
+          .orderBy(desc(workOrderTable.created_at));
 
         return workOrders;
       } catch (error) {
@@ -249,7 +220,7 @@ export const workOrderQueryRouter = router({
       }
     }),
 
-  // Get work order with full details including sites, budgets, activities, and expenses
+  // Get work order with full details including sites
   getWorkOrderDetails: publicProcedure
     .input(getWorkOrderSchema)
     .query(async ({ input }) => {
@@ -281,7 +252,8 @@ export const workOrderQueryRouter = router({
           .from(workOrderTable)
           .leftJoin(clientTable, eq(workOrderTable.client_id, clientTable.id))
           .leftJoin(officeTable, eq(workOrderTable.office_id, officeTable.id))
-          .where(eq(workOrderTable.id, id));
+          .where(eq(workOrderTable.id, id))
+          .orderBy(desc(workOrderTable.created_at));
 
         if (workOrders.length === 0) {
           throw new TRPCError({
@@ -313,157 +285,29 @@ export const workOrderQueryRouter = router({
           .leftJoin(siteTable, eq(workOrderSiteTable.site_id, siteTable.id))
           .where(eq(workOrderSiteTable.work_order_id, id));
 
-        // Get site budgets with activities and expenses for each site
-        const sitesWithDetails = await Promise.all(
-          woSites.map(async (woSite) => {
-            // Get budgets for this site
-            const budgets = await db
-              .select({
-                id: siteBudgetTable.id,
-                budget_category_id: budgetCategoryTable.id,
-                category_name: budgetCategoryTable.name,
-                category_description: budgetCategoryTable.description,
-                budget_amount: siteBudgetTable.budget_amount,
-                expense_amount: siteBudgetTable.expense_amount,
-              })
-              .from(siteBudgetTable)
-              .leftJoin(
-                budgetCategoryTable,
-                eq(siteBudgetTable.budget_category_id, budgetCategoryTable.id)
-              )
-              .where(eq(siteBudgetTable.wo_site_id, woSite.wo_site_id));
-
-            // Get activities for this site
-            const activities = await db
-              .select({
-                site_activity_id: siteActivityTable.id,
-                activity_id: activityTable.id,
-                activity_name: activityTable.name,
-                activity_description: activityTable.description,
-                status: siteActivityTable.status,
-                start_date: siteActivityTable.start_date,
-                end_date: siteActivityTable.end_date,
-              })
-              .from(siteActivityTable)
-              .leftJoin(
-                activityTable,
-                eq(siteActivityTable.activity_id, activityTable.id)
-              )
-              .where(eq(siteActivityTable.wo_site_id, woSite.wo_site_id));
-
-            // Get expenses for each activity
-            const activitiesWithExpenses = await Promise.all(
-              activities.map(async (activity) => {
-                const expenses = await db
-                  .select({
-                    id: siteActivityExpenseTable.id,
-                    site_budget_id: siteActivityExpenseTable.site_budget_id,
-                    budget_category_name: budgetCategoryTable.name,
-                    expense_amount: siteActivityExpenseTable.expense_amount,
-                    description: siteActivityExpenseTable.description,
-                    expense_date: siteActivityExpenseTable.expense_date,
-                    category: siteActivityExpenseTable.category,
-                    receipt_number: siteActivityExpenseTable.receipt_number,
-                  })
-                  .from(siteActivityExpenseTable)
-                  .leftJoin(
-                    siteBudgetTable,
-                    eq(
-                      siteActivityExpenseTable.site_budget_id,
-                      siteBudgetTable.id
-                    )
-                  )
-                  .leftJoin(
-                    budgetCategoryTable,
-                    eq(
-                      siteBudgetTable.budget_category_id,
-                      budgetCategoryTable.id
-                    )
-                  )
-                  .where(
-                    eq(
-                      siteActivityExpenseTable.site_activity_id,
-                      activity.site_activity_id
-                    )
-                  );
-
-                // Calculate total expense for this activity
-                const totalExpense = expenses.reduce(
-                  (sum, exp) => sum + Number(exp.expense_amount || 0),
-                  0
-                );
-
-                return {
-                  ...activity,
-                  total_expense: totalExpense,
-                  expenses,
-                };
-              })
-            );
-
-            // Calculate site totals
-            const siteTotalBudget = budgets.reduce(
-              (sum, b) => sum + Number(b.budget_amount || 0),
-              0
-            );
-            const siteTotalExpense = budgets.reduce(
-              (sum, b) => sum + Number(b.expense_amount || 0),
-              0
-            );
-
-            return {
-              site: {
-                id: woSite.site_id,
-                name: woSite.site_name,
-                address: woSite.site_address,
-                city: woSite.site_city,
-                state: woSite.site_state,
-                pincode: woSite.site_pincode,
-                contact_person: woSite.site_contact_person,
-                contact_number: woSite.site_contact_number,
-                email: woSite.site_email,
-              },
-              wo_site_id: woSite.wo_site_id,
-              start_date: woSite.start_date,
-              end_date: woSite.end_date,
-              status: woSite.status,
-              budgets,
-              activities: activitiesWithExpenses,
-              site_total_budget: siteTotalBudget,
-              site_total_expense: siteTotalExpense,
-              site_utilization:
-                siteTotalBudget > 0
-                  ? (siteTotalExpense / siteTotalBudget) * 100
-                  : 0,
-            };
-          })
-        );
-
-        // Calculate overall stats
-        const totalBudget = sitesWithDetails.reduce(
-          (sum, s) => sum + s.site_total_budget,
-          0
-        );
-        const totalExpense = sitesWithDetails.reduce(
-          (sum, s) => sum + s.site_total_expense,
-          0
-        );
-        const completedActivities = sitesWithDetails.reduce(
-          (sum, s) =>
-            sum + s.activities.filter((a) => a.status === "completed").length,
-          0
-        );
+        const sitesWithDetails = woSites.map((woSite) => ({
+          site: {
+            id: woSite.site_id,
+            name: woSite.site_name,
+            address: woSite.site_address,
+            city: woSite.site_city,
+            state: woSite.site_state,
+            pincode: woSite.site_pincode,
+            contact_person: woSite.site_contact_person,
+            contact_number: woSite.site_contact_number,
+            email: woSite.site_email,
+          },
+          wo_site_id: woSite.wo_site_id,
+          start_date: woSite.start_date,
+          end_date: woSite.end_date,
+          status: woSite.status,
+        }));
 
         return {
           workOrder,
           sites: sitesWithDetails,
           stats: {
             total_sites: sitesWithDetails.length,
-            completed_activities: completedActivities,
-            total_budget: totalBudget,
-            total_expense: totalExpense,
-            budget_utilization:
-              totalBudget > 0 ? (totalExpense / totalBudget) * 100 : 0,
           },
         };
       } catch (error) {
