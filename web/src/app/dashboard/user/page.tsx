@@ -96,23 +96,22 @@ const User = () => {
         value={activeTab}
         onValueChange={setActiveTab}
         className='w-full mt-8'>
-        <div className='flex justify-between items-center'>
-          <div className='flex justify-between items-center flex-1'>
-            <UserSearchNFilter />
-            <TabsList className='bg-gray-200 !h-8'>
-              <TabsTrigger
-                value='all'
-                className='text-xs cursor-pointer'>
-                Show All
-              </TabsTrigger>
-              <TabsTrigger
-                value='categorized'
-                className='text-xs cursor-pointer'>
-                Categorized
-              </TabsTrigger>
-            </TabsList>
-          </div>
+        <div className='flex justify-between items-center flex-1 mb-4'>
+          <UserSearchNFilter />
+          <TabsList className='bg-gray-300/60 !h-8'>
+            <TabsTrigger
+              value='all'
+              className='text-xs cursor-pointer'>
+              Show All
+            </TabsTrigger>
+            <TabsTrigger
+              value='categorized'
+              className='text-xs cursor-pointer'>
+              Categorized
+            </TabsTrigger>
+          </TabsList>
         </div>
+
         <TabsContent value='all'>
           <UserTable
             users={allUsersList}

@@ -23,3 +23,15 @@ export const editSiteSchema = addSiteSchema.partial().extend({
 export const getSiteSchema = z.object({
   id: z.number(),
 });
+
+// Get All Sites paginated schema
+export const getAllSitesPaginatedSchema = z.object({
+  page: z.number().min(1, "Page number must be at least 1"),
+  limit: z
+    .number()
+    .min(1, "Limit must be at least 1")
+    .max(100, "Limit cannot exceed 100"),
+  searchQuery: z.string().optional(),
+  status: z.enum(["all", "active", "inactive"]).optional(),
+  siteNamesOrder: z.enum(["asc", "desc", "latest", "oldest"]).optional(),
+});

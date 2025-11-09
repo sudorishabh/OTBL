@@ -25,15 +25,15 @@ const OfficeCard: React.FC<OfficeCardProps> = ({ office }) => {
 
   return (
     <div
-      className='bg-white rounded-xl cursor-pointer border-2 border-gray-50 shadow-sm hover:shadow-lg hover:border-cyan-900/25 transition-all duration-300 overflow-hidden group'
+      className='bg-white rounded-xl cursor-pointer border-2 border-gray-50 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group'
       onClick={() => router.push(`/dashboard/office/${office.id}`)}>
       {/* Main Content - Horizontal Layout */}
 
       <div className='flex flex-col gap-4'>
         {/* Header */}
-        <div className='flex items-start justify-between px-4 pt-6'>
+        <div className='flex items-start justify-between px-4 pt-4'>
           <div>
-            <h3 className='text-lg font-semibold text-gray-700 group-hover:text-[#035864] transition-colors line-clamp-1'>
+            <h3 className='text font-semibold text-gray-700 group-hover:text-[#035864] transition-colors line-clamp-1'>
               {capitalFirstLetter(office.name)}
             </h3>
             <div className='flex items-center space-x-1 text-xs text-gray-400 mt-1'>
@@ -53,7 +53,7 @@ const OfficeCard: React.FC<OfficeCardProps> = ({ office }) => {
               <div className='p-[5px] bg-[#00d57f]/10 rounded-md'>
                 <MapPin className='size-3.5 text-[#035864]' />
               </div>
-              <span className='text-sm font-semibold text-gray-700 uppercase tracking-wide'>
+              <span className='text-xs font-semibold text-gray-700 uppercase tracking-wide'>
                 Location
               </span>
             </div>
@@ -64,12 +64,8 @@ const OfficeCard: React.FC<OfficeCardProps> = ({ office }) => {
               <p className='text-xs text-gray-700'>
                 {office.city}, {office.state} - {office.pincode}
               </p>
-              {office.gst_number && (
-                <div className='flex items-center gap-1 text-xs text-gray-600'>
-                  <FileText className='size-3' />
-                  <span className='font-medium'>GST:</span> {office.gst_number}
-                </div>
-              )}
+
+              <p className=' text-xs text-gray-600'>PIN - {office.pincode}</p>
             </div>
           </div>
 
@@ -79,7 +75,7 @@ const OfficeCard: React.FC<OfficeCardProps> = ({ office }) => {
               <div className='p-[5px] bg-[#00d57f]/10 rounded-md'>
                 <User className='size-3.5 text-[#035864]' />
               </div>
-              <span className='text-sm font-semibold text-gray-700 uppercase tracking-wide'>
+              <span className='text-xs font-semibold text-gray-700 uppercase tracking-wide'>
                 Contact
               </span>
             </div>
@@ -130,11 +126,11 @@ const OfficeCard: React.FC<OfficeCardProps> = ({ office }) => {
             {office.operators && office.operators.length > 0 && (
               <div className='flex items-start gap-2'>
                 <Users className='size-4 text-[#035864] mt-0.5' />
-                <div className='flex-1'>
-                  <span className='text-xs font-semibold text-gray-600'>
+                <div className='flex items-center flex-1 gap-2'>
+                  <span className='text-xs font-semibold text-gray-600 text-nowrap'>
                     Operators ({office.operators.length}):
                   </span>
-                  <div className='flex flex-wrap gap-1 mt-1'>
+                  <div className='flex flex-wra gap-1 mt-1 line-clamp-1'>
                     {office.operators.map((operator) => (
                       <Badge
                         key={operator.id}

@@ -52,6 +52,9 @@ export const getOfficeStatsSchema = z.object({
 export const getOfficesPaginatedSchema = z.object({
   page: z.number().int().positive().default(1),
   limit: z.number().int().positive().max(50).default(10),
+  searchQuery: z.string().optional(),
+  status: z.enum(["all", "active", "inactive"]).optional(),
+  officeNamesOrder: z.enum(["asc", "desc", "latest", "oldest"]).optional(),
 });
 
 export const assignUserToOfficeSchema = z.object({

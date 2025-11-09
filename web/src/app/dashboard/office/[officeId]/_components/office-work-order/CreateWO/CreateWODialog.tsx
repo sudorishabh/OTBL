@@ -200,7 +200,7 @@ const CreateWODialog = ({ open, setOpen }: Props) => {
       description='Set up a new work order with detailed information and site assignments'
       open={open}
       setOpen={setOpen}
-      size='xl'>
+      size='lg'>
       <div className='space-y-6'>
         <Form {...form}>
           <CustomForm

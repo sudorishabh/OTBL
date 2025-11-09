@@ -34,9 +34,11 @@ const addSiteSchema = z.object({
 interface Props {
   open: boolean;
   setOpen: (open: boolean) => void;
+  isEditInfo?: any;
+  setIsEditInfo?: (site: any) => void;
 }
 
-const AddSiteDialog = ({ open, setOpen }: Props) => {
+const AddSiteDialog = ({ open, setOpen, isEditInfo, setIsEditInfo }: Props) => {
   const form = useForm<z.infer<typeof addSiteSchema>>({
     resolver: zodResolver(addSiteSchema),
     defaultValues: {
@@ -56,8 +58,9 @@ const AddSiteDialog = ({ open, setOpen }: Props) => {
   const addSite = trpc.siteMutation.addSite.useMutation({
     onSuccess: () => {
       utils.siteQuery.getSites.invalidate();
+      utils.siteQuery.getAll.invalidate();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Error adding site:", error);
     },
   });
@@ -65,17 +68,49 @@ const AddSiteDialog = ({ open, setOpen }: Props) => {
   const editSite = trpc.siteMutation.editSite.useMutation({
     onSuccess: () => {
       utils.siteQuery.getSites.invalidate();
+      utils.siteQuery.getAll.invalidate();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Error editing site:", error);
     },
   });
 
+  useEffect(() => {
+    if (isEditInfo) {
+      form.reset({
+        name: isEditInfo.name || "",
+        address: isEditInfo.address || "",
+        city: isEditInfo.city || "",
+        state: isEditInfo.state || "",
+        pincode: isEditInfo.pincode || "",
+        contact_person: isEditInfo.contact_person || "",
+        contact_number: isEditInfo.contact_number || "",
+        email: isEditInfo.email || "",
+      });
+    } else {
+      form.reset({
+        name: "",
+        address: "",
+        city: "",
+        contact_number: "",
+        contact_person: "",
+        email: "",
+        pincode: "",
+        state: "",
+      });
+    }
+  }, [isEditInfo, form]);
+
   async function onSubmit(values: z.infer<typeof addSiteSchema>) {
     try {
-      await addSite.mutateAsync(values);
+      if (isEditInfo) {
+        await editSite.mutateAsync({ ...values, id: isEditInfo.id });
+      } else {
+        await addSite.mutateAsync(values);
+      }
       setOpen(false);
       form.reset();
+      if (setIsEditInfo) setIsEditInfo(null);
     } catch (error) {
       console.error("Error submitting form:", error);
     }
@@ -94,13 +129,16 @@ const AddSiteDialog = ({ open, setOpen }: Props) => {
         pincode: "",
         state: "",
       });
+      if (setIsEditInfo) setIsEditInfo(null);
     }
   };
 
   return (
     <DialogWindow
-      title='Add Site'
-      description='Add a new site to the system'
+      title={isEditInfo ? "Edit Site" : "Add Site"}
+      description={
+        isEditInfo ? "Update site information" : "Add a new site to the system"
+      }
       open={open}
       size='sm'
       setOpen={handleOpenChange}>
@@ -244,7 +282,7 @@ const AddSiteDialog = ({ open, setOpen }: Props) => {
 
           <CustomButton
             type='submit'
-            text='Submit'
+            text={isEditInfo ? "Update" : "Submit"}
             className='w-full'
             variant='primary'
             loading={form.formState.isSubmitting}

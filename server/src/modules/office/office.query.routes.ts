@@ -11,7 +11,7 @@ import {
   officeUserTable,
   userTable,
 } from "@/db/schema";
-import { eq, desc, count } from "drizzle-orm";
+import { eq, desc, count, and, or, like, asc } from "drizzle-orm";
 import {
   addOfficeSchema,
   getOfficeSchema,
@@ -31,21 +31,67 @@ export const officeQueryRouter = router({
   getOfficesPaginated: publicProcedure
     .input(getOfficesPaginatedSchema)
     .query(async ({ input }) => {
-      const { page, limit } = input;
+      const { page, limit, searchQuery, status, officeNamesOrder } = input;
       const offset = (page - 1) * limit;
+
+      // Build query conditions
+      let officeQuery = undefined;
+
+      if (status && status !== "all") {
+        officeQuery =
+          and(officeQuery, eq(officeTable.status, status)) ?? officeQuery;
+      }
+
+      if (searchQuery && searchQuery.trim() !== "") {
+        officeQuery =
+          and(
+            officeQuery,
+            or(
+              like(officeTable.name, `%${searchQuery}%`),
+              like(officeTable.address, `%${searchQuery}%`),
+              like(officeTable.contact_person, `%${searchQuery}%`),
+              like(officeTable.contact_number, `%${searchQuery}%`),
+              like(officeTable.email, `%${searchQuery}%`)
+            )
+          ) ?? officeQuery;
+      }
+
+      const officeOrder =
+        officeNamesOrder === "asc"
+          ? asc(officeTable.name)
+          : officeNamesOrder === "desc"
+          ? desc(officeTable.name)
+          : officeNamesOrder === "latest"
+          ? desc(officeTable.created_at)
+          : asc(officeTable.created_at);
 
       // Get total count
       const [totalResult] = await db
         .select({ count: count() })
-        .from(officeTable);
+        .from(officeTable)
+        .where(officeQuery ?? undefined);
 
       const total = totalResult.count;
+
+      if (total === 0) {
+        return {
+          offices: [],
+          pagination: {
+            page,
+            limit,
+            total,
+            hasMore: false,
+            totalPages: 0,
+          },
+        };
+      }
 
       // Get paginated offices
       const offices = await db
         .select()
         .from(officeTable)
-        .orderBy(desc(officeTable.created_at))
+        .where(officeQuery ?? undefined)
+        .orderBy(officeOrder)
         .limit(limit)
         .offset(offset);
 

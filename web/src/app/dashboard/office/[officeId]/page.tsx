@@ -57,7 +57,7 @@ const Office = ({ params }: PageProps) => {
     <Wrapper
       title={capitalFirstLetter(office?.name ?? "Office Info")}
       description='Manage Office Info and Work Orders'
-      backClick={() => router.push("/office")}
+      backClick={() => router.push("/dashboard/office")}
       button={
         <div className='flex gap-2'>
           <CustomButton

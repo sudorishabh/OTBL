@@ -9,18 +9,16 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Mail, Phone, User, Briefcase, Trash2 } from "lucide-react";
 import {
-  Search,
-  Mail,
-  Phone,
-  User,
-  Briefcase,
-  Plus,
-  Trash2,
-  Edit,
-} from "lucide-react";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MoreHorizontal } from "lucide-react";
 import { trpc } from "@/lib/trpc";
+import LoadMoreBtn from "@/components/LoadMoreBtn";
 
 interface ClientContact {
   id: number;
@@ -42,14 +40,24 @@ interface Client {
 interface ClientContactsTableProps {
   contacts: ClientContact[];
   clients: Client[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    hasMore: boolean;
+    totalPages: number;
+  } | null;
+  handleLoadMore: () => void;
+  isLoadingData: boolean;
 }
 
 const ClientContactsTable: React.FC<ClientContactsTableProps> = ({
   contacts,
   clients,
+  pagination,
+  handleLoadMore,
+  isLoadingData,
 }) => {
-  const [searchQuery, setSearchQuery] = React.useState("");
-
   const utils = trpc.useUtils();
 
   const deleteClientContact =
@@ -81,111 +89,52 @@ const ClientContactsTable: React.FC<ClientContactsTableProps> = ({
     }
   };
 
-  const filteredContacts = contacts.filter(
-    (contact) =>
-      contact.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      contact.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      contact.designation?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   const getClientName = (clientId: number) => {
     const client = clients.find((c) => c.id === clientId);
     return client?.name || "Unknown Client";
   };
 
   return (
-    <div className='space-y-4'>
-      {/* Search Bar */}
-      <div className='relative'>
-        <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400' />
-        <Input
-          placeholder='Search contacts by name, email, or designation...'
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className='pl-10'
-        />
-      </div>
-
-      {/* Contacts Table */}
-      {filteredContacts.length > 0 ? (
-        <div className='bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden'>
-          <Table>
-            <TableHeader>
-              <TableRow className='bg-gray-50 hover:bg-gray-50'>
-                <TableHead className='font-semibold text-gray-900'>
-                  Contact Person
-                </TableHead>
-                <TableHead className='font-semibold text-gray-900'>
-                  Designation
-                </TableHead>
-                <TableHead className='font-semibold text-gray-900'>
-                  Contact Info
-                </TableHead>
-                <TableHead className='font-semibold text-gray-900'>
-                  Client
-                </TableHead>
-                <TableHead className='font-semibold text-gray-900'>
-                  Type
-                </TableHead>
-                <TableHead className='font-semibold text-gray-900'>
-                  Actions
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredContacts.map((contact) => (
-                <TableRow
-                  key={contact.id}
-                  className='hover:bg-[#035864]/5 transition-colors'>
-                  <TableCell>
-                    <div className='flex items-center gap-3'>
-                      <div className='p-2 bg-[#00d57f]/10 rounded-lg'>
-                        <User className='h-4 w-4 text-[#035864]' />
-                      </div>
-                      <div>
-                        <p className='font-semibold text-gray-900'>
-                          {contact.name}
-                        </p>
-                        <p className='text-xs text-gray-500'>
-                          ID: {contact.id}
-                        </p>
-                      </div>
-                    </div>
+    <div className='border rounded-lg bg-white'>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className='pl-8 text-xs'>Contact Person</TableHead>
+            <TableHead className='text-xs'>Email</TableHead>
+            <TableHead className='text-xs'>Phone</TableHead>
+            <TableHead className='text-xs'>Designation</TableHead>
+            <TableHead className='text-xs'>Client</TableHead>
+            <TableHead className='text-xs'>Type</TableHead>
+            <TableHead className='text-xs text-right'>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {contacts?.length === 0 ? (
+            <TableRow>
+              <TableCell
+                colSpan={7}
+                className='text-center py-8 text-muted-foreground'>
+                No contacts found
+              </TableCell>
+            </TableRow>
+          ) : (
+            <>
+              {contacts?.map((contact) => (
+                <TableRow key={contact.id}>
+                  <TableCell className='text-xs font-medium'>
+                    {contact.name}
                   </TableCell>
-                  <TableCell>
-                    <div className='flex items-center gap-2'>
-                      <Briefcase className='h-3.5 w-3.5 text-gray-400' />
-                      <span className='text-sm text-gray-700'>
-                        {contact.designation || "N/A"}
-                      </span>
-                    </div>
+                  <TableCell className='text-xs'>{contact.email}</TableCell>
+                  <TableCell className='text-xs'>
+                    {contact.contact_number}
                   </TableCell>
-                  <TableCell>
-                    <div className='space-y-1'>
-                      <div className='flex items-center gap-2'>
-                        <Mail className='h-3.5 w-3.5 text-gray-400' />
-                        <a
-                          href={`mailto:${contact.email}`}
-                          className='text-sm text-blue-600 hover:underline'>
-                          {contact.email}
-                        </a>
-                      </div>
-                      <div className='flex items-center gap-2'>
-                        <Phone className='h-3.5 w-3.5 text-gray-400' />
-                        <a
-                          href={`tel:${contact.contact_number}`}
-                          className='text-sm text-gray-700 hover:text-blue-600'>
-                          {contact.contact_number}
-                        </a>
-                      </div>
-                    </div>
+                  <TableCell className='text-xs'>
+                    {contact.designation || "N/A"}
                   </TableCell>
-                  <TableCell>
-                    <span className='text-sm text-gray-700'>
-                      {getClientName(contact.client_id)}
-                    </span>
+                  <TableCell className='text-xs'>
+                    {getClientName(contact.client_id)}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className='text-xs'>
                     {contact.contact_type && (
                       <Badge
                         variant='outline'
@@ -194,44 +143,48 @@ const ClientContactsTable: React.FC<ClientContactsTableProps> = ({
                       </Badge>
                     )}
                   </TableCell>
-                  <TableCell>
-                    <div className='flex items-center gap-2'>
-                      <Button
-                        variant='ghost'
-                        size='sm'
-                        className='h-8 w-8 p-0 hover:bg-blue-50'
-                        title='Edit contact'>
-                        <Edit className='h-4 w-4 text-blue-600' />
-                      </Button>
-                      <Button
-                        variant='ghost'
-                        size='sm'
-                        className='h-8 w-8 p-0 hover:bg-red-50'
-                        onClick={() =>
-                          handleDeleteContact(contact.id, contact.name)
-                        }
-                        disabled={deleteClientContact.isPending}
-                        title='Delete contact'>
-                        <Trash2 className='h-4 w-4 text-red-600' />
-                      </Button>
-                    </div>
+                  <TableCell className='text-right'>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant='ghost'
+                          className='h-8 w-8 p-0'>
+                          <span className='sr-only'>Open menu</span>
+                          <MoreHorizontal className='h-4 w-4' />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align='end'>
+                        <DropdownMenuItem
+                          className='text-destructive'
+                          onClick={() =>
+                            handleDeleteContact(contact.id, contact.name)
+                          }
+                          disabled={deleteClientContact.isPending}>
+                          <Trash2 className='mr-2 h-4 w-4' />
+                          Delete Contact
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))}
-            </TableBody>
-          </Table>
-        </div>
-      ) : (
-        <div className='text-center py-12 bg-white rounded-lg border border-gray-200'>
-          <User className='h-12 w-12 mx-auto text-gray-400 mb-3' />
-          <p className='text-gray-600 font-medium'>No contacts found</p>
-          <p className='text-sm text-gray-500 mt-1'>
-            {searchQuery
-              ? "Try adjusting your search query"
-              : "No contacts have been added yet"}
-          </p>
-        </div>
-      )}
+
+              {pagination?.hasMore && (
+                <TableRow>
+                  <TableCell
+                    colSpan={7}
+                    className='text-center'>
+                    <LoadMoreBtn
+                      onClick={handleLoadMore}
+                      loading={isLoadingData}
+                    />
+                  </TableCell>
+                </TableRow>
+              )}
+            </>
+          )}
+        </TableBody>
+      </Table>
     </div>
   );
 };

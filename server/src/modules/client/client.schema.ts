@@ -1,5 +1,27 @@
 import { z } from "zod";
 
+// Get All Clients paginated schema
+export const getAllClientsPaginatedSchema = z.object({
+  page: z.number().min(1, "Page number must be at least 1"),
+  limit: z
+    .number()
+    .min(1, "Limit must be at least 1")
+    .max(100, "Limit cannot exceed 100"),
+  searchQuery: z.string().optional(),
+  status: z.enum(["all", "active", "inactive"]).optional(),
+});
+
+// Get All Client Contacts paginated schema
+export const getAllClientContactsPaginatedSchema = z.object({
+  page: z.number().min(1, "Page number must be at least 1"),
+  limit: z
+    .number()
+    .min(1, "Limit must be at least 1")
+    .max(100, "Limit cannot exceed 100"),
+  searchQuery: z.string().optional(),
+  clientId: z.string().optional(),
+});
+
 // CLIENT SCHEMAS
 export const addClientSchema = z.object({
   name: z.string().min(1, { message: "Client name is required" }),
