@@ -15,6 +15,13 @@
       "when": 1762714396903,
       "tag": "0001_broken_malice",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1762751150354,
+      "tag": "0002_lyrical_blue_marvel",
+      "breakpoints": true
     }
   ]
 }

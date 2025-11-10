@@ -121,9 +121,12 @@ const CreateWODialog = ({ open, setOpen }: Props) => {
       office_id: officeId,
 
       // Client data
-      client_id:
-        values.clientMode === "existing" ? Number(values.client_id) : undefined,
-      newClient: values.clientMode === "new" ? values.newClient : undefined,
+      ...(values.clientMode === "existing" && values.client_id
+        ? { client_id: Number(values.client_id) }
+        : {}),
+      ...(values.clientMode === "new" && values.newClient
+        ? { newClient: values.newClient }
+        : {}),
 
       // Dates
       start_date: values.start_date,
@@ -132,13 +135,15 @@ const CreateWODialog = ({ open, setOpen }: Props) => {
 
       // Agreement
       agreement_number: values.agreement_number,
-      agreement_url: values.agreement_url || undefined,
+      ...(values.agreement_url ? { agreement_url: values.agreement_url } : {}),
 
       // Metrics
-      metric_ton: values.metric_ton ? Number(values.metric_ton) : undefined,
-      metric_ton_rate: values.metric_ton_rate
-        ? Number(values.metric_ton_rate)
-        : undefined,
+      ...(values.metric_ton && values.metric_ton.trim()
+        ? { metric_ton: Number(values.metric_ton) }
+        : {}),
+      ...(values.metric_ton_rate && values.metric_ton_rate.trim()
+        ? { metric_ton_rate: Number(values.metric_ton_rate) }
+        : {}),
 
       // Budget and description
       description: values.description,
@@ -147,29 +152,51 @@ const CreateWODialog = ({ open, setOpen }: Props) => {
       status: values.status,
 
       // Sites
-      existingSiteIds:
-        values.siteMode === "existing"
-          ? values.site_ids?.map((id) => Number(id))
-          : undefined,
-      newSites: values.siteMode === "new" ? values.newSites : undefined,
-
-      // Work order sites with activity type
-      workOrderSites:
-        values.siteMode === "existing" && values.site_ids
-          ? values.site_ids.map((siteId) => ({
-              site_id: Number(siteId),
-              start_date: values.start_date,
-              end_date: values.end_date,
-              activity_type: values.activity_type,
-            }))
-          : values.siteMode === "new" && values.newSites
-          ? values.newSites.map((_, index) => ({
-              start_date: values.start_date,
-              end_date: values.end_date,
-              activity_type: values.activity_type,
-            }))
-          : undefined,
+      ...(values.siteMode === "existing" &&
+      values.site_ids &&
+      values.site_ids.length > 0
+        ? { existingSiteIds: values.site_ids.map((id) => Number(id)) }
+        : {}),
+      ...(values.siteMode === "new" &&
+      values.newSites &&
+      values.newSites.length > 0
+        ? { newSites: values.newSites }
+        : {}),
     };
+
+    // Add workOrderSites only if we have sites
+    if (
+      values.siteMode === "existing" &&
+      values.site_ids &&
+      values.site_ids.length > 0
+    ) {
+      workOrderData.workOrderSites = values.site_ids.map((siteId) => {
+        const siteData: any = {
+          site_id: Number(siteId),
+          start_date: values.start_date,
+          end_date: values.end_date,
+        };
+        if (values.activity_type) {
+          siteData.activity_type = values.activity_type;
+        }
+        return siteData;
+      });
+    } else if (
+      values.siteMode === "new" &&
+      values.newSites &&
+      values.newSites.length > 0
+    ) {
+      workOrderData.workOrderSites = values.newSites.map((_, index) => {
+        const siteData: any = {
+          start_date: values.start_date,
+          end_date: values.end_date,
+        };
+        if (values.activity_type) {
+          siteData.activity_type = values.activity_type;
+        }
+        return siteData;
+      });
+    }
 
     console.log("Submitting work order:", workOrderData);
     createWorkOrder.mutate(workOrderData);

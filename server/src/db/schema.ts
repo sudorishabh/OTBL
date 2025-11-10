@@ -227,6 +227,22 @@ export const workOrderSiteTable = mysqlTable("work_order_sites", {
   updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
 });
 
+export const WOSiteUserTable = mysqlTable("work_order_site_users", {
+  id: int("id").autoincrement().primaryKey(),
+  user_id: int("user_id")
+    .notNull()
+    .references(() => userTable.id, { onDelete: "cascade" }),
+  work_order_site_id: int("work_order_site_id")
+    .notNull()
+    .references(() => workOrderSiteTable.id, { onDelete: "cascade" }),
+  assigned_by: int("assigned_by").references(() => userTable.id, {
+    onDelete: "set null",
+  }),
+  work_description: text("work_description"),
+  created_at: timestamp("created_at").notNull().defaultNow(),
+  updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+});
+
 // Activity Tables
 
 // Zero Day Activity - One time activity

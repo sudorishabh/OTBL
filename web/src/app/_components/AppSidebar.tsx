@@ -40,11 +40,7 @@ const sidebarLinks = [
     link: "/user",
     icon: Users,
   },
-  {
-    title: "Offices",
-    link: "/office",
-    icon: Building2,
-  },
+
   {
     title: "Sites",
     link: "/site",
@@ -69,6 +65,11 @@ const sidebarLinks = [
     title: "Work Orders",
     link: "/work-order",
     icon: ReceiptIndianRupee,
+  },
+  {
+    title: "Offices",
+    link: "/office",
+    icon: Building2,
   },
 ];
 

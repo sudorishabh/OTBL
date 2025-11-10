@@ -35,6 +35,50 @@ export const workOrderMutationRouter = router({
       );
 
       try {
+        // Defensive: validate dates are parsable
+        const isValidDate = (d: any) => {
+          if (d instanceof Date) return !isNaN(d.getTime());
+          const t = Date.parse(String(d));
+          return !isNaN(t);
+        };
+
+        if (
+          !isValidDate(input.start_date) ||
+          !isValidDate(input.end_date) ||
+          !isValidDate(input.handing_over_date)
+        ) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Invalid date(s) provided",
+          });
+        }
+
+        // Helper: support different insert result shapes
+        const getInsertId = (res: any): number => {
+          if (!res) return 0;
+          // drizzle(mysql2) often returns OkPacket
+          if (typeof res.insertId === "number") return res.insertId;
+          // sometimes user code accesses [0].insertId
+          if (
+            Array.isArray(res) &&
+            res[0] &&
+            typeof res[0].insertId === "number"
+          )
+            return res[0].insertId;
+          return 0;
+        };
+
+        // Enforce unique code with friendly error (avoids raw SQL error)
+        const existingWOWithCode = await db
+          .select({ id: workOrderTable.id })
+          .from(workOrderTable)
+          .where(eq(workOrderTable.code, input.code));
+        if (existingWOWithCode.length > 0) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Work order code already exists",
+          });
+        }
         let clientId: number;
 
         // Step 1: Handle client creation or use existing
@@ -44,7 +88,7 @@ export const workOrderMutationRouter = router({
             ...input.newClient,
             status: "active",
           });
-          clientId = clientResult[0].insertId;
+          clientId = getInsertId(clientResult);
         } else if (input.client_id) {
           // Verify existing client exists
           const existingClient = await db
@@ -86,8 +130,13 @@ export const workOrderMutationRouter = router({
           expense_amount: input.expense_amount.toString(),
           status: input.status,
         });
-
-        const workOrderId = workOrderResult[0].insertId;
+        const workOrderId = getInsertId(workOrderResult);
+        if (!workOrderId) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to create work order (no insertId)",
+          });
+        }
 
         // Step 3: Handle sites (new or existing)
         const siteIds: number[] = [];
@@ -99,7 +148,14 @@ export const workOrderMutationRouter = router({
               ...newSite,
               status: "active",
             });
-            siteIds.push(siteResult[0].insertId);
+            const sid = getInsertId(siteResult);
+            if (!sid) {
+              throw new TRPCError({
+                code: "INTERNAL_SERVER_ERROR",
+                message: "Failed to create site (no insertId)",
+              });
+            }
+            siteIds.push(sid);
           }
         }
 
@@ -155,8 +211,7 @@ export const workOrderMutationRouter = router({
                 : null,
               status: "pending",
             });
-
-            const woSiteId = woSiteResult[0].insertId;
+            const woSiteId = getInsertId(woSiteResult);
             workOrderSiteIds.push(woSiteId);
           }
         } else {
@@ -170,8 +225,7 @@ export const workOrderMutationRouter = router({
               activity_type: null,
               status: "pending",
             });
-
-            workOrderSiteIds.push(woSiteResult[0].insertId);
+            workOrderSiteIds.push(getInsertId(woSiteResult));
           }
         }
 
@@ -183,11 +237,20 @@ export const workOrderMutationRouter = router({
           sitesLinked: siteIds.length,
           workOrderSitesCreated: workOrderSiteIds.length,
         };
-      } catch (error) {
+      } catch (error: any) {
+        // Translate common SQL errors to friendly messages
         if (error instanceof TRPCError) {
           throw error;
         }
-        console.error("Error creating work order:", error);
+        const msg = error?.message || String(error);
+        console.error("Error creating work order:", msg);
+        // Duplicate key on unique code
+        if (msg && /duplicate/i.test(msg) && /code/i.test(msg)) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Work order code already exists",
+          });
+        }
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to create work order",
