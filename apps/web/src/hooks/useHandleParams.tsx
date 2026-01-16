@@ -1,0 +1,93 @@
+"use client";
+import { useCallback } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+
+export const useHandleParams = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const setParam = useCallback(
+    (key: string, value: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set(key, value);
+      router.push(`?${params.toString()}`);
+    },
+    [searchParams, router]
+  );
+
+  const deleteParam = useCallback(
+    (key: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete(key);
+      const paramsString = params.toString();
+      router.push(paramsString ? `?${paramsString}` : window.location.pathname);
+    },
+    [searchParams, router]
+  );
+
+  const setParams = useCallback(
+    (paramsObject: Record<string, string>) => {
+      const params = new URLSearchParams(searchParams.toString());
+      Object.entries(paramsObject).forEach(([key, value]) => {
+        params.set(key, value);
+      });
+      router.push(`?${params.toString()}`);
+    },
+    [searchParams, router]
+  );
+
+  const deleteParams = useCallback(
+    (keys: string[]) => {
+      const params = new URLSearchParams(searchParams.toString());
+      keys.forEach((key) => params.delete(key));
+      const paramsString = params.toString();
+      router.push(paramsString ? `?${paramsString}` : window.location.pathname);
+    },
+    [searchParams, router]
+  );
+
+  const updateParams = useCallback(
+    (set?: Record<string, string>, del?: string[]) => {
+      const params = new URLSearchParams(searchParams.toString());
+
+      // Delete specified params first
+      if (del) {
+        del.forEach((key) => params.delete(key));
+      }
+
+      // Then set new params
+      if (set) {
+        Object.entries(set).forEach(([key, value]) => {
+          params.set(key, value);
+        });
+      }
+
+      const paramsString = params.toString();
+      router.push(paramsString ? `?${paramsString}` : window.location.pathname);
+    },
+    [searchParams, router]
+  );
+
+  const getParam = useCallback(
+    (key: string) => {
+      return searchParams.get(key);
+    },
+    [searchParams]
+  );
+
+  const clearAllParams = useCallback(() => {
+    router.push(window.location.pathname);
+  }, [router]);
+
+  return {
+    setParam,
+    deleteParam,
+    setParams,
+    deleteParams,
+    updateParams,
+    getParam,
+    clearAllParams,
+  };
+};
+
+export default useHandleParams;

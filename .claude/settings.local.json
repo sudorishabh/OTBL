@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(dir /b \"c:\\\\Users\\\\Rishabh.Negi_i\\\\OneDrive - The Energy and Resources Institute\\\\Desktop\\\\My_Files\\\\Projects\\\\OTBL\\\\otbl-monorepo-2\\\\apps\\\\web\\\\src\\\\app\")",
+      "Bash(pnpm add:*)",
+      "Bash(npx tsc:*)",
+      "Bash(pnpm build:*)",
+      "Bash(del \"c:\\\\Users\\\\Rishabh.Negi_i\\\\OneDrive - The Energy and Resources Institute\\\\Desktop\\\\My_Files\\\\Projects\\\\OTBL\\\\otbl-monorepo-2\\\\packages\\\\trpc\\\\src\\\\routers\\\\work-order\\\\work-order.service.ts\")",
+      "Bash(pnpm --filter trpc build:*)",
+      "Bash(pnpm --filter db build:*)"
+    ]
+  }
+}
