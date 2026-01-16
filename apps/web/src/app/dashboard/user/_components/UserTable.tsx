@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useEffect } from "react";
 import {
   Table,
@@ -289,7 +290,10 @@ const UserTable = () => {
                   <DropdownMenuContent align='end'>
                     <DropdownMenuItem
                       onClick={() => {
-                        setParams({ mode: "edit", id: user.id.toString() });
+                        setParams({
+                          dialog: "update-user",
+                          id: user.id.toString(),
+                        });
                       }}>
                       <Edit className='mr-2 h-4 w-4' />
                       Edit User

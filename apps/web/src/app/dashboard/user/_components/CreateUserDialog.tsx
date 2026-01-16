@@ -1,3 +1,4 @@
+"use client";
 import DialogWindow from "@/components/DialogWindow";
 import React, { useEffect, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
@@ -5,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import CustomButton from "@/components/CustomButton";
 import CustomInput from "@/components/CustomInput";
-import { userSchemas, type RegisterInput } from "@pkg/trpc/schemas";
+import { userSchemas, type userTypes } from "@pkg/schema";
 import { trpc } from "@/lib/trpc";
 import toast from "react-hot-toast";
 import {
@@ -30,7 +31,7 @@ interface CreatedCredentials {
   role: string;
 }
 
-const AddUserDialog = () => {
+const CreateUserDialog = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [createdCredentials, setCreatedCredentials] =
     useState<CreatedCredentials | null>(null);
@@ -39,19 +40,19 @@ const AddUserDialog = () => {
 
   const { deleteParams, getParam } = useHandleParams();
   const { handleError } = useApiError();
-  const mode = getParam("mode");
+  const dialog = getParam("dialog");
   const userId = getParam("id");
-  const isEditMode = mode === "edit";
-  const isAddMode = mode === "add";
+  const isEditMode = dialog === "update-user";
+  const isAddMode = dialog === "create-user";
   const isOpenDialog = isEditMode || isAddMode;
   const trpcUtils = trpc.useUtils();
 
   // Use visual mode for rendering to prevent layout shifts during closing
-  const displayMode = isOpenDialog ? mode : visualMode;
-  const isDisplayEditMode = displayMode === "edit";
+  const displayMode = isOpenDialog ? dialog : visualMode;
+  const isDisplayEditMode = displayMode === "update-user";
 
-  const form = useForm<RegisterInput>({
-    resolver: zodResolver(userSchemas.registerSchema),
+  const form = useForm<userTypes.CreateUserType>({
+    resolver: zodResolver(userSchemas.createUserSchema),
     defaultValues: {
       name: "",
       email: "",
@@ -92,7 +93,7 @@ const AddUserDialog = () => {
   });
 
   const handleCloseDialog = useCallback(() => {
-    deleteParams(["mode", "id"]);
+    deleteParams(["dialog", "id"]);
     setCreatedCredentials(null);
 
     // Delay clearing visual mode and form reset until after animation completes
@@ -132,17 +133,9 @@ const AddUserDialog = () => {
         setCreatedCredentials(null);
       }
     }
-  }, [
-    mode,
-    isUserSuccess,
-    userQuery,
-    isUserLoading,
-    isEditMode,
-    isAddMode,
-    form,
-  ]);
+  }, [isUserSuccess, userQuery, isUserLoading, isEditMode, isAddMode, form]);
 
-  async function onSubmit(values: RegisterInput) {
+  async function onSubmit(values: userTypes.CreateUserType) {
     console.log(values);
     try {
       if (isEditMode) {
@@ -402,4 +395,4 @@ const AddUserDialog = () => {
   );
 };
 
-export default AddUserDialog;
+export default CreateUserDialog;

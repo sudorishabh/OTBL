@@ -23,7 +23,7 @@ export const statusEnum = z.enum([STATUS.ACTIVE, STATUS.INACTIVE]);
 /**
  * Add client schema
  */
-export const addClientSchema = z.object({
+export const createClientSchema = z.object({
   name: nameValidator,
   address: addressValidator,
   state: stateValidator,
@@ -38,7 +38,7 @@ export const addClientSchema = z.object({
 /**
  * Edit client schema
  */
-export const editClientSchema = addClientSchema.partial().extend({
+export const editClientSchema = createClientSchema.extend({
   id: positiveIntValidator,
 });
 

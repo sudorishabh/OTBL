@@ -1,0 +1,64 @@
+import { z } from "zod";
+import { constants } from "@pkg/utils";
+import {
+  nameValidator,
+  emailValidator,
+  passwordValidator,
+  optionalMobileValidator,
+  pageValidator,
+  limitValidator,
+  searchQueryValidator,
+  sortOrderValidator,
+  positiveIntValidator,
+} from "../validators";
+
+const { ROLES, STATUS } = constants;
+
+// Enums
+
+const userRoleEnum = z.enum([
+  ROLES.ADMIN,
+  ROLES.MANAGER,
+  ROLES.STAFF,
+  ROLES.VIEWER,
+  ROLES.OPERATOR,
+]);
+
+const statusEnum = z.enum([STATUS.ACTIVE, STATUS.INACTIVE]);
+
+// Mutation Schemas
+export const createUserSchema = z.object({
+  name: nameValidator,
+  email: emailValidator,
+  password: passwordValidator,
+  contact_number: optionalMobileValidator,
+  role: userRoleEnum,
+});
+
+export const updateUserSchema = createUserSchema.extend({
+  id: positiveIntValidator,
+});
+
+export const updateUserPasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Current password is required"),
+    newPassword: passwordValidator,
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  });
+
+// Query Schemas
+
+export const getAllUsersSchema = z.object({
+  page: pageValidator,
+  limit: limitValidator,
+  searchQuery: searchQueryValidator,
+  role: z
+    .enum(["all", ROLES.MANAGER, ROLES.STAFF, ROLES.VIEWER, ROLES.OPERATOR])
+    .optional(),
+  status: z.enum([...userRoleEnum.options, "all"]).optional(),
+  userNamesOrder: sortOrderValidator,
+});

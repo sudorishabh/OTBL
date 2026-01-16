@@ -1,0 +1,46 @@
+import { z } from "zod";
+import { constants } from "@pkg/utils";
+import {
+  nameValidator,
+  addressValidator,
+  cityValidator,
+  stateValidator,
+  pincodeValidator,
+  positiveIntValidator,
+  searchQueryValidator,
+} from "../validators";
+
+const { STATUS } = constants;
+
+const statusEnum = z.enum([STATUS.ACTIVE, STATUS.INACTIVE]);
+
+// Base Schemas
+
+export const siteBaseSchema = z.object({
+  name: nameValidator,
+  address: addressValidator,
+  state: stateValidator,
+  city: cityValidator,
+  pincode: pincodeValidator,
+});
+
+// Mutation Schemas
+
+export const createSiteSchema = siteBaseSchema.extend({
+  office_id: positiveIntValidator,
+  operator_ids: z.array(positiveIntValidator).optional(),
+});
+
+export const updateSiteSchema = siteBaseSchema.extend({
+  site_id: positiveIntValidator,
+});
+
+// Query Schemas
+
+export const getSiteSchema = z.object({ site_id: positiveIntValidator });
+
+export const getAllSitesPaginatedSchema = z.object({
+  office_id: positiveIntValidator,
+  searchQuery: searchQueryValidator,
+  status: z.enum(["all", "active", "inactive"]).optional(),
+});

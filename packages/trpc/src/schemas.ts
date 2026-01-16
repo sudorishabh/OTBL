@@ -13,7 +13,7 @@
 
 // Auth Schemas
 export * as authSchemas from "./routers/auth/auth.schema";
-export type { LoginInput } from "./routers/auth/auth.schema";
+// export type { LoginInput } from "./routers/auth/auth.schema";
 
 // User Schemas
 export * as userSchemas from "./routers/user/user.schema";

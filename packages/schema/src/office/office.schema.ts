@@ -1,6 +1,3 @@
-/**
- * Office Router Schemas
- */
 import { z } from "zod";
 import { constants } from "@pkg/utils";
 import {
@@ -14,16 +11,17 @@ import {
   positiveIntValidator,
   optionalPositiveIntValidator,
   searchQueryValidator,
-} from "../../validation/validators";
+} from "../validators";
 
 const { STATUS } = constants;
 
-export const statusEnum = z.enum([STATUS.ACTIVE, STATUS.INACTIVE]);
-export const officeRoleEnum = z.enum(["manager", "operator"]);
+// Enums
+const statusEnum = z.enum([STATUS.ACTIVE, STATUS.INACTIVE]);
+const officeRoleEnum = z.enum(["manager", "operator"]);
+const officeNamesOrderEnum = z.enum(["asc", "desc", "latest", "oldest"]);
 
-/**
- * Office base schema
- */
+// Base Schemas
+
 const officeBaseSchema = z.object({
   name: nameValidator,
   address: addressValidator,
@@ -34,56 +32,48 @@ const officeBaseSchema = z.object({
   email: emailValidator,
 });
 
-/**
- * Add office schema
- */
-export const addOfficeSchema = officeBaseSchema.extend({
+// Mutation Schemas
+
+export const createOfficeSchema = officeBaseSchema.extend({
   manager_id: optionalPositiveIntValidator,
   operator_ids: z.array(positiveIntValidator).optional(),
   status: statusEnum.optional(),
 });
 
-/**
- * Edit office schema
- */
-export const editOfficeSchema = officeBaseSchema.extend({
+export const updateOfficeSchema = officeBaseSchema.extend({
   id: positiveIntValidator,
   status: statusEnum.optional(),
 });
 
-/**
- * Get offices schema
- */
-export const getOfficesSchema = z.object({
-  searchQuery: searchQueryValidator,
-  status: z.enum(["all", "active", "inactive"]).optional(),
-  officeNamesOrder: z.enum(["asc", "desc", "latest", "oldest"]).optional(),
-});
-
-/**
- * Assign user to office schema
- */
 export const assignUserToOfficeSchema = z.object({
   office_id: positiveIntValidator,
   user_id: positiveIntValidator,
   role: officeRoleEnum,
 });
 
-/**
- * Remove user from office schema
- */
 export const expelUserFromOfficeSchema = z.object({
   office_id: positiveIntValidator,
   user_id: positiveIntValidator,
 });
 
-export const getOfficeSchema = z.object({ id: positiveIntValidator });
-export const getOfficeWorkOrderScema = z.object({ id: positiveIntValidator });
-export const getOfficeStatsSchema = z.object({ id: positiveIntValidator });
+// Query Schemas
+
+export const getOfficesSchema = z.object({
+  searchQuery: searchQueryValidator,
+  status: z.enum([...statusEnum.options, "all"]).optional(),
+  officeNamesOrder: officeNamesOrderEnum.optional(),
+});
+
+export const getOfficeSchema = z.object({ officeId: positiveIntValidator });
+
+export const getOfficeWorkOrderSchema = z.object({
+  officeId: positiveIntValidator,
+});
+
+export const getOfficeStatsSchema = z.object({
+  officeId: positiveIntValidator,
+});
+
 export const getOfficeUsersSchema = z.object({
   office_id: positiveIntValidator,
 });
-
-// Type exports
-export type AddOfficeInput = z.infer<typeof addOfficeSchema>;
-export type EditOfficeInput = z.infer<typeof editOfficeSchema>;

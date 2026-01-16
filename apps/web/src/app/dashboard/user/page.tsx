@@ -7,15 +7,13 @@ import UserTable from "./_components/UserTable";
 import CategorizedUsers from "./_components/CategorizedUsers";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserSearchNFilter from "./_components/UserSearchNFilter";
-import { useSearchParams } from "next/navigation";
-import AddUserDialog from "./_components/AddUserDialog";
+import AddUserDialog from "./_components/CreateUserDialog";
 import { useHandleParams } from "@/hooks/useHandleParams";
 import ScrollToTop from "@/app/_components/ScrollToTop";
 
 const User = () => {
-  const searchParams = useSearchParams();
-  const { setParam } = useHandleParams();
-  const isUserTab = searchParams.get("tab") || "all";
+  const { getParam, setParam } = useHandleParams();
+  const isUserTab = getParam("tab") || "all";
 
   return (
     <Wrapper
@@ -26,7 +24,7 @@ const User = () => {
           text='Add User'
           Icon={Plus}
           variant='primary'
-          onClick={() => setParam("mode", "add")}
+          onClick={() => setParam("dialog", "create-user")}
         />
       }>
       <Tabs

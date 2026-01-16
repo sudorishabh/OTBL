@@ -1,5 +1,5 @@
 {
-  "name": "@pkg/trpc",
+  "name": "@pkg/schema",
   "version": "0.1.0",
   "main": "dist/index.js",
   "module": "dist/index.js",
@@ -9,16 +9,6 @@
       "import": "./dist/index.js",
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
-    },
-    "./schemas": {
-      "import": "./dist/schemas.js",
-      "require": "./dist/schemas.js",
-      "types": "./dist/schemas.d.ts"
-    },
-    "./errors": {
-      "import": "./dist/errors/client.js",
-      "require": "./dist/errors/client.js",
-      "types": "./dist/errors/client.d.ts"
     }
   },
   "files": [
@@ -30,13 +20,8 @@
     "prebuild": "npm run clean"
   },
   "dependencies": {
-    "@pkg/schema": "workspace:*",
     "@pkg/utils": "workspace:*",
-    "@pkg/auth": "workspace:*",
-    "@pkg/db": "workspace:*",
-    "@trpc/server": "^11.7.2",
-    "drizzle-orm": "^0.44.7",
-    "zod": "^4.1.13"
+    "zod": "^4.3.5"
   },
   "devDependencies": {
     "rimraf": "^3.0.0",
