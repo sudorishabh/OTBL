@@ -4,7 +4,7 @@ import * as authTypes from "./auth/auth.type";
 
 // Client
 import * as clientSchemas from "./client/client.schema";
-// import * as clientTypes from "./client/client.type";
+import * as clientTypes from "./client/client.type";
 
 // Office
 import * as officeSchemas from "./office/office.schema";
@@ -36,7 +36,7 @@ export {
   authSchemas,
   authTypes,
   clientSchemas,
-  // clientTypes,
+  clientTypes,
   officeSchemas,
   officeTypes,
   proposalSchemas,

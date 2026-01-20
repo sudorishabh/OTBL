@@ -47,7 +47,6 @@ const CreateUserDialog = () => {
   const isOpenDialog = isEditMode || isAddMode;
   const trpcUtils = trpc.useUtils();
 
-  // Use visual mode for rendering to prevent layout shifts during closing
   const displayMode = isOpenDialog ? dialog : visualMode;
   const isDisplayEditMode = displayMode === "update-user";
 
@@ -70,10 +69,10 @@ const CreateUserDialog = () => {
     { id: Number(userId) },
     {
       enabled: !!userId,
-    }
+    },
   );
 
-  const registerMutation = trpc.userMutation.registerUserByAdmin.useMutation({
+  const registerMutation = trpc.userMutation.createUserByAdmin.useMutation({
     onSuccess: () => {
       toast.success("User registered successfully");
       trpcUtils.userQuery.getAllUser.invalidate();
@@ -83,7 +82,7 @@ const CreateUserDialog = () => {
     },
   });
 
-  const editUserMutation = trpc.userMutation.editUser.useMutation({
+  const editUserMutation = trpc.userMutation.updateUserByAdmin.useMutation({
     onSuccess: () => {
       toast.success("User updated successfully");
     },
@@ -96,7 +95,6 @@ const CreateUserDialog = () => {
     deleteParams(["dialog", "id"]);
     setCreatedCredentials(null);
 
-    // Delay clearing visual mode and form reset until after animation completes
     setTimeout(() => {
       setVisualMode(null);
       form.reset({
@@ -112,13 +110,12 @@ const CreateUserDialog = () => {
   useEffect(() => {
     if (!isUserLoading) {
       if (isEditMode && isUserSuccess && userQuery) {
-        console.log(userQuery);
         setVisualMode("edit");
         form.reset({
           name: userQuery.name ?? "",
           email: userQuery.email ?? "",
           contact_number: userQuery.contact_number ?? "",
-          role: userQuery.role as any,
+          role: userQuery.role as "staff" | "manager" | "viewer" | "operator",
           password: "",
         });
       } else if (isAddMode) {
@@ -136,7 +133,6 @@ const CreateUserDialog = () => {
   }, [isUserSuccess, userQuery, isUserLoading, isEditMode, isAddMode, form]);
 
   async function onSubmit(values: userTypes.CreateUserType) {
-    console.log(values);
     try {
       if (isEditMode) {
         await editUserMutation.mutateAsync({ id: Number(userId), ...values });
@@ -148,7 +144,7 @@ const CreateUserDialog = () => {
           return;
         }
         const result = await registerMutation.mutateAsync(
-          values as Required<typeof values>
+          values as Required<typeof values>,
         );
         if (result.success) {
           setCreatedCredentials({

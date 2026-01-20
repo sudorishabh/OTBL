@@ -41,7 +41,7 @@ const ClientSearchNFilter = ({ type, clients = [] }: Props) => {
 
   const handleAddContact = () => {
     const params = new URLSearchParams(searchParams.toString());
-    params.set("mode", "contact-add");
+    params.set("dialog", "create-client-contact");
     router.push(`?${params.toString()}`);
   };
 

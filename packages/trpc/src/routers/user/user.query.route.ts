@@ -5,9 +5,9 @@ import { router } from "../../trpc";
 import { protectedProcedure } from "../../core";
 import { z } from "zod";
 import { hasAnyRole, hasRole } from "../../authorization";
-import { getAllUsersSchema } from "./user.schema";
 import { throwNotFoundError, handleDatabaseOperation } from "../../errors";
 import { handleProtectedQuery } from "../../helper/typed-handler";
+import { userSchemas, userTypes } from "@pkg/schema";
 
 const { userTable, officeTable, officeUserTable, siteTable, siteUserTable } =
   schema;
@@ -37,12 +37,12 @@ export const userQueryRouter = router({
       }
 
       return userData;
-    })
+    }),
   ),
 
   getAllUser: protectedProcedure
     .use(hasRole(ROLES.ADMIN))
-    .input(getAllUsersSchema)
+    .input(userSchemas.getAllUsersSchema)
     .query(
       handleProtectedQuery(async ({ input, ctx }) => {
         const { page, limit, searchQuery, role, status, userNamesOrder } =
@@ -66,8 +66,8 @@ export const userQueryRouter = router({
               or(
                 like(userTable.name, `%${searchQuery}%`),
                 like(userTable.email, `%${searchQuery}%`),
-                like(userTable.contact_number, `%${searchQuery}%`)
-              )
+                like(userTable.contact_number, `%${searchQuery}%`),
+              ),
             ) ?? userQuery;
         }
 
@@ -153,7 +153,7 @@ export const userQueryRouter = router({
             .from(officeUserTable)
             .innerJoin(
               officeTable,
-              eq(officeUserTable.office_id, officeTable.id)
+              eq(officeUserTable.office_id, officeTable.id),
             )
             .where(inArray(officeUserTable.user_id, userIds));
 
@@ -183,7 +183,6 @@ export const userQueryRouter = router({
             sites: userSites,
           };
         });
-        console.log("usersWithOfficesAndSites", usersWithOfficesAndSites);
 
         const totalPages = Math.ceil(totalResult?.count / limit);
         const hasMore = offset + users.length < totalResult.count;
@@ -198,7 +197,7 @@ export const userQueryRouter = router({
             totalPages,
           },
         };
-      })
+      }),
     ),
 
   // Get user by ID
@@ -226,7 +225,7 @@ export const userQueryRouter = router({
         }
 
         return user;
-      })
+      }),
     ),
 
   // Get managers and operators for office assignment
@@ -247,20 +246,20 @@ export const userQueryRouter = router({
             eq(userTable.status, STATUS.ACTIVE),
             or(
               eq(userTable.role, ROLES.MANAGER),
-              eq(userTable.role, ROLES.OPERATOR)
-            )
-          )
+              eq(userTable.role, ROLES.OPERATOR),
+            ),
+          ),
         )
         .orderBy(asc(userTable.name));
 
       const managers = users.filter((user: any) => user.role === ROLES.MANAGER);
 
       const operators = users.filter(
-        (user: any) => user.role === ROLES.OPERATOR
+        (user: any) => user.role === ROLES.OPERATOR,
       );
 
       return { managers, operators };
-    })
+    }),
   ),
 
   // Get 8 users from each role category
@@ -286,15 +285,15 @@ export const userQueryRouter = router({
               and(
                 eq(userTable.role, role),
                 eq(userTable.status, STATUS.ACTIVE),
-                not(eq(userTable.role, ROLES.ADMIN))
-              )
+                not(eq(userTable.role, ROLES.ADMIN)),
+              ),
             )
             .orderBy(desc(userTable.created_at))
-            .limit(8)
+            .limit(8),
         );
 
       const totalUserByRole = async (
-        role: (typeof ROLES)[keyof typeof ROLES]
+        role: (typeof ROLES)[keyof typeof ROLES],
       ) => {
         return await handleDatabaseOperation(() =>
           ctx.db
@@ -303,9 +302,9 @@ export const userQueryRouter = router({
             .where(
               and(
                 not(eq(userTable.role, ROLES.ADMIN)),
-                eq(userTable.role, role)
-              )
-            )
+                eq(userTable.role, role),
+              ),
+            ),
         );
       };
 
@@ -339,6 +338,6 @@ export const userQueryRouter = router({
         totalOperators: totalOperators[0]?.count,
         totalViewers: totalViewers[0]?.count,
       };
-    })
+    }),
   ),
 });

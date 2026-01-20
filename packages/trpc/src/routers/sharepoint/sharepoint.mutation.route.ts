@@ -1,12 +1,7 @@
 import { router } from "../../trpc";
 import { protectedProcedure } from "../../middleware";
 import { z } from "zod";
-import {
-  uploadFileSchema,
-  deleteFileSchema,
-  createFolderSchema,
-  createUploadSessionSchema,
-} from "./sharepoint.schema";
+import { sharepointSchemas } from "@pkg/schema";
 import {
   getSharePointConfig,
   isSharePointConfigured,
@@ -17,16 +12,9 @@ import {
   createServiceUnavailableError,
 } from "../../errors";
 
-/**
- * SharePoint mutation router - file write operations
- */
 export const sharePointMutationRouter = router({
-  /**
-   * Upload a file to SharePoint
-   * Expects base64 encoded content
-   */
   uploadFile: protectedProcedure
-    .input(uploadFileSchema)
+    .input(sharepointSchemas.uploadFileSchema)
     .mutation(async ({ input, ctx }) => {
       if (!isSharePointConfigured(ctx.appEnv)) {
         throw createServiceUnavailableError("SharePoint", {
@@ -48,7 +36,7 @@ export const sharePointMutationRouter = router({
           input.folderPath,
           input.fileName,
           buffer,
-          { conflictBehavior: input.conflictBehavior }
+          { conflictBehavior: input.conflictBehavior },
         );
 
         return {
@@ -65,11 +53,8 @@ export const sharePointMutationRouter = router({
       }
     }),
 
-  /**
-   * Delete a file from SharePoint
-   */
   deleteFile: protectedProcedure
-    .input(deleteFileSchema)
+    .input(sharepointSchemas.deleteFileSchema)
     .mutation(async ({ input, ctx }) => {
       if (!isSharePointConfigured(ctx.appEnv)) {
         throw createServiceUnavailableError("SharePoint", {
@@ -99,11 +84,8 @@ export const sharePointMutationRouter = router({
       }
     }),
 
-  /**
-   * Create a folder in SharePoint
-   */
   createFolder: protectedProcedure
-    .input(createFolderSchema)
+    .input(sharepointSchemas.createFolderSchema)
     .mutation(async ({ input, ctx }) => {
       if (!isSharePointConfigured(ctx.appEnv)) {
         throw createServiceUnavailableError("SharePoint", {
@@ -119,7 +101,7 @@ export const sharePointMutationRouter = router({
         const service = createSharePointService(config);
         const folder = await service.createFolder(
           input.parentPath,
-          input.folderName
+          input.folderName,
         );
 
         return {
@@ -139,11 +121,8 @@ export const sharePointMutationRouter = router({
       }
     }),
 
-  /**
-   * Create an upload session for a file
-   */
   createUploadSession: protectedProcedure
-    .input(createUploadSessionSchema)
+    .input(sharepointSchemas.createUploadSessionSchema)
     .mutation(async ({ input, ctx }) => {
       if (!isSharePointConfigured(ctx.appEnv)) {
         throw createServiceUnavailableError("SharePoint", {
@@ -160,7 +139,7 @@ export const sharePointMutationRouter = router({
         const session = await service.createUploadSession(
           input.folderPath,
           input.fileName,
-          input.conflictBehavior
+          input.conflictBehavior,
         );
 
         return {
@@ -179,9 +158,6 @@ export const sharePointMutationRouter = router({
       }
     }),
 
-  /**
-   * Create a public sharing link for a file
-   */
   createPublicLink: protectedProcedure
     .input(z.object({ fileId: z.string() }))
     .mutation(async ({ input, ctx }) => {

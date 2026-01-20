@@ -1,6 +1,6 @@
 import React from "react";
 import { trpc } from "@/lib/trpc";
-import type { CategorizedUsers } from "@/types/user.types";
+// import type { CategorizedUsers } from "@/types/user.types";
 import { capitalFirstLetter, constants } from "@pkg/utils";
 import Loading from "@/components/Loading";
 import DialogWindow from "@/components/DialogWindow";
@@ -25,6 +25,7 @@ import { capitalizeEachWord } from "@pkg/utils";
 import UserTable from "./UserTable";
 import CustomButton from "@/components/CustomButton";
 import UserSearchNFilter from "./UserSearchNFilter";
+import StatusIndicator from "../../../../components/StatusIndicator";
 
 const { ROLES } = constants;
 
@@ -43,21 +44,21 @@ const CategorizedUsers = () => {
     totalStaff,
     totalOperators,
     totalViewers,
-  } = (categorizedUsers?.data ?? {}) as CategorizedUsers;
+  } = categorizedUsers?.data ?? {};
 
   if (categorizedUsers.isLoading) {
     return <Loading />;
   }
 
   const handleOpenCategoryDialog = (
-    role: "all" | "manager" | "staff" | "viewer" | "operator"
+    role: "all" | "manager" | "staff" | "viewer" | "operator",
   ) => {
     setFilters({ role, status: "all" });
-    setParams({ mode: "categorized", role });
+    setParams({ dialog: "categorized", role });
   };
 
   const handleCloseDialog = () => {
-    deleteParams(["mode", "role"]);
+    deleteParams(["dialog", "role"]);
     setTimeout(() => {
       resetFilters();
     }, 1000);
@@ -140,10 +141,10 @@ const CategorizedUsers = () => {
                           category.users.map((user) => (
                             <TableRow key={user.id}>
                               <TableCell className='text-xs font-medium py-3 flex items-center gap-2'>
-                                <div
-                                  className={`size-2 rounded-full ${
-                                    user.status ? "bg-green-500" : "bg-red-500"
-                                  }`}></div>
+                                <StatusIndicator
+                                  status={user.status ? "active" : "inactive"}
+                                  size='sm'
+                                />
                                 {capitalizeEachWord(user.name)}
                               </TableCell>
                               <TableCell className='text-xs py-2'>
@@ -176,7 +177,7 @@ const CategorizedUsers = () => {
       </div>
 
       <DialogWindow
-        open={getParam("mode") === "categorized"}
+        open={getParam("dialog") === "categorized"}
         setOpen={handleCloseDialog}
         title={capitalFirstLetter(getParam("role") || "") + " Users"}
         description={

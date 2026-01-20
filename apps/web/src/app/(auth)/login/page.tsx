@@ -14,7 +14,6 @@ const LoginPage = () => {
   return (
     <div className='min-h-screen flex items-center justify-center bg-blue-50 dark:bg-gray-950 p-4'>
       <div className='w-full max-w-md mx-auto space-y-6'>
-        {/* Brand Header */}
         <div className='text-center space-y-3'>
           <div className='inline-flex items-center'>
             <Image
@@ -33,7 +32,6 @@ const LoginPage = () => {
           </p>
         </div>
 
-        {/* Login Form Card */}
         <Card className='border-0 shadow-md bg-white dark:bg-gray-900'>
           <CardHeader className='space-y-1 text-center pb-6'>
             <CardTitle className='text-2xl font-bold text-gray-700 dark:text-gray-100'>
@@ -48,11 +46,10 @@ const LoginPage = () => {
           </CardContent>
         </Card>
 
-        {/* Footer */}
         <div className='text-center text-xs text-gray-500 dark:text-gray-400'>
           <p>
-            © 2025 OTBL. All rights reserved. Protected by industry-leading
-            security.
+            © {new Date().getFullYear()} OTBL. All rights reserved. Protected
+            by industry-leading security.
           </p>
         </div>
       </div>

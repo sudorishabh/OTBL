@@ -31,7 +31,15 @@ const LoginForm = () => {
     },
   });
 
-  const loginMutation = trpc.authMutation.login.useMutation();
+  const loginMutation = trpc.authMutation.login.useMutation({
+    onSuccess: (data: { user: User }) => {
+      router.push("/dashboard");
+      setUser(data.user);
+    },
+    onError: (error) => {
+      handleError(error, { showToast: true });
+    },
+  });
 
   type User = {
     id: number;
@@ -42,16 +50,9 @@ const LoginForm = () => {
   };
 
   const onSubmit = (data: authTypes.loginType) => {
-    loginMutation.mutate(data, {
-      onSuccess: (data: { user: User }) => {
-        router.push("/dashboard");
-        setUser(data.user);
-      },
-      onError: (error) => {
-        handleError(error, { showToast: true });
-      },
-    });
+    loginMutation.mutate(data);
   };
+
   return (
     <Form {...form}>
       <form

@@ -11,10 +11,10 @@ import CreateWOStep2Sites from "./Steps/CreateWOStep2Sites";
 import { useParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { Check } from "lucide-react";
-import {
-  workOrderSchemas,
-  type CreateWorkOrderFormInput,
-} from "@pkg/trpc/schemas";
+// import {
+//   workOrderSchemas,
+//   type CreateWorkOrderFormInput,
+// } from "@pkg/trpc/schemas";
 import { useHandleParams } from "@/hooks/useHandleParams";
 import CustomUploadDocument from "@/components/CustomUploadDocument";
 import { useApiError } from "@/hooks/useApiError";
@@ -25,7 +25,7 @@ interface Props {
   proposalTitle: string;
 }
 
-type WorkOrderFormValues = CreateWorkOrderFormInput;
+// type WorkOrderFormValues = CreateWorkOrderFormInput;
 
 const CreateWODialog = ({ proposalId, proposalTitle }: Props) => {
   const [step, setStep] = useState<number>(1);
@@ -113,7 +113,7 @@ const CreateWODialog = ({ proposalId, proposalTitle }: Props) => {
   const getActivityTypes =
     trpc.technologyQuery.getActivityTypesByTechnology.useQuery(
       { technology_id: Number(selectedTechnologyId) },
-      { enabled: !!selectedTechnologyId && selectedTechnologyId !== "" }
+      { enabled: !!selectedTechnologyId && selectedTechnologyId !== "" },
     );
 
   const activityTypesData = getActivityTypes?.data?.activityTypes || [];
@@ -139,7 +139,7 @@ const CreateWODialog = ({ proposalId, proposalTitle }: Props) => {
         uploadedFileId.current = null;
       }, 500);
     },
-    [isUploading, cleanupFile, deleteParams, form]
+    [isUploading, cleanupFile, deleteParams, form],
   );
 
   // Separate function for step components that doesn't take parameters
@@ -176,7 +176,7 @@ const CreateWODialog = ({ proposalId, proposalTitle }: Props) => {
   // Get sites for selected office
   const getSites = trpc.siteQuery.getSitesByOfficeId.useQuery(
     { office_id: Number(selectedOfficeId) },
-    { enabled: !!selectedOfficeId && selectedOfficeId !== "" }
+    { enabled: !!selectedOfficeId && selectedOfficeId !== "" },
   );
 
   const sitesData = getSites?.data;
@@ -190,7 +190,7 @@ const CreateWODialog = ({ proposalId, proposalTitle }: Props) => {
       "Site IDs type:",
       typeof values.site_ids,
       "Is Array:",
-      Array.isArray(values.site_ids)
+      Array.isArray(values.site_ids),
     );
     console.log("Site IDs:", values.site_ids);
 
@@ -253,7 +253,7 @@ const CreateWODialog = ({ proposalId, proposalTitle }: Props) => {
         "Office changed from",
         prevOfficeIdRef.current,
         "to",
-        selectedOfficeId
+        selectedOfficeId,
       );
       form.setValue("site_ids", [], { shouldValidate: false });
       prevOfficeIdRef.current = String(selectedOfficeId);
@@ -274,7 +274,7 @@ const CreateWODialog = ({ proposalId, proposalTitle }: Props) => {
               console.error("❌ Form validation failed:", errors);
               toast.error(
                 "Please check the form for errors. Missing fields: " +
-                  Object.keys(errors).join(", ")
+                  Object.keys(errors).join(", "),
               );
             })}>
             {/* Enhanced Stepper */}

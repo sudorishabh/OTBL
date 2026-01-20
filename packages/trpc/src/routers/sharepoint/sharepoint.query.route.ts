@@ -1,10 +1,6 @@
 import { router } from "../../trpc";
 import { protectedProcedure } from "../../middleware";
-import {
-  getFilesSchema,
-  getFoldersSchema,
-  downloadFileSchema,
-} from "./sharepoint.schema";
+import { sharepointSchemas } from "@pkg/schema";
 import {
   getSharePointConfig,
   isSharePointConfigured,
@@ -16,22 +12,13 @@ import {
   createNotFoundError,
 } from "../../errors";
 
-/**
- * SharePoint query router - file read operations
- */
 export const sharePointQueryRouter = router({
-  /**
-   * Check if SharePoint is configured
-   */
   isConfigured: protectedProcedure.query(async ({ ctx }) => {
     return {
       configured: isSharePointConfigured(ctx.appEnv),
     };
   }),
 
-  /**
-   * Test connection to Microsoft Graph API
-   */
   testConnection: protectedProcedure.query(async ({ ctx }) => {
     if (!isSharePointConfigured(ctx.appEnv)) {
       return {
@@ -60,11 +47,8 @@ export const sharePointQueryRouter = router({
     }
   }),
 
-  /**
-   * Get files from a folder in document library
-   */
   getFiles: protectedProcedure
-    .input(getFilesSchema)
+    .input(sharepointSchemas.getFilesSchema)
     .query(async ({ input, ctx }) => {
       if (!isSharePointConfigured(ctx.appEnv)) {
         throw createServiceUnavailableError("SharePoint", {
@@ -99,7 +83,7 @@ export const sharePointQueryRouter = router({
    * Get folders from a path in document library
    */
   getFolders: protectedProcedure
-    .input(getFoldersSchema)
+    .input(sharepointSchemas.getFoldersSchema)
     .query(async ({ input, ctx }) => {
       if (!isSharePointConfigured(ctx.appEnv)) {
         throw createServiceUnavailableError("SharePoint", {
@@ -126,12 +110,8 @@ export const sharePointQueryRouter = router({
       }
     }),
 
-  /**
-   * Download a file from SharePoint
-   * Returns file metadata and base64 encoded content
-   */
   downloadFile: protectedProcedure
-    .input(downloadFileSchema)
+    .input(sharepointSchemas.downloadFileSchema)
     .query(async ({ input, ctx }) => {
       if (!isSharePointConfigured(ctx.appEnv)) {
         throw createServiceUnavailableError("SharePoint", {

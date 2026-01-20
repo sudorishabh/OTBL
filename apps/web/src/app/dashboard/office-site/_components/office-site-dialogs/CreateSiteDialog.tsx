@@ -1,7 +1,6 @@
 "use client";
 import React, { useEffect, useCallback, useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
-import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import DialogWindow from "@/components/DialogWindow";
 import { Form } from "@/components/ui/form";
@@ -22,31 +21,30 @@ import {
   X,
   Mail,
 } from "lucide-react";
-import { siteSchemas, type SiteBaseInput } from "@pkg/trpc/schemas";
 import { useApiError } from "@/hooks/useApiError";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { siteSchemas, type siteTypes } from "@pkg/schema";
 
-const AddSiteDialog = () => {
+const CreateSiteDialog = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const siteMode = searchParams.get("siteMode");
   const officeId = searchParams.get("officeId");
   const officeName = searchParams.get("officeName");
   const siteId = searchParams.get("siteId");
-
   const isAddMode = siteMode === "add";
   const isEditMode = siteMode === "edit";
   const isOpenDialog = isAddMode || isEditMode;
 
-  const form = useForm<SiteBaseInput>({
+  const form = useForm<siteTypes.siteBaseType>({
     resolver: zodResolver(siteSchemas.siteBaseSchema),
     defaultValues: {
-      address: "",
-      city: "",
       name: "",
-      pincode: "",
+      address: "",
       state: "",
+      city: "",
+      pincode: "",
     },
   });
 
@@ -58,7 +56,6 @@ const AddSiteDialog = () => {
   const utils = trpc.useUtils();
   const { handleError } = useApiError();
 
-  // Get operators for site assignment
   const { data: staffData, isLoading: isLoadingStaffData } =
     trpc.userQuery.getManagersAndOperators.useQuery(undefined, {
       enabled: isAddMode,
@@ -66,13 +63,12 @@ const AddSiteDialog = () => {
 
   const operators = staffData?.operators;
 
-  // Filter and paginate operators
   const filteredOperators = useMemo(() => {
     if (!operators) return [];
     return operators.filter(
       (user: any) =>
         user.name.toLowerCase().includes(operatorSearch.toLowerCase()) ||
-        user.email.toLowerCase().includes(operatorSearch.toLowerCase())
+        user.email.toLowerCase().includes(operatorSearch.toLowerCase()),
     );
   }, [operators, operatorSearch]);
 
@@ -82,14 +78,13 @@ const AddSiteDialog = () => {
 
   const hasMoreOperators = filteredOperators.length > paginatedOperators.length;
 
-  // Fetch site data if in edit mode
   const { data: siteData, isLoading: isSiteLoading } =
     trpc.siteQuery.getSite.useQuery(
-      { id: Number(siteId) },
-      { enabled: isEditMode && !!siteId }
+      { siteId: Number(siteId) },
+      { enabled: isEditMode && !!siteId },
     );
 
-  const addSite = trpc.siteMutation.addSite.useMutation({
+  const addSite = trpc.siteMutation.createSite.useMutation({
     onSuccess: () => {
       toast.success("Site added successfully");
       utils.siteQuery.getSitesByOfficeId.invalidate();
@@ -100,7 +95,7 @@ const AddSiteDialog = () => {
     },
   });
 
-  const editSite = trpc.siteMutation.editSite.useMutation({
+  const editSite = trpc.siteMutation.updateSite.useMutation({
     onSuccess: () => {
       toast.success("Site updated successfully");
       utils.siteQuery.getSitesByOfficeId.invalidate();
@@ -139,7 +134,6 @@ const AddSiteDialog = () => {
     }
   };
 
-  // Populate form when editing
   useEffect(() => {
     if (isEditMode && siteData && !isSiteLoading) {
       form.reset({
@@ -160,10 +154,10 @@ const AddSiteDialog = () => {
     }
   }, [isEditMode, isAddMode, siteData, isSiteLoading, form]);
 
-  async function onSubmit(values: SiteBaseInput) {
+  async function onSubmit(values: siteTypes.siteBaseType) {
     try {
       if (isEditMode && siteId) {
-        await editSite.mutateAsync({ ...values, id: Number(siteId) });
+        await editSite.mutateAsync({ ...values, siteId: Number(siteId) });
       } else if (isAddMode && officeId) {
         await addSite.mutateAsync({
           ...values,
@@ -196,7 +190,6 @@ const AddSiteDialog = () => {
       <Form {...form}>
         <CustomForm onSubmit={form.handleSubmit(onSubmit)}>
           <div className='max-h-[60vh] overflow-y-auto pr-2 space-y-6'>
-            {/* Site Information Section */}
             <div className='space-y-4'>
               {isAddMode && (
                 <div className='border-b pb-2'>
@@ -280,7 +273,7 @@ const AddSiteDialog = () => {
                       <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
                         {paginatedOperators.map((user: any) => {
                           const isSelected = selectedOperators.includes(
-                            user.id
+                            user.id,
                           );
                           return (
                             <div
@@ -290,7 +283,7 @@ const AddSiteDialog = () => {
                                 "group flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer",
                                 isSelected
                                   ? "border-[#035864] bg-[#035864]/5 ring-[#035864]"
-                                  : "border-gray-100 hover:border-[#035864]/30 hover:bg-gray-50/80"
+                                  : "border-gray-100 hover:border-[#035864]/30 hover:bg-gray-50/80",
                               )}>
                               <div className='flex items-center gap-3'>
                                 <div
@@ -298,7 +291,7 @@ const AddSiteDialog = () => {
                                     "h-10 w-10 rounded-full flex items-center justify-center text-sm font-semibold transition-colors shadow-sm",
                                     isSelected
                                       ? "bg-[#035864] text-white"
-                                      : "bg-white border text-gray-500 group-hover:border-[#035864]/30 group-hover:text-[#035864]"
+                                      : "bg-white border text-gray-500 group-hover:border-[#035864]/30 group-hover:text-[#035864]",
                                   )}>
                                   {user.name.slice(0, 2).toUpperCase()}
                                 </div>
@@ -308,7 +301,7 @@ const AddSiteDialog = () => {
                                       "font-medium text-sm transition-colors",
                                       isSelected
                                         ? "text-[#035864]"
-                                        : "text-gray-900"
+                                        : "text-gray-900",
                                     )}>
                                     {user.name}
                                   </p>
@@ -328,19 +321,20 @@ const AddSiteDialog = () => {
                             </div>
                           );
                         })}
-                        {!isLoadingStaffData && paginatedOperators.length === 0 && (
-                          <div className='col-span-2 flex flex-col items-center justify-center py-10 text-gray-500'>
-                            <div className='h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center mb-3'>
-                              <Users className='h-6 w-6 text-gray-400' />
+                        {!isLoadingStaffData &&
+                          paginatedOperators.length === 0 && (
+                            <div className='col-span-2 flex flex-col items-center justify-center py-10 text-gray-500'>
+                              <div className='h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center mb-3'>
+                                <Users className='h-6 w-6 text-gray-400' />
+                              </div>
+                              <p className='text-sm font-medium'>
+                                No operators found
+                              </p>
+                              <p className='text-xs text-gray-400 mt-1'>
+                                Try adjusting your search
+                              </p>
                             </div>
-                            <p className='text-sm font-medium'>
-                              No operators found
-                            </p>
-                            <p className='text-xs text-gray-400 mt-1'>
-                              Try adjusting your search
-                            </p>
-                          </div>
-                        )}
+                          )}
                       </div>
                       {hasMoreOperators && (
                         <button
@@ -411,4 +405,4 @@ const AddSiteDialog = () => {
   );
 };
 
-export default AddSiteDialog;
+export default CreateSiteDialog;

@@ -4,11 +4,6 @@ import { hashPassword, USER_ROLES, verifyPassword } from "@pkg/auth";
 import { adminProcedure, protectedProcedure } from "../../middleware";
 import { router } from "../../trpc";
 import {
-  registerSchema,
-  editUserSchema,
-  changePasswordSchema,
-} from "./user.schema";
-import {
   throwNotFoundError,
   throwUnauthorizedError,
   throwConflictError,
@@ -16,117 +11,124 @@ import {
   handleDatabaseOperation,
 } from "../../errors";
 import { handleProtectedMutation } from "../../helper/typed-handler";
+import { userSchemas } from "@pkg/schema";
 
 const { userTable } = schema;
 
 export const userMutationRouter = router({
-  registerUserByAdmin: adminProcedure.input(registerSchema).mutation(
-    handleProtectedMutation(async ({ input, ctx }) => {
-      const existingUser = await ctx.db
-        .select()
-        .from(userTable)
-        .where(eq(userTable.email, input.email));
+  createUserByAdmin: adminProcedure
+    .input(userSchemas.createUserSchema)
+    .mutation(
+      handleProtectedMutation(async ({ input, ctx }) => {
+        const existingUser = await ctx.db
+          .select()
+          .from(userTable)
+          .where(eq(userTable.email, input.email));
 
-      if (existingUser.length > 0) {
-        throwConflictError("User with this email already exists");
-      }
+        if (existingUser.length > 0) {
+          throwConflictError("User with this email already exists");
+        }
 
-      // Hash the password before storing
-      const hashedPassword = await hashPassword(input.password);
+        // Hash the password before storing
+        const hashedPassword = await hashPassword(input.password);
 
-      await handleDatabaseOperation(
-        () =>
-          ctx.db.insert(userTable).values({
-            ...input,
-            password: hashedPassword,
-          }),
-        "Failed to create new user"
-      );
+        await handleDatabaseOperation(
+          () =>
+            ctx.db.insert(userTable).values({
+              ...input,
+              password: hashedPassword,
+            }),
+          "Failed to create new user",
+        );
 
-      return {
-        success: true,
-        message: "User created successfully",
-      };
-    })
-  ),
+        return {
+          success: true,
+          message: "User created successfully",
+        };
+      }),
+    ),
 
-  editUser: protectedProcedure.input(editUserSchema).mutation(
-    handleProtectedMutation(async ({ input, ctx }) => {
-      const { id, password, ...rest } = input;
+  updateUserByAdmin: protectedProcedure
+    .input(userSchemas.updateUserSchema)
+    .mutation(
+      handleProtectedMutation(async ({ input, ctx }) => {
+        const { id, password, ...rest } = input;
 
-      const existingUser = await ctx.db
-        .select()
-        .from(userTable)
-        .where(eq(userTable.id, id));
+        const existingUser = await ctx.db
+          .select()
+          .from(userTable)
+          .where(eq(userTable.id, id));
 
-      if (existingUser.length === 0) {
-        throwNotFoundError("User");
-      }
+        if (existingUser.length === 0) {
+          throwNotFoundError("User");
+        }
 
-      const isAdmin = ctx.user.role === USER_ROLES.ADMIN;
-      const isOwnProfile = ctx.user.sub === id.toString();
+        const isAdmin = ctx.user.role === USER_ROLES.ADMIN;
+        const isOwnProfile = ctx.user.sub === id.toString();
 
-      if (!isAdmin && !isOwnProfile) {
-        throwForbiddenError("You can only edit your own profile");
-      }
+        if (!isAdmin && !isOwnProfile) {
+          throwForbiddenError("You can only edit your own profile");
+        }
 
-      // Prepare update data
-      const updateData: Record<string, any> = { ...rest };
+        // Prepare update data
+        const updateData: Record<string, any> = { ...rest };
 
-      // Hash password if provided
-      if (password) {
-        updateData.password = await hashPassword(password);
-      }
+        // Hash password if provided
+        if (password) {
+          updateData.password = await hashPassword(password);
+        }
 
-      await ctx.db
-        .update(userTable)
-        .set(updateData)
-        .where(eq(userTable.id, id));
+        await ctx.db
+          .update(userTable)
+          .set(updateData)
+          .where(eq(userTable.id, id));
 
-      return {
-        success: true,
-        message: "User updated successfully",
-      };
-    })
-  ),
+        return {
+          success: true,
+          message: "User updated successfully",
+        };
+      }),
+    ),
 
-  changePassword: protectedProcedure.input(changePasswordSchema).mutation(
-    handleProtectedMutation(async ({ input, ctx }) => {
-      const userId = parseInt(ctx.user.sub);
-      const users = await ctx.db
-        .select({
-          id: userTable.id,
-          password: userTable.password,
-        })
-        .from(userTable)
-        .where(eq(userTable.id, userId));
+  updateUserPassword: protectedProcedure
+    .input(userSchemas.updateUserPasswordSchema)
+    .mutation(
+      handleProtectedMutation(async ({ input, ctx }) => {
+        const userId = parseInt(ctx.user.sub);
+        const users = await ctx.db
+          .select({
+            id: userTable.id,
+            password: userTable.password,
+          })
+          .from(userTable)
+          .where(eq(userTable.id, userId));
 
-      if (!users[0] || users.length === 0) {
-        throwNotFoundError("User");
-      }
+        if (!users[0] || users.length === 0) {
+          throwNotFoundError("User");
+        }
 
-      const userData = users[0];
+        const userData = users[0];
 
-      const isCurrentPasswordValid = await verifyPassword(
-        input.currentPassword,
-        userData.password
-      );
+        const isCurrentPasswordValid = await verifyPassword(
+          input.currentPassword,
+          userData.password,
+        );
 
-      if (!isCurrentPasswordValid) {
-        throwUnauthorizedError("Current password is incorrect");
-      }
+        if (!isCurrentPasswordValid) {
+          throwUnauthorizedError("Current password is incorrect");
+        }
 
-      const hashedNewPassword = await hashPassword(input.newPassword);
+        const hashedNewPassword = await hashPassword(input.newPassword);
 
-      await ctx.db
-        .update(userTable)
-        .set({ password: hashedNewPassword })
-        .where(eq(userTable.id, userId));
+        await ctx.db
+          .update(userTable)
+          .set({ password: hashedNewPassword })
+          .where(eq(userTable.id, userId));
 
-      return {
-        success: true,
-        message: "Password changed successfully",
-      };
-    })
-  ),
+        return {
+          success: true,
+          message: "Password changed successfully",
+        };
+      }),
+    ),
 });

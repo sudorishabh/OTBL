@@ -1,14 +1,11 @@
 import DialogWindow from "@/components/DialogWindow";
 import React, { useState, useMemo, useCallback } from "react";
-import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { trpc } from "@/lib/trpc";
 import CustomButton from "@/components/CustomButton";
 import CustomForm from "@/components/CustomForm";
-import { Badge } from "@/components/ui/badge";
 import {
   CheckCircle2,
   Mail,
@@ -24,21 +21,21 @@ import {
 import toast from "react-hot-toast";
 import { useRouter, useSearchParams } from "next/navigation";
 import CustomInput from "@/components/CustomInput";
-import { officeSchemas, type AddOfficeInput } from "@pkg/trpc/schemas";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useApiError } from "@/hooks/useApiError";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { officeSchemas, officeTypes } from "@pkg/schema";
 
 const AddOfficeDialog = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const mode = searchParams.get("mode");
-  const isAddMode = mode === "add";
+  const mode = searchParams.get("dialog");
+  const isAddMode = mode === "create-office";
   const isOpenDialog = isAddMode;
 
   const [selectedManagerId, setSelectedManagerId] = useState<number | null>(
-    null
+    null,
   );
   const [selectedOperators, setSelectedOperators] = useState<number[]>([]);
   const [managerSearch, setManagerSearch] = useState("");
@@ -52,8 +49,8 @@ const AddOfficeDialog = () => {
   const utils = trpc.useUtils();
   const { handleError } = useApiError();
 
-  const form = useForm<AddOfficeInput>({
-    resolver: zodResolver(officeSchemas.addOfficeSchema),
+  const form = useForm<officeTypes.createOfficeType>({
+    resolver: zodResolver(officeSchemas.createOfficeSchema),
     defaultValues: {
       name: "",
       address: "",
@@ -80,7 +77,7 @@ const AddOfficeDialog = () => {
     return managers.filter(
       (user: any) =>
         user.name.toLowerCase().includes(managerSearch.toLowerCase()) ||
-        user.email.toLowerCase().includes(managerSearch.toLowerCase())
+        user.email.toLowerCase().includes(managerSearch.toLowerCase()),
     );
   }, [managers, managerSearch]);
 
@@ -96,7 +93,7 @@ const AddOfficeDialog = () => {
     return operators.filter(
       (user: any) =>
         user.name.toLowerCase().includes(operatorSearch.toLowerCase()) ||
-        user.email.toLowerCase().includes(operatorSearch.toLowerCase())
+        user.email.toLowerCase().includes(operatorSearch.toLowerCase()),
     );
   }, [operators, operatorSearch]);
 
@@ -106,7 +103,7 @@ const AddOfficeDialog = () => {
 
   const hasMoreOperators = filteredOperators.length > paginatedOperators.length;
 
-  const addOffice = trpc.officeMutation.addOffice.useMutation({
+  const addOffice = trpc.officeMutation.createOffice.useMutation({
     onSuccess: () => {
       toast.success("Office created successfully");
       utils.officeQuery.getOffices.invalidate();
@@ -116,7 +113,7 @@ const AddOfficeDialog = () => {
     },
   });
 
-  async function onSubmit(values: AddOfficeInput) {
+  async function onSubmit(values: officeTypes.createOfficeType) {
     try {
       await addOffice.mutateAsync({
         ...values,
@@ -133,7 +130,7 @@ const AddOfficeDialog = () => {
 
   const handleClose = useCallback(() => {
     const params = new URLSearchParams(searchParams.toString());
-    params.delete("mode");
+    params.delete("dialog");
     const paramsString = params.toString();
     router.push(paramsString ? `?${paramsString}` : window.location.pathname);
     form.reset();
@@ -303,14 +300,14 @@ const AddOfficeDialog = () => {
                               key={user.id}
                               onClick={() =>
                                 setSelectedManagerId(
-                                  isSelected ? null : user.id
+                                  isSelected ? null : user.id,
                                 )
                               }
                               className={cn(
                                 "group flex m-0 items-center justify-between p-3 rounded-lg border transition-all cursor-pointer",
                                 isSelected
                                   ? "border-[#035864] bg-[#035864]/5 ring-[#035864]"
-                                  : "border-gray-100 hover:border-[#035864]/30 hover:bg-gray-50/80"
+                                  : "border-gray-100 hover:border-[#035864]/30 hover:bg-gray-50/80",
                               )}>
                               <div className='flex items-center gap-3'>
                                 <div
@@ -318,7 +315,7 @@ const AddOfficeDialog = () => {
                                     "h-10 w-10 rounded-full flex items-center justify-center text-sm font-semibold transition-colors shadow-sm",
                                     isSelected
                                       ? "bg-[#035864] text-white"
-                                      : "bg-white border text-gray-500 group-hover:border-[#035864]/30 group-hover:text-[#035864]"
+                                      : "bg-white border text-gray-500 group-hover:border-[#035864]/30 group-hover:text-[#035864]",
                                   )}>
                                   {user.name.slice(0, 2).toUpperCase()}
                                 </div>
@@ -328,7 +325,7 @@ const AddOfficeDialog = () => {
                                       "font-medium text-sm transition-colors",
                                       isSelected
                                         ? "text-[#035864]"
-                                        : "text-gray-900"
+                                        : "text-gray-900",
                                     )}>
                                     {user.name}
                                   </p>
@@ -375,7 +372,7 @@ const AddOfficeDialog = () => {
                         className='mt-0 space-y-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
                         {paginatedOperators.map((user: any) => {
                           const isSelected = selectedOperators.includes(
-                            user.id
+                            user.id,
                           );
                           return (
                             <div
@@ -385,7 +382,7 @@ const AddOfficeDialog = () => {
                                 "group flex m-0 items-center justify-between p-3 rounded-lg border transition-all cursor-pointer",
                                 isSelected
                                   ? "border-[#035864] bg-[#035864]/5 ring-[#035864]"
-                                  : "border-gray-100 hover:border-[#035864]/30 hover:bg-gray-50/80"
+                                  : "border-gray-100 hover:border-[#035864]/30 hover:bg-gray-50/80",
                               )}>
                               <div className='flex items-center gap-3'>
                                 <div
@@ -393,7 +390,7 @@ const AddOfficeDialog = () => {
                                     "h-10 w-10 rounded-full flex items-center justify-center text-sm font-semibold transition-colors shadow-sm",
                                     isSelected
                                       ? "bg-[#035864] text-white"
-                                      : "bg-white border text-gray-500 group-hover:border-[#035864]/30 group-hover:text-[#035864]"
+                                      : "bg-white border text-gray-500 group-hover:border-[#035864]/30 group-hover:text-[#035864]",
                                   )}>
                                   {user.name.slice(0, 2).toUpperCase()}
                                 </div>
@@ -403,7 +400,7 @@ const AddOfficeDialog = () => {
                                       "font-medium text-sm transition-colors",
                                       isSelected
                                         ? "text-[#035864]"
-                                        : "text-gray-900"
+                                        : "text-gray-900",
                                     )}>
                                     {user.name}
                                   </p>
@@ -469,7 +466,7 @@ const AddOfficeDialog = () => {
                         <span className='font-medium text-gray-900 text-xs'>
                           {
                             managers?.find(
-                              (m: any) => m.id === selectedManagerId
+                              (m: any) => m.id === selectedManagerId,
                             )?.name
                           }
                         </span>

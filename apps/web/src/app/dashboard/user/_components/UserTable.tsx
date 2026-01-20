@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -30,15 +30,24 @@ import { useUserManagementContext } from "@/contexts/UserManagementContext";
 import { trpc } from "@/lib/trpc";
 import Loading from "@/components/Loading";
 import { capitalFirstLetter, capitalizeEachWord } from "@pkg/utils";
-import type { User } from "@/types/user.types";
 import useHandleParams from "@/hooks/useHandleParams";
 import NoFetchData from "@/components/NoFetchData";
+import StatusIndicator from "../../../../components/StatusIndicator";
+import { userTypes } from "@pkg/schema";
+
+interface Pagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasMore: boolean;
+}
 
 const UserTable = () => {
   const { setParams } = useHandleParams();
   const [currentPage, setCurrentPage] = useState(1);
-  const [allUsersList, setAllUsersList] = useState<User[]>([]);
-  const [pagination, setPagination] = useState<any>(null);
+  const [allUsersList, setAllUsersList] = useState<userTypes.AllUserType[]>([]);
+  const [pagination, setPagination] = useState<Pagination | null>(null);
 
   const { userNamesOrder, setUserNamesOrder, searchQuery, filters } =
     useUserManagementContext();
@@ -55,10 +64,18 @@ const UserTable = () => {
   });
 
   const isAllUserQueryLoading = getAllUsersQuery.isLoading;
-  const { users, pagination: fetchedPagination } = getAllUsersQuery?.data || {
-    users: [],
-    pagination: null,
-  };
+  const { users, pagination: fetchedPagination } =
+    getAllUsersQuery?.data ||
+    ({
+      users: [],
+      pagination: {
+        page: 1,
+        limit: allUsersQueryLimit,
+        total: 0,
+        totalPages: 1,
+        hasMore: false,
+      },
+    } as userTypes.AllUsersQueryType);
 
   const isInitialLoading =
     isAllUserQueryLoading &&
@@ -149,8 +166,6 @@ const UserTable = () => {
       />
     );
 
-  console.log(allUsersList);
-
   return (
     <div className='border rounded-lg bg-white'>
       <Table>
@@ -187,11 +202,9 @@ const UserTable = () => {
           {allUsersList?.map((user) => (
             <TableRow key={user.id}>
               <TableCell className='pl-6'>
-                {user.status === "active" ? (
-                  <div className='text-green-500 h-3 w-3 rounded-full bg-green-500'></div>
-                ) : (
-                  <div className='text-red-500 h-3 w-3 rounded-full bg-red-500'></div>
-                )}
+                <StatusIndicator
+                  status={user.status as "active" | "inactive"}
+                />
               </TableCell>
               <TableCell className='text-xs font-medium'>
                 {capitalizeEachWord(user.name)}
@@ -209,7 +222,7 @@ const UserTable = () => {
               </TableCell>
               <TableCell className='text-xs overflow-hidden max-w-[450px] flex flex-wrap gap-1.5'>
                 {[...user.offices, ...user.sites].sort((a, b) =>
-                  a.name.localeCompare(b.name)
+                  a.name.localeCompare(b.name),
                 ).length > 0 ? (
                   <>
                     {[...user.offices, ...user.sites].map((uo) => (
@@ -226,56 +239,6 @@ const UserTable = () => {
                     No offices & sites
                   </span>
                 )}
-
-                {/* {user.offices.length > 0 ? (
-                  <div className='flex flex-col gap-1'>
-                    {user.offices.map((uo) => (
-                      <div
-                        key={uo.id}
-                        className='flex items-center gap-1 flex-wrap'>
-                        <Badge
-                          variant='outline'
-                          className='text-xs'>
-                          {uo.name || "Unknown Office"}
-                        </Badge>
-                        <Badge
-                          variant='secondary'
-                          className='text-xs px-1.5 py-0'>
-                          Office
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <span className='text-xs text-muted-foreground'>
-                    No offices
-                  </span>
-                )}
-
-                {user.sites.length > 0 ? (
-                  <div className='flex flex-col gap-1'>
-                    {user.sites.map((us) => (
-                      <div
-                        key={us.id}
-                        className='flex items-center gap-1 flex-wrap'>
-                        <Badge
-                          variant='outline'
-                          className='text-xs'>
-                          {us.name || "Unknown Site"}
-                        </Badge>
-                        <Badge
-                          variant='secondary'
-                          className='text-xs px-1.5 py-0'>
-                          Site
-                        </Badge>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <span className='text-xs text-muted-foreground'>
-                    No sites
-                  </span>
-                )} */}
               </TableCell>
               <TableCell className='text-right'>
                 <DropdownMenu>
@@ -318,6 +281,19 @@ const UserTable = () => {
           )}
         </TableBody>
       </Table>
+
+      {/* User Count Footer */}
+      <div className='flex justify-between items-center px-4 py-2 text-xs text-muted-foreground border-t'>
+        <span>
+          Showing {allUsersList.length} of{" "}
+          {pagination?.total || allUsersList.length} users
+        </span>
+        {pagination && pagination.totalPages > 1 && (
+          <span>
+            Page {pagination.page} of {pagination.totalPages}
+          </span>
+        )}
+      </div>
     </div>
   );
 };

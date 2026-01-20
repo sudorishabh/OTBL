@@ -2,14 +2,14 @@ import { eq, inArray } from "drizzle-orm";
 import { schema } from "@pkg/db";
 import { router } from "../../trpc";
 import { managerProcedure } from "../../middleware";
-import { addSiteSchema, editSiteSchema } from "./site.schema";
 import { throwNotFoundError, handleDatabaseOperation } from "../../errors";
 import { handleMutation } from "../../helper/typed-handler";
+import { siteSchemas } from "@pkg/schema";
 
 const { siteTable, userTable, siteUserTable } = schema;
 
 export const siteMutationRouter = router({
-  addSite: managerProcedure.input(addSiteSchema).mutation(
+  createSite: managerProcedure.input(siteSchemas.createSiteSchema).mutation(
     handleMutation(async ({ input, ctx }) => {
       const { operator_ids, ...siteData } = input;
 
@@ -46,18 +46,15 @@ export const siteMutationRouter = router({
       });
 
       return { success: true };
-    })
+    }),
   ),
 
-  /**
-   * Edit an existing site - Manager or higher
-   */
-  editSite: managerProcedure.input(editSiteSchema).mutation(
+  updateSite: managerProcedure.input(siteSchemas.updateSiteSchema).mutation(
     handleMutation(async ({ input, ctx }) => {
       const existingSite = await ctx.db
         .select()
         .from(siteTable)
-        .where(eq(siteTable.id, input.id));
+        .where(eq(siteTable.id, input.siteId));
 
       if (existingSite.length === 0) {
         throwNotFoundError("Site");
@@ -67,10 +64,10 @@ export const siteMutationRouter = router({
         return ctx.db
           .update(siteTable)
           .set(input)
-          .where(eq(siteTable.id, input.id));
+          .where(eq(siteTable.id, input.siteId));
       }, "Failed to edit site");
 
       return { success: true };
-    })
+    }),
   ),
 });

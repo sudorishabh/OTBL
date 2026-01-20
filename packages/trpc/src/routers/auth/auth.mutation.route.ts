@@ -11,7 +11,7 @@ import { schema } from "@pkg/db";
 import { constants } from "@pkg/utils";
 import { publicProcedure } from "../../middleware";
 import { router } from "../../trpc";
-import { loginSchema } from "./auth.schema";
+import { authSchemas } from "@pkg/schema";
 import {
   throwUnauthorizedError,
   throwInternalError,
@@ -23,7 +23,7 @@ const { STATUS } = constants;
 const { userTable } = schema;
 
 export const authMutationRouter = router({
-  login: publicProcedure.input(loginSchema).mutation(
+  login: publicProcedure.input(authSchemas.loginSchema).mutation(
     handleMutation(async ({ input, ctx }) => {
       const { email, password } = input;
 
@@ -50,7 +50,7 @@ export const authMutationRouter = router({
 
         if (user.status !== STATUS.ACTIVE) {
           throwUnauthorizedError(
-            "The account is inactive, please contact support"
+            "The account is inactive, please contact support",
           );
         }
 
@@ -67,13 +67,13 @@ export const authMutationRouter = router({
         const accessToken = signToken(
           payload,
           ctx.appEnv.JWT.SECRET,
-          ctx.appEnv.JWT.EXPIRES_IN
+          ctx.appEnv.JWT.EXPIRES_IN,
         );
 
         const refreshToken = signRefreshToken(
           payload,
           ctx.appEnv.JWT.REFRESH_SECRET,
-          ctx.appEnv.JWT.REFRESH_EXPIRES_IN
+          ctx.appEnv.JWT.REFRESH_EXPIRES_IN,
         );
 
         setAuthenticationCookies({
@@ -102,7 +102,7 @@ export const authMutationRouter = router({
         console.error("[Auth] Login error:", error);
         throwInternalError("An unexpected error occurred during login");
       }
-    })
+    }),
   ),
 
   logout: publicProcedure.mutation(
@@ -118,6 +118,6 @@ export const authMutationRouter = router({
         console.error("[Auth] Logout error:", error);
         throwInternalError("An unexpected error occurred during logout");
       }
-    })
+    }),
   ),
 });

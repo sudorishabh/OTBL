@@ -40,7 +40,8 @@ export const createClientContactSchema = z.object({
   designation: z
     .string()
     .trim()
-    .max(100, "Designation cannot exceed 100 characters"),
+    .max(100, "Designation cannot exceed 100 characters")
+    .optional(),
   contact_number: mobileValidator,
   email: emailValidator,
   contact_type: z
@@ -54,7 +55,7 @@ export const updateClientContactSchema = createClientContactSchema.extend({
   id: positiveIntValidator,
 });
 
-export const addClientWithContactsSchema = z.object({
+export const createClientWithContactsSchema = z.object({
   client: createClientSchema,
   contacts: z
     .array(createClientContactSchema.omit({ client_id: true }))
@@ -70,6 +71,11 @@ export const updateClientWithContactsSchema = z.object({
   contactsToRemove: z.array(positiveIntValidator).optional(),
 });
 
+export const deleteClientContactSchema = z.object({
+  clientContactId: positiveIntValidator,
+});
+export const deleteClientSchema = z.object({ clientId: positiveIntValidator });
+
 // Queries Schema
 export const getAllClientsSchema = z.object({
   searchQuery: searchQueryValidator,
@@ -82,13 +88,11 @@ export const getAllClientContactsSchema = z.object({
 });
 
 export const getClientSchema = z.object({ clientId: positiveIntValidator });
+
 export const getClientContactSchema = z.object({
-  clientId: positiveIntValidator,
+  clientContactId: positiveIntValidator,
 });
+
 export const getClientContactsSchema = z.object({
-  client_id: z.number(),
+  clientId: z.number(),
 });
-export const deleteClientContactSchema = z.object({
-  clientId: positiveIntValidator,
-});
-export const deleteClientSchema = z.object({ clientId: positiveIntValidator });

@@ -32,12 +32,12 @@ export const createSiteSchema = siteBaseSchema.extend({
 });
 
 export const updateSiteSchema = siteBaseSchema.extend({
-  site_id: positiveIntValidator,
+  siteId: positiveIntValidator,
 });
 
 // Query Schemas
 
-export const getSiteSchema = z.object({ site_id: positiveIntValidator });
+export const getSiteSchema = z.object({ siteId: positiveIntValidator });
 
 export const getAllSitesPaginatedSchema = z.object({
   office_id: positiveIntValidator,

@@ -25,36 +25,34 @@ import { Button } from "@/components/ui/button";
 import { Plus, Trash2, Users, UserPlus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
-import { useRouter, useSearchParams } from "next/navigation";
-import { clientSchemas, type AddClientInput } from "@pkg/trpc/schemas";
+import { useSearchParams } from "next/navigation";
+import { clientSchemas, clientTypes } from "@pkg/schema";
 import { z } from "zod";
 import useHandleParams from "@/hooks/useHandleParams";
 import { useApiError } from "@/hooks/useApiError";
 import toast from "react-hot-toast";
 
-// Re-use the addClientContactSchema for the contact form
-const contactSchema = clientSchemas.addClientContactSchema.omit({
+const contactSchema = clientSchemas.createClientContactSchema.omit({
   client_id: true,
 });
 type ContactFormInput = z.infer<typeof contactSchema>;
 
-interface Contact {
+type Contact = {
   id: string | number;
   name: string;
   designation?: string | null;
   contact_number: string;
   email: string;
   contact_type?: string | null;
-}
+};
 
-const AddClientDialog = () => {
-  const router = useRouter();
+const CreateClientDialog = () => {
   const searchParams = useSearchParams();
-  const isAddClientMode = searchParams.get("mode") === "client-add";
+  const isAddClientMode = searchParams.get("dialog") === "create-client";
   const [selectedContacts, setSelectedContacts] = useState<Contact[]>([]);
   const [isAddingNewContact, setIsAddingNewContact] = useState(false);
   const [contactMode, setContactMode] = useState<"existing" | "new">(
-    "existing"
+    "existing",
   );
 
   const { deleteParam } = useHandleParams();
@@ -66,11 +64,11 @@ const AddClientDialog = () => {
     {
       searchQuery: "",
       clientId: "",
-    }
+    },
   );
 
   const addClientWithContacts =
-    trpc.clientMutation.addClientWithContacts.useMutation({
+    trpc.clientMutation.createClientWithContacts.useMutation({
       onSuccess: () => {
         toast.success("Client added successfully");
         utils.clientQuery.getClients.invalidate();
@@ -81,8 +79,8 @@ const AddClientDialog = () => {
       },
     });
 
-  const form = useForm<AddClientInput>({
-    resolver: zodResolver(clientSchemas.addClientSchema),
+  const form = useForm<clientTypes.createClientInput>({
+    resolver: zodResolver(clientSchemas.createClientSchema),
     defaultValues: {
       name: "",
       address: "",
@@ -107,7 +105,7 @@ const AddClientDialog = () => {
   });
 
   const handleCloseDialog = () => {
-    deleteParam("mode");
+    deleteParam("dialog");
     form.reset();
     contactForm.reset();
     setSelectedContacts([]);
@@ -115,16 +113,15 @@ const AddClientDialog = () => {
     setContactMode("existing");
   };
 
-  async function onSubmit(values: AddClientInput) {
+  async function onSubmit(values: clientTypes.createClientInput) {
     try {
-      // Prepare contacts data (exclude existing contact IDs)
       const newContacts = selectedContacts
         .filter((c: Contact) => c.id.toString().startsWith("temp-"))
-        .map(({ id, ...contact }) => ({
+        .map(({ id, designation, contact_type, ...contact }) => ({
           ...contact,
-          designation: contact.designation || undefined,
-          contact_type: contact.contact_type || undefined,
-        }));
+          designation: designation || undefined,
+          contact_type: contact_type || undefined,
+        })) as Array<Omit<clientTypes.createClientContactInput, "client_id">>;
 
       await addClientWithContacts.mutateAsync({
         client: values,
@@ -159,7 +156,7 @@ const AddClientDialog = () => {
 
     // Check both as string and number just in case
     const contact = existingClientContacts.data?.find(
-      (c: Contact) => c.id == idToCompare
+      (c: Contact) => c.id == idToCompare,
     );
 
     if (
@@ -341,7 +338,7 @@ const AddClientDialog = () => {
                   </Badge>
                 </div>
                 <div className='flex gap-2'>
-                  {existingClientContacts.data?.length > 0 && (
+                  {(existingClientContacts.data?.length ?? 0) > 0 && (
                     <Button
                       type='button'
                       variant={
@@ -378,19 +375,19 @@ const AddClientDialog = () => {
 
               {/* Existing Contacts Selector */}
               {contactMode === "existing" &&
-                existingClientContacts.data?.length > 0 && (
+                (existingClientContacts.data?.length ?? 0) > 0 && (
                   <div className='mb-4'>
                     <Select onValueChange={handleSelectExistingContact}>
                       <SelectTrigger>
                         <SelectValue placeholder='Select existing contact' />
                       </SelectTrigger>
                       <SelectContent>
-                        {existingClientContacts.data
+                        {(existingClientContacts.data ?? [])
                           .filter(
                             (ec: Contact) =>
                               !selectedContacts.find(
-                                (sc: Contact) => sc.id == ec.id
-                              )
+                                (sc: Contact) => sc.id == ec.id,
+                              ),
                           )
                           .map((contact: Contact) => (
                             <SelectItem
@@ -584,4 +581,4 @@ const AddClientDialog = () => {
   );
 };
 
-export default AddClientDialog;
+export default CreateClientDialog;

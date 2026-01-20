@@ -1,10 +1,9 @@
-import { ArrowUpRight, Loader, Plus } from "lucide-react";
-import React, { useState } from "react";
+import { Plus } from "lucide-react";
+import React from "react";
 import SitesTable from "./OfficeSiteTable";
 import { capitalizeEachWord, capitalFirstLetter } from "@pkg/utils";
 import CustomButton from "@/components/CustomButton";
-import AddSiteDialog from "./office-site-dialogs/AddSiteDialog";
-import { trpc } from "@/lib/trpc";
+import AddSiteDialog from "./office-site-dialogs/CreateSiteDialog";
 import useHandleParams from "@/hooks/useHandleParams";
 import OfficeDetailsDialog from "./office-site-dialogs/OfficeDetailsDialog";
 
@@ -59,7 +58,7 @@ const OfficeCard: React.FC<{ office: Office }> = ({ office }) => {
 
   const handleAddSiteDialogOpen = () => {
     setParams({
-      siteMode: "add",
+      dialogMode: "create-site",
       officeId: office.id.toString(),
       officeName: office.name,
     });
@@ -67,7 +66,7 @@ const OfficeCard: React.FC<{ office: Office }> = ({ office }) => {
 
   const handleOfficeDetailsDialogOpen = () => {
     setParams({
-      officeMode: "view",
+      dialogMode: "view-office",
       officeId: office.id.toString(),
       officeName: office.name,
     });

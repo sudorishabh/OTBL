@@ -3,12 +3,7 @@ import { schema } from "@pkg/db";
 import { constants } from "@pkg/utils";
 import { router } from "../../trpc";
 import { adminProcedure, managerProcedure } from "../../middleware";
-import {
-  addOfficeSchema,
-  editOfficeSchema,
-  assignUserToOfficeSchema,
-  removeUserFromOfficeSchema,
-} from "./office.schema";
+import { officeSchemas } from "@pkg/schema";
 import {
   throwNotFoundError,
   throwValidationError,
@@ -20,7 +15,7 @@ const { officeTable, officeUserTable, userTable } = schema;
 const { ROLES } = constants;
 
 export const officeMutationRouter = router({
-  addOffice: adminProcedure.input(addOfficeSchema).mutation(
+  createOffice: adminProcedure.input(officeSchemas.createOfficeSchema).mutation(
     handleMutation(async ({ input, ctx }) => {
       const { manager_id, operator_ids, ...officeData } = input;
       const userId = parseInt(ctx.user!.sub);
@@ -73,116 +68,114 @@ export const officeMutationRouter = router({
         success: true,
         officeId,
       };
-    })
+    }),
   ),
 
-  editOffice: managerProcedure.input(editOfficeSchema).mutation(
-    handleMutation(async ({ input, ctx }) => {
-      const { id, ...rest } = input;
+  updateOffice: managerProcedure
+    .input(officeSchemas.updateOfficeSchema)
+    .mutation(
+      handleMutation(async ({ input, ctx }) => {
+        const { id, ...rest } = input;
 
-      const existingOffice = await ctx.db
-        .select()
-        .from(officeTable)
-        .where(eq(officeTable.id, id));
+        const existingOffice = await ctx.db
+          .select()
+          .from(officeTable)
+          .where(eq(officeTable.id, id));
 
-      if (existingOffice.length === 0) {
-        throwNotFoundError("Office", id);
-      }
+        if (existingOffice.length === 0) {
+          throwNotFoundError("Office", id);
+        }
 
-      await handleDatabaseOperation(
-        () =>
-          ctx.db.update(officeTable).set(rest).where(eq(officeTable.id, id)),
-        "Failed to update office"
-      );
+        await handleDatabaseOperation(
+          () =>
+            ctx.db.update(officeTable).set(rest).where(eq(officeTable.id, id)),
+          "Failed to update office",
+        );
 
-      return { success: true };
-    })
-  ),
+        return { success: true };
+      }),
+    ),
 
-  /**
-   * Assign a user to an office - Admin or Manager
-   */
-  assignUserToOffice: managerProcedure.input(assignUserToOfficeSchema).mutation(
-    handleMutation(async ({ input, ctx }) => {
-      const { office_id, user_id, role } = input;
-      const userId = parseInt(ctx.user!.sub);
+  assignUserToOffice: managerProcedure
+    .input(officeSchemas.assignUserToOfficeSchema)
+    .mutation(
+      handleMutation(async ({ input, ctx }) => {
+        const { office_id, user_id, role } = input;
+        const userId = parseInt(ctx.user!.sub);
 
-      // Verify office exists
-      const [office] = await ctx.db
-        .select()
-        .from(officeTable)
-        .where(eq(officeTable.id, office_id));
+        // Verify office exists
+        const [office] = await ctx.db
+          .select()
+          .from(officeTable)
+          .where(eq(officeTable.id, office_id));
 
-      if (!office) {
-        throwNotFoundError("Office", office_id);
-      }
+        if (!office) {
+          throwNotFoundError("Office", office_id);
+        }
 
-      // Verify user exists
-      const [user] = await ctx.db
-        .select()
-        .from(userTable)
-        .where(eq(userTable.id, user_id));
+        // Verify user exists
+        const [user] = await ctx.db
+          .select()
+          .from(userTable)
+          .where(eq(userTable.id, user_id));
 
-      if (!user) {
-        throwNotFoundError("User", user_id);
-      }
+        if (!user) {
+          throwNotFoundError("User", user_id);
+        }
 
-      // If assigning as manager, check if office already has a manager
-      if (role === ROLES.MANAGER) {
-        const existingManagers = await ctx.db
+        // If assigning as manager, check if office already has a manager
+        if (role === ROLES.MANAGER) {
+          const existingManagers = await ctx.db
+            .select()
+            .from(officeUserTable)
+            .where(
+              and(
+                eq(officeUserTable.office_id, office_id),
+                eq(officeUserTable.role, ROLES.MANAGER),
+              ),
+            );
+
+          if (existingManagers.length > 0) {
+            throwValidationError(
+              "Office already has a manager. Please remove the existing manager first.",
+            );
+          }
+        }
+
+        // Check if user is already assigned to this office
+        const [existingAssignments] = await ctx.db
           .select()
           .from(officeUserTable)
           .where(
             and(
               eq(officeUserTable.office_id, office_id),
-              eq(officeUserTable.role, ROLES.MANAGER)
-            )
-          );
-
-        if (existingManagers.length > 0) {
-          throwValidationError(
-            "Office already has a manager. Please remove the existing manager first."
-          );
-        }
-      }
-
-      // Check if user is already assigned to this office
-      const [existingAssignments] = await ctx.db
-        .select()
-        .from(officeUserTable)
-        .where(
-          and(
-            eq(officeUserTable.office_id, office_id),
-            eq(officeUserTable.user_id, user_id)
+              eq(officeUserTable.user_id, user_id),
+            ),
           )
-        )
-        .limit(1);
+          .limit(1);
 
-      if (existingAssignments) {
-        // Update the role if already assigned
-        await ctx.db
-          .update(officeUserTable)
-          .set({ role })
-          .where(eq(officeUserTable.id, existingAssignments.id));
-      } else {
-        // Create new assignment
-        await ctx.db.insert(officeUserTable).values({
-          user_id,
-          office_id,
-          role,
-          assigned_by: userId,
-        });
-      }
+        if (existingAssignments) {
+          // Update the role if already assigned
+          await ctx.db
+            .update(officeUserTable)
+            .set({ role })
+            .where(eq(officeUserTable.id, existingAssignments.id));
+        } else {
+          // Create new assignment
+          await ctx.db.insert(officeUserTable).values({
+            user_id,
+            office_id,
+            role,
+            assigned_by: userId,
+          });
+        }
 
-      return { success: true };
-    })
-  ),
+        return { success: true };
+      }),
+    ),
 
-  /**
-   * Remove a user from an office - Admin or Manager
-   */
   removeUserFromOffice: managerProcedure
-    .input(removeUserFromOfficeSchema)
+    .input(officeSchemas.expelUserFromOfficeSchema)
     .mutation(
       handleMutation(async ({ input, ctx }) => {
         const { office_id, user_id } = input;
@@ -193,8 +186,8 @@ export const officeMutationRouter = router({
           .where(
             and(
               eq(officeUserTable.office_id, office_id),
-              eq(officeUserTable.user_id, user_id)
-            )
+              eq(officeUserTable.user_id, user_id),
+            ),
           );
 
         if (!assignments[0]) {
@@ -206,6 +199,6 @@ export const officeMutationRouter = router({
           .where(eq(officeUserTable.id, assignments[0].id));
 
         return { success: true };
-      })
+      }),
     ),
 });

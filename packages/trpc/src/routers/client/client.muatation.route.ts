@@ -2,26 +2,14 @@ import { eq } from "drizzle-orm";
 import { schema } from "@pkg/db";
 import { router } from "../../trpc";
 import { adminProcedure } from "../../middleware";
-import {
-  addClientSchema,
-  editClientSchema,
-  addClientContactSchema,
-  editClientContactSchema,
-  deleteClientContactSchema,
-  deleteClientSchema,
-  addClientWithContactsSchema,
-  editClientWithContactsSchema,
-} from "./client.schema";
+import { clientSchemas } from "@pkg/schema";
 import { throwNotFoundError, handleDatabaseOperation } from "../../errors";
 import { handleMutation } from "../../helper/typed-handler";
 
 const { clientTable, clientContactTable } = schema;
 
 export const clientMutationRouter = router({
-  /**
-   * Add a new client - Manager or higher
-   */
-  addClient: adminProcedure.input(addClientSchema).mutation(
+  createClient: adminProcedure.input(clientSchemas.createClientSchema).mutation(
     handleMutation(async ({ input, ctx }) => {
       const result = await handleDatabaseOperation(async () => {
         return ctx.db.insert(clientTable).values(input);
@@ -31,14 +19,11 @@ export const clientMutationRouter = router({
         success: true,
         clientId: result[0].insertId,
       };
-    })
+    }),
   ),
 
-  /**
-   * Add client with contacts in one transaction - Admin, Manager, or Staff
-   */
-  addClientWithContacts: adminProcedure
-    .input(addClientWithContactsSchema)
+  createClientWithContacts: adminProcedure
+    .input(clientSchemas.createClientWithContactsSchema)
     .mutation(
       handleMutation(async ({ input, ctx }) => {
         const clientResult = await handleDatabaseOperation(async () => {
@@ -54,7 +39,9 @@ export const clientMutationRouter = router({
           }));
 
           await handleDatabaseOperation(async () => {
-            return ctx.db.insert(clientContactTable).values(contactsWithClientId);
+            return ctx.db
+              .insert(clientContactTable)
+              .values(contactsWithClientId);
           }, "Failed to add contacts");
         }
 
@@ -63,13 +50,10 @@ export const clientMutationRouter = router({
           clientId,
           contactsAdded: input.contacts?.length || 0,
         };
-      })
+      }),
     ),
 
-  /**
-   * Edit an existing client - Manager or higher
-   */
-  editClient: adminProcedure.input(editClientSchema).mutation(
+  updateClient: adminProcedure.input(clientSchemas.updateClientSchema).mutation(
     handleMutation(async ({ input, ctx }) => {
       const { id, ...rest } = input;
 
@@ -90,113 +74,106 @@ export const clientMutationRouter = router({
       }, "Failed to edit client");
 
       return { success: true };
-    })
+    }),
   ),
 
-  /**
-   * Delete a client - Admin only
-   */
-  deleteClient: adminProcedure.input(deleteClientSchema).mutation(
+  deleteClient: adminProcedure.input(clientSchemas.deleteClientSchema).mutation(
     handleMutation(async ({ input, ctx }) => {
       const existingClient = await ctx.db
         .select()
         .from(clientTable)
-        .where(eq(clientTable.id, input.id));
+        .where(eq(clientTable.id, input.clientId));
 
       if (existingClient.length === 0) {
         throwNotFoundError("Client");
       }
 
       await handleDatabaseOperation(async () => {
-        return ctx.db.delete(clientTable).where(eq(clientTable.id, input.id));
+        return ctx.db
+          .delete(clientTable)
+          .where(eq(clientTable.id, input.clientId));
       }, "Failed to delete client");
 
       return { success: true };
-    })
+    }),
   ),
 
-  /**
-   * Add a new client contact - Manager or higher
-   */
-  addClientContact: adminProcedure.input(addClientContactSchema).mutation(
-    handleMutation(async ({ input, ctx }) => {
-      // Verify client exists
-      const client = await ctx.db
-        .select()
-        .from(clientTable)
-        .where(eq(clientTable.id, input.client_id));
+  createClientContact: adminProcedure
+    .input(clientSchemas.createClientContactSchema)
+    .mutation(
+      handleMutation(async ({ input, ctx }) => {
+        // Verify client exists
+        const client = await ctx.db
+          .select()
+          .from(clientTable)
+          .where(eq(clientTable.id, input.client_id));
 
-      if (client.length === 0) {
-        throwNotFoundError("Client");
-      }
+        if (client.length === 0) {
+          throwNotFoundError("Client");
+        }
 
-      const result = await handleDatabaseOperation(async () => {
-        return ctx.db.insert(clientContactTable).values(input);
-      }, "Failed to add client contact");
+        const result = await handleDatabaseOperation(async () => {
+          return ctx.db.insert(clientContactTable).values(input);
+        }, "Failed to add client contact");
 
-      return {
-        success: true,
-        contactId: result[0].insertId,
-      };
-    })
-  ),
+        return {
+          success: true,
+          contactId: result[0].insertId,
+        };
+      }),
+    ),
 
-  /**
-   * Edit an existing client contact - Manager or higher
-   */
-  editClientContact: adminProcedure.input(editClientContactSchema).mutation(
-    handleMutation(async ({ input, ctx }) => {
-      const { id, ...rest } = input;
+  updateClientContact: adminProcedure
+    .input(clientSchemas.updateClientContactSchema)
+    .mutation(
+      handleMutation(async ({ input, ctx }) => {
+        const { id, ...rest } = input;
 
-      const existingContact = await ctx.db
-        .select()
-        .from(clientContactTable)
-        .where(eq(clientContactTable.id, id));
-
-      if (existingContact.length === 0) {
-        throwNotFoundError("Client contact");
-      }
-
-      await handleDatabaseOperation(async () => {
-        return ctx.db
-          .update(clientContactTable)
-          .set(rest)
+        const existingContact = await ctx.db
+          .select()
+          .from(clientContactTable)
           .where(eq(clientContactTable.id, id));
-      }, "Failed to edit client contact");
 
-      return { success: true };
-    })
-  ),
+        if (existingContact.length === 0) {
+          throwNotFoundError("Client contact");
+        }
 
-  /**
-   * Delete a client contact - Manager or higher
-   */
-  deleteClientContact: adminProcedure.input(deleteClientContactSchema).mutation(
-    handleMutation(async ({ input, ctx }) => {
-      const existingContact = await ctx.db
-        .select()
-        .from(clientContactTable)
-        .where(eq(clientContactTable.id, input.id));
+        await handleDatabaseOperation(async () => {
+          return ctx.db
+            .update(clientContactTable)
+            .set(rest)
+            .where(eq(clientContactTable.id, id));
+        }, "Failed to edit client contact");
 
-      if (existingContact.length === 0) {
-        throwNotFoundError("Client contact");
-      }
+        return { success: true };
+      }),
+    ),
 
-      await handleDatabaseOperation(async () => {
-        return ctx.db
-          .delete(clientContactTable)
-          .where(eq(clientContactTable.id, input.id));
-      }, "Failed to delete client contact");
+  deleteClientContact: adminProcedure
+    .input(clientSchemas.deleteClientContactSchema)
+    .mutation(
+      handleMutation(async ({ input, ctx }) => {
+        const existingContact = await ctx.db
+          .select()
+          .from(clientContactTable)
+          .where(eq(clientContactTable.id, input.clientContactId));
 
-      return { success: true };
-    })
-  ),
+        if (existingContact.length === 0) {
+          throwNotFoundError("Client contact");
+        }
 
-  /**
-   * Edit client with contacts in one transaction - Manager or higher
-   */
-  editClientWithContacts: adminProcedure
-    .input(editClientWithContactsSchema)
+        await handleDatabaseOperation(async () => {
+          return ctx.db
+            .delete(clientContactTable)
+            .where(eq(clientContactTable.id, input.clientContactId));
+        }, "Failed to delete client contact");
+
+        return { success: true };
+      }),
+    ),
+
+  updateClientWithContacts: adminProcedure
+    .input(clientSchemas.updateClientWithContactsSchema)
     .mutation(
       handleMutation(async ({ input, ctx }) => {
         const { clientId, client, contactsToAdd, contactsToRemove } = input;
@@ -237,7 +214,9 @@ export const clientMutationRouter = router({
           }));
 
           await handleDatabaseOperation(async () => {
-            return ctx.db.insert(clientContactTable).values(contactsWithClientId);
+            return ctx.db
+              .insert(clientContactTable)
+              .values(contactsWithClientId);
           }, "Failed to add contacts");
         }
 
@@ -247,6 +226,6 @@ export const clientMutationRouter = router({
           contactsAdded: contactsToAdd?.length || 0,
           contactsRemoved: contactsToRemove?.length || 0,
         };
-      })
+      }),
     ),
 });

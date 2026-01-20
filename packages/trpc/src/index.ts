@@ -10,8 +10,8 @@ import { authMutationRouter } from "./routers/auth/auth.mutation.route";
 import { authQueryRouter } from "./routers/auth/auth.query.route";
 import { clientMutationRouter } from "./routers/client/client.muatation.route";
 import { clientQueryRouter } from "./routers/client/client.query.route";
-import { workOrderMutationRouter } from "./routers/work-order/work-mutation.mutation.route";
-import { workOrderQueryRouter } from "./routers/work-order/work-order.query.route";
+// import { workOrderMutationRouter } from "./routers/work-order/work-mutation.mutation.route";
+// import { workOrderQueryRouter } from "./routers/work-order/work-order.query.route";
 import { siteActivityMutationRouter } from "./routers/site-activity/site-activity.mutation.route";
 import { siteActivityQueryRouter } from "./routers/site-activity/site-activity.query.route";
 import { proposalMutationRouter } from "./routers/proposal/proposal.mutation.route";
@@ -42,8 +42,8 @@ export const appRouter = router({
   clientQuery: clientQueryRouter,
 
   // Work Order management
-  workOrderMutation: workOrderMutationRouter,
-  workOrderQuery: workOrderQueryRouter,
+  // workOrderMutation: workOrderMutationRouter,
+  // workOrderQuery: workOrderQueryRouter,
 
   // Site Activity management
   siteActivityMutation: siteActivityMutationRouter,
@@ -98,3 +98,9 @@ export * from "./schemas";
 
 // Export centralized error handling system
 export * from "./errors";
+
+// Re-export all types and schemas from @pkg/schema
+// This is necessary to make the inferred type of appRouter portable
+// Without this, TypeScript would reference '../node_modules/@pkg/schema/dist/...'
+// which is not a portable path across different package managers and setups
+export * from "@pkg/schema";

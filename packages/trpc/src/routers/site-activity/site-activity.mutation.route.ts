@@ -36,9 +36,6 @@ const {
 } = schema;
 
 export const siteActivityMutationRouter = router({
-  // ============== Site Activity Mutations ==============
-
-  // Create a new site activity
   createSiteActivity: operatorProcedure
     .input(createSiteActivitySchema)
     .mutation(
@@ -78,7 +75,6 @@ export const siteActivityMutationRouter = router({
       })
     ),
 
-  // Update a site activity
   updateSiteActivity: operatorProcedure
     .input(updateSiteActivitySchema)
     .mutation(
@@ -126,7 +122,6 @@ export const siteActivityMutationRouter = router({
       })
     ),
 
-  // Delete a site activity (will cascade delete items)
   deleteSiteActivity: operatorProcedure
     .input(deleteSiteActivitySchema)
     .mutation(
@@ -139,10 +134,7 @@ export const siteActivityMutationRouter = router({
       })
     ),
 
-  // ============== Activity Items Mutations ==============
-
-  // Add an item to a site activity
-  addActivityItem: operatorProcedure.input(addActivityItemSchema).mutation(
+  createActivityItem: operatorProcedure.input(addActivityItemSchema).mutation(
     handleMutation(async ({ input, ctx }) => {
       const [item] = await ctx.db.insert(siteActivityItemsTable).values({
         site_activity_id: input.site_activity_id,
@@ -154,7 +146,6 @@ export const siteActivityMutationRouter = router({
     })
   ),
 
-  // Remove an item from a site activity
   removeActivityItem: operatorProcedure
     .input(removeActivityItemSchema)
     .mutation(
@@ -167,7 +158,6 @@ export const siteActivityMutationRouter = router({
       })
     ),
 
-  // Link existing item to a site activity
   linkItemToActivity: operatorProcedure
     .input(
       z.object({
@@ -178,7 +168,6 @@ export const siteActivityMutationRouter = router({
     )
     .mutation(
       handleMutation(async ({ input, ctx }) => {
-        // Check if the link already exists
         const [existing] = await ctx.db
           .select()
           .from(siteActivityItemsTable)
@@ -198,7 +187,6 @@ export const siteActivityMutationRouter = router({
           return { success: true, id: existing.id, existed: true };
         }
 
-        // Update the item's site_activity_id based on table
         let table;
         switch (input.item_table_name) {
           case "zero_days":

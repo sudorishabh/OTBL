@@ -17,10 +17,10 @@ import CustomButton from "@/components/CustomButton";
 import { trpc } from "@/lib/trpc";
 import CustomForm from "@/components/CustomForm";
 import toast from "react-hot-toast";
-import { proposalSchemas, type BaseProposalInput } from "@pkg/trpc/schemas";
 import { useHandleParams } from "@/hooks/useHandleParams";
 import CustomUploadDocument from "@/components/CustomUploadDocument";
 import { useApiError } from "@/hooks/useApiError";
+import { proposalSchemas, type proposalTypes } from "@pkg/schema";
 
 interface Props {
   clientId: number;
@@ -33,7 +33,7 @@ const CreateProposalDialog = ({ clientId }: Props) => {
   const mode = getParam("mode");
   const isAddMode = mode === "proposal-add";
   const isOpenDialog = isAddMode;
-  const form = useForm<BaseProposalInput>({
+  const form = useForm<proposalTypes.BaseProposalInput>({
     resolver: zodResolver(proposalSchemas.baseProposalSchema),
     defaultValues: {
       code: "",
@@ -45,7 +45,7 @@ const CreateProposalDialog = ({ clientId }: Props) => {
 
   const utils = trpc.useUtils();
 
-  const addProposal = trpc.proposalMutation.addProposal.useMutation({
+  const addProposal = trpc.proposalMutation.createProposal.useMutation({
     onSuccess: () => {
       utils.proposalQuery.getProposalsByClient.invalidate();
       toast.success("Proposal added");
@@ -99,7 +99,7 @@ const CreateProposalDialog = ({ clientId }: Props) => {
     }
   }, [isAddMode, form]);
 
-  async function onSubmit(values: BaseProposalInput) {
+  async function onSubmit(values: proposalTypes.BaseProposalInput) {
     try {
       console.log(values);
       await addProposal.mutateAsync({ ...values, client_id: clientId });

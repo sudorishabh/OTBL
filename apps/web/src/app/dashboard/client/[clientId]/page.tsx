@@ -24,13 +24,13 @@ const Client = ({ params }: PageProps) => {
   const router = useRouter();
 
   const clientQuery = trpc.clientQuery.getClient.useQuery(
-    { id: Number(clientId) },
-    { enabled: !!clientId }
+    { clientId: Number(clientId) },
+    { enabled: !!clientId },
   );
 
   const statsQuery = trpc.clientQuery.getClientStats.useQuery(
-    { id: Number(clientId) },
-    { enabled: !!clientId }
+    { clientId: Number(clientId) },
+    { enabled: !!clientId },
   );
 
   if (clientQuery.isLoading || statsQuery.isLoading) {

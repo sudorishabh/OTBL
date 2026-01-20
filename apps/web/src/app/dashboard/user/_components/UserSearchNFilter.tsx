@@ -1,8 +1,10 @@
 import CustomButton from "@/components/CustomButton";
 import CustomInput from "@/components/CustomInput";
 import { useUserManagementContext } from "@/contexts/UserManagementContext";
+import { useDebounce } from "@/hooks/useDebounce";
+import useHandleParams from "@/hooks/useHandleParams";
 import { Search, X } from "lucide-react";
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 interface Props {
   showResetButton?: boolean;
@@ -15,83 +17,105 @@ const UserSearchNFilter = ({
 }: Props) => {
   const { searchQuery, setSearchQuery, filters, setFilters, resetFilters } =
     useUserManagementContext();
+  const { getParam } = useHandleParams();
+
+  const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
+  const debouncedSearchQuery = useDebounce(localSearchQuery, 300);
+  const prevSearchQueryRef = useRef(searchQuery);
+
+  useEffect(() => {
+    setSearchQuery(debouncedSearchQuery);
+  }, [debouncedSearchQuery, setSearchQuery]);
+
+  if (
+    searchQuery === "" &&
+    prevSearchQueryRef.current !== "" &&
+    localSearchQuery !== ""
+  ) {
+    setLocalSearchQuery("");
+  }
+  prevSearchQueryRef.current = searchQuery;
 
   const hasActiveFilters =
     searchQuery !== "" || filters.role !== "all" || filters.status !== "all";
 
+  const showSearchAndFilter = !getParam("tab") || getParam("tab") === "all";
+
   return (
-    <div className=' flex items-center gap-4'>
-      {/* Search Input */}
-      <div className='flex-1 w-80'>
-        <CustomInput
-          mode='standalone'
-          value={searchQuery}
-          onChange={setSearchQuery}
-          placeholder='Search users by name, email, or contact...'
-          inputIcon={Search}
-        />
-      </div>
+    <>
+      {showSearchAndFilter ? (
+        <div className=' flex items-center gap-4'>
+          <div className='flex-1 w-80'>
+            <CustomInput
+              mode='standalone'
+              value={localSearchQuery}
+              onChange={setLocalSearchQuery}
+              placeholder='Search users by name, email, or contact...'
+              inputIcon={Search}
+            />
+          </div>
 
-      <div className='flex items-center gap-3 text-xs'>
-        {/* Role Filter */}
-        {showRoleFilter && (
-          <CustomInput
-            mode='standalone'
-            value={filters.role}
-            onChange={(value) =>
-              setFilters({
-                ...filters,
-                role: value as
-                  | "all"
-                  | "manager"
-                  | "staff"
-                  | "viewer"
-                  | "operator",
-              })
-            }
-            isSelect
-            selectOptions={[
-              { label: "All Roles", value: "all" },
-              { label: "Manager", value: "manager" },
-              { label: "Operator", value: "operator" },
-              { label: "Staff", value: "staff" },
-              { label: "Viewer", value: "viewer" },
-            ]}
-            className='h-8! w-[140px] text-xs cursor-pointer'
-          />
-        )}
+          <div className='flex items-center gap-3 text-xs'>
+            {showRoleFilter && (
+              <CustomInput
+                mode='standalone'
+                value={filters.role}
+                onChange={(value) =>
+                  setFilters({
+                    ...filters,
+                    role: value as
+                      | "all"
+                      | "manager"
+                      | "staff"
+                      | "viewer"
+                      | "operator",
+                  })
+                }
+                isSelect
+                selectOptions={[
+                  { label: "All Roles", value: "all" },
+                  { label: "Manager", value: "manager" },
+                  { label: "Operator", value: "operator" },
+                  { label: "Staff", value: "staff" },
+                  { label: "Viewer", value: "viewer" },
+                ]}
+                className='h-8! w-[140px] text-xs cursor-pointer'
+              />
+            )}
 
-        {/* Status Filter */}
-        <CustomInput
-          mode='standalone'
-          value={filters.status}
-          onChange={(value) =>
-            setFilters({
-              ...filters,
-              status: value as "all" | "active" | "inactive",
-            })
-          }
-          isSelect
-          selectOptions={[
-            { label: "All Status", value: "all" },
-            { label: "Active", value: "active" },
-            { label: "Inactive", value: "inactive" },
-          ]}
-          className='h-8! w-[140px] text-xs cursor-pointer'
-        />
+            <CustomInput
+              mode='standalone'
+              value={filters.status}
+              onChange={(value) =>
+                setFilters({
+                  ...filters,
+                  status: value as "all" | "active" | "inactive",
+                })
+              }
+              isSelect
+              selectOptions={[
+                { label: "All Status", value: "all" },
+                { label: "Active", value: "active" },
+                { label: "Inactive", value: "inactive" },
+              ]}
+              className='h-8! w-[140px] text-xs cursor-pointer'
+            />
 
-        {/* Reset Button */}
-        {hasActiveFilters && showResetButton && (
-          <CustomButton
-            text='Reset'
-            onClick={resetFilters}
-            variant='outline'
-            Icon={X}
-            className='h-8 text-xs'
-          />
-        )}
-      </div>
-    </div>
+            {hasActiveFilters && showResetButton && (
+              <CustomButton
+                text='Reset'
+                onClick={resetFilters}
+                variant='outline'
+                Icon={X}
+                className='h-8 text-xs'
+              />
+            )}
+          </div>
+        </div>
+      ) : (
+        <div></div>
+      )}
+    </>
   );
 };
 

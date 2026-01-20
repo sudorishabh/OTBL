@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
 import { useForm } from "react-hook-form";
-import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import DialogWindow from "@/components/DialogWindow";
 import {
@@ -24,20 +23,20 @@ import CustomButton from "@/components/CustomButton";
 import CustomForm from "@/components/CustomForm";
 import { trpc } from "@/lib/trpc";
 import { useRouter, useSearchParams } from "next/navigation";
-import { clientSchemas, type AddClientContactInput } from "@pkg/trpc/schemas";
 import { useApiError } from "@/hooks/useApiError";
 import toast from "react-hot-toast";
-
+import { clientSchemas, type clientTypes } from "@pkg/schema";
 interface Client {
   id: number;
   name: string;
   email: string;
 }
 
-const AddClientContactDialog = () => {
+const CreateClientContactDialog = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const isClientAddMode = searchParams.get("mode") === "contact-add";
+  const isClientAddMode =
+    searchParams.get("dialog") === "create-client-contact";
   const utils = trpc.useUtils();
   const { handleError } = useApiError();
 
@@ -50,7 +49,7 @@ const AddClientContactDialog = () => {
     status: "all",
   });
 
-  const addClientContact = trpc.clientMutation.addClientContact.useMutation({
+  const addClientContact = trpc.clientMutation.createClientContact.useMutation({
     onSuccess: () => {
       toast.success("Contact added successfully");
       utils.clientQuery.getAllClientContacts.invalidate();
@@ -61,8 +60,8 @@ const AddClientContactDialog = () => {
     },
   });
 
-  const form = useForm<AddClientContactInput>({
-    resolver: zodResolver(clientSchemas.addClientContactSchema),
+  const form = useForm<clientTypes.createClientContactInput>({
+    resolver: zodResolver(clientSchemas.createClientContactSchema),
     defaultValues: {
       client_id: isClientAddMode ? 0 : 0,
       name: "",
@@ -80,12 +79,12 @@ const AddClientContactDialog = () => {
   //   }
   // }, [preselectedClientId, form]);
 
-  async function onSubmit(values: AddClientContactInput) {
+  async function onSubmit(values: clientTypes.createClientContactInput) {
     try {
       await addClientContact.mutateAsync({
         ...values,
-        designation: values.designation || undefined,
-        contact_type: values.contact_type || undefined,
+        designation: values.designation,
+        contact_type: values.contact_type,
       });
       // setOpen(false);
       form.reset();
@@ -96,7 +95,7 @@ const AddClientContactDialog = () => {
 
   const handleCloseDialog = () => {
     const params = new URLSearchParams(searchParams.toString());
-    params.delete("mode");
+    params.delete("dialog");
     router.push(`?${params.toString()}`);
     form.reset({
       client_id: 0,
@@ -135,7 +134,7 @@ const AddClientContactDialog = () => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {clients.map((client: Client) => (
+                      {clients?.map((client: Client) => (
                         <SelectItem
                           key={client.id}
                           value={client.id.toString()}>
@@ -255,4 +254,4 @@ const AddClientContactDialog = () => {
   );
 };
 
-export default AddClientContactDialog;
+export default CreateClientContactDialog;

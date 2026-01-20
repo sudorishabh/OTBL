@@ -1,0 +1,20 @@
+"use client";
+import CustomButton from "@/components/CustomButton";
+import useHandleParams from "@/hooks/useHandleParams";
+import { Plus } from "lucide-react";
+import React from "react";
+
+const CreateClientButton = () => {
+  const { setParam } = useHandleParams();
+
+  return (
+    <CustomButton
+      text='Add Client'
+      Icon={Plus}
+      onClick={() => setParam("dialog", "create-client")}
+      variant='primary'
+    />
+  );
+};
+
+export default CreateClientButton;

@@ -59,6 +59,6 @@ export const getAllUsersSchema = z.object({
   role: z
     .enum(["all", ROLES.MANAGER, ROLES.STAFF, ROLES.VIEWER, ROLES.OPERATOR])
     .optional(),
-  status: z.enum([...userRoleEnum.options, "all"]).optional(),
+  status: z.enum([...statusEnum.options, "all"]).optional(),
   userNamesOrder: sortOrderValidator,
 });

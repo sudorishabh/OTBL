@@ -2,13 +2,7 @@ import { and, count, desc, eq, like, or } from "drizzle-orm";
 import { schema } from "@pkg/db";
 import { router } from "../../trpc";
 import { protectedProcedure, publicProcedure } from "../../core";
-import {
-  getClientSchema,
-  getClientContactSchema,
-  getClientContactsSchema,
-  getAllClientsSchema,
-  getAllClientContactsSchema,
-} from "./client.schema";
+import { clientSchemas } from "@pkg/schema";
 import { throwNotFoundError, handleDatabaseOperation } from "../../errors";
 import { handleQuery } from "../../helper/typed-handler";
 
@@ -34,11 +28,11 @@ export const clientQueryRouter = router({
         totalClients: clientsResult[0].count,
         totalContacts: contactsResult[0].count,
       };
-    })
+    }),
   ),
 
   // Get all clients with pagination, search, and filters
-  getClients: publicProcedure.input(getAllClientsSchema).query(
+  getClients: publicProcedure.input(clientSchemas.getAllClientsSchema).query(
     handleQuery(async ({ input, ctx }) => {
       const { searchQuery, status } = input;
 
@@ -54,7 +48,7 @@ export const clientQueryRouter = router({
           like(clientTable.email, `%${searchQuery}%`),
           like(clientTable.gst_number, `%${searchQuery}%`),
           like(clientTable.city, `%${searchQuery}%`),
-          like(clientTable.contact_number, `%${searchQuery}%`)
+          like(clientTable.contact_number, `%${searchQuery}%`),
         );
         clientQuery = clientQuery
           ? and(clientQuery, searchCondition)
@@ -68,17 +62,17 @@ export const clientQueryRouter = router({
           .where(clientQuery)
           .orderBy(desc(clientTable.created_at));
       }, "Failed to fetch clients");
-    })
+    }),
   ),
 
   // Get a single client by ID
-  getClient: publicProcedure.input(getClientSchema).query(
+  getClient: publicProcedure.input(clientSchemas.getClientSchema).query(
     handleQuery(async ({ input, ctx }) => {
       const client = await handleDatabaseOperation(async () => {
         return ctx.db
           .select()
           .from(clientTable)
-          .where(eq(clientTable.id, input.id));
+          .where(eq(clientTable.id, input.clientId));
       }, "Failed to fetch client");
 
       if (client.length === 0) {
@@ -89,20 +83,20 @@ export const clientQueryRouter = router({
         return ctx.db
           .select()
           .from(clientContactTable)
-          .where(eq(clientContactTable.client_id, input.id));
+          .where(eq(clientContactTable.client_id, input.clientId));
       }, "Failed to fetch client contacts");
 
       return { client: client[0], clientUsers };
-    })
+    }),
   ),
 
   // Get client stats
-  getClientStats: publicProcedure.input(getClientSchema).query(
+  getClientStats: publicProcedure.input(clientSchemas.getClientSchema).query(
     handleQuery(async ({ input, ctx }) => {
       const workOrders = await ctx.db
         .select({ id: workOrderTable.id })
         .from(workOrderTable)
-        .where(eq(workOrderTable.client_id, input.id));
+        .where(eq(workOrderTable.client_id, input.clientId));
 
       const workOrderIds = workOrders.map((w: any) => w.id);
 
@@ -136,7 +130,7 @@ export const clientQueryRouter = router({
             expense_amount: workOrderTable.expense_amount,
           })
           .from(workOrderTable)
-          .where(eq(workOrderTable.client_id, input.id));
+          .where(eq(workOrderTable.client_id, input.clientId));
 
         for (const row of woRows) {
           if (row.status === "completed") completedWorkOrders += 1;
@@ -151,99 +145,107 @@ export const clientQueryRouter = router({
         totalBudgetAmount,
         totalExpenseAmount,
       };
-    })
+    }),
   ),
 
   // Get all client contacts with pagination, search, and filters
-  getAllClientContacts: publicProcedure.input(getAllClientContactsSchema).query(
-    handleQuery(async ({ input, ctx }) => {
-      const { searchQuery, clientId } = input;
+  getAllClientContacts: publicProcedure
+    .input(clientSchemas.getAllClientContactsSchema)
+    .query(
+      handleQuery(async ({ input, ctx }) => {
+        const { searchQuery, clientId } = input;
 
-      let contactQuery = undefined;
+        let contactQuery = undefined;
 
-      if (clientId && clientId !== "all") {
-        contactQuery = eq(clientContactTable.client_id, parseInt(clientId));
-      }
+        if (clientId && clientId !== "all") {
+          contactQuery = eq(clientContactTable.client_id, parseInt(clientId));
+        }
 
-      if (searchQuery && searchQuery.trim() !== "") {
-        const searchCondition = or(
-          like(clientContactTable.name, `%${searchQuery}%`),
-          like(clientContactTable.email, `%${searchQuery}%`),
-          like(clientContactTable.contact_number, `%${searchQuery}%`),
-          like(clientContactTable.designation, `%${searchQuery}%`)
-        );
-        contactQuery = contactQuery
-          ? and(contactQuery, searchCondition)
-          : searchCondition;
-      }
+        if (searchQuery && searchQuery.trim() !== "") {
+          const searchCondition = or(
+            like(clientContactTable.name, `%${searchQuery}%`),
+            like(clientContactTable.email, `%${searchQuery}%`),
+            like(clientContactTable.contact_number, `%${searchQuery}%`),
+            like(clientContactTable.designation, `%${searchQuery}%`),
+          );
+          contactQuery = contactQuery
+            ? and(contactQuery, searchCondition)
+            : searchCondition;
+        }
 
-      return handleDatabaseOperation(async () => {
-        return ctx.db
-          .select()
-          .from(clientContactTable)
-          .where(contactQuery)
-          .orderBy(desc(clientContactTable.id));
-      }, "Failed to fetch client contacts");
-    })
-  ),
+        return handleDatabaseOperation(async () => {
+          return ctx.db
+            .select()
+            .from(clientContactTable)
+            .where(contactQuery)
+            .orderBy(desc(clientContactTable.id));
+        }, "Failed to fetch client contacts");
+      }),
+    ),
 
   // Get contacts for a specific client
-  getClientContacts: publicProcedure.input(getClientContactsSchema).query(
-    handleQuery(async ({ input, ctx }) => {
-      return handleDatabaseOperation(async () => {
-        return ctx.db
-          .select()
-          .from(clientContactTable)
-          .where(eq(clientContactTable.client_id, input.client_id));
-      }, "Failed to fetch client contacts");
-    })
-  ),
+  getClientContacts: publicProcedure
+    .input(clientSchemas.getClientContactsSchema)
+    .query(
+      handleQuery(async ({ input, ctx }) => {
+        return handleDatabaseOperation(async () => {
+          return ctx.db
+            .select()
+            .from(clientContactTable)
+            .where(eq(clientContactTable.client_id, input.clientId));
+        }, "Failed to fetch client contacts");
+      }),
+    ),
 
   // Get a single contact by ID
-  getClientContact: publicProcedure.input(getClientContactSchema).query(
-    handleQuery(async ({ input, ctx }) => {
-      const contact = await handleDatabaseOperation(async () => {
-        return ctx.db
-          .select()
-          .from(clientContactTable)
-          .where(eq(clientContactTable.id, input.id));
-      }, "Failed to fetch client contact");
+  getClientContact: publicProcedure
+    .input(clientSchemas.getClientContactSchema)
+    .query(
+      handleQuery(async ({ input, ctx }) => {
+        const contact = await handleDatabaseOperation(async () => {
+          return ctx.db
+            .select()
+            .from(clientContactTable)
+            .where(eq(clientContactTable.id, input.clientContactId));
+        }, "Failed to fetch client contact");
 
-      if (contact.length === 0) {
-        throwNotFoundError("Client contact");
-      }
+        if (contact.length === 0) {
+          throwNotFoundError("Client contact");
+        }
 
-      return contact[0];
-    })
-  ),
+        return contact[0];
+      }),
+    ),
 
   // Get client with all their contacts
-  getClientWithContacts: publicProcedure.input(getClientSchema).query(
-    handleQuery(async ({ input, ctx }) => {
-      const client = await handleDatabaseOperation(async () => {
-        return ctx.db
-          .select()
-          .from(clientTable)
-          .where(eq(clientTable.id, input.id));
-      }, "Failed to fetch client");
+  getClientWithContacts: publicProcedure
+    .input(clientSchemas.getClientSchema)
+    .query(
+      handleQuery(async ({ input, ctx }) => {
+        const client = await handleDatabaseOperation(async () => {
+          return ctx.db
+            .select()
+            .from(clientTable)
+            .where(eq(clientTable.id, input.clientId));
+        }, "Failed to fetch client");
 
-      if (client.length === 0) {
-        throwNotFoundError("Client");
-      }
+        if (client.length === 0) {
+          throwNotFoundError("Client");
+        }
 
-      const contacts = await handleDatabaseOperation(async () => {
-        return ctx.db
-          .select()
-          .from(clientContactTable)
-          .where(eq(clientContactTable.client_id, input.id));
-      }, "Failed to fetch client contacts");
+        const contacts = await handleDatabaseOperation(async () => {
+          return ctx.db
+            .select()
+            .from(clientContactTable)
+            .where(eq(clientContactTable.client_id, input.clientId));
+        }, "Failed to fetch client contacts");
 
-      return {
-        client: client[0],
-        contacts,
-      };
-    })
-  ),
+        return {
+          client: client[0],
+          contacts,
+        };
+      }),
+    ),
 
   // Get all clients with their contacts
   getClientsWithContacts: publicProcedure.query(
@@ -259,9 +261,9 @@ export const clientQueryRouter = router({
       return clients.map((client: any) => ({
         ...client,
         contacts: allContacts.filter(
-          (contact: any) => contact.client_id === client.id
+          (contact: any) => contact.client_id === client.id,
         ),
       }));
-    })
+    }),
   ),
 });
