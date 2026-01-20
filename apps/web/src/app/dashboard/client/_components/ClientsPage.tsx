@@ -11,7 +11,7 @@ import useHandleParams from "@/hooks/useHandleParams";
 import { trpc } from "@/lib/trpc";
 import { Badge } from "@/components/ui/badge";
 
-const ClientPage = () => {
+const ClientsPage = () => {
   const { getParam, setParam } = useHandleParams();
   const clientsTab = getParam("tab") || "clients";
 
@@ -76,4 +76,4 @@ const ClientPage = () => {
   );
 };
 
-export default ClientPage;
+export default ClientsPage;

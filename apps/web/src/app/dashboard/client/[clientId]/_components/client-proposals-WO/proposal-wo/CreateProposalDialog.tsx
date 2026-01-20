@@ -13,6 +13,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import CustomButton from "@/components/CustomButton";
 import { trpc } from "@/lib/trpc";
 import CustomForm from "@/components/CustomForm";
@@ -33,6 +40,14 @@ const CreateProposalDialog = ({ clientId }: Props) => {
   const mode = getParam("mode");
   const isAddMode = mode === "proposal-add";
   const isOpenDialog = isAddMode;
+
+  // Fetch offices for the dropdown
+  const { data: officesData, isLoading: isLoadingOffices } =
+    trpc.officeQuery.getOffices.useQuery(
+      { searchQuery: "", status: "active" },
+      { enabled: isOpenDialog },
+    );
+
   const form = useForm<proposalTypes.BaseProposalInput>({
     resolver: zodResolver(proposalSchemas.baseProposalSchema),
     defaultValues: {
@@ -40,6 +55,9 @@ const CreateProposalDialog = ({ clientId }: Props) => {
       title: "",
       description: "",
       document_key: "",
+      office_id: undefined,
+      proposal_amount: 0,
+      proposal_submission_date: undefined,
     },
   });
 
@@ -82,6 +100,9 @@ const CreateProposalDialog = ({ clientId }: Props) => {
         title: "",
         description: "",
         document_key: "",
+        office_id: undefined,
+        proposal_amount: 0,
+        proposal_submission_date: undefined,
       });
       uploadedFileId.current = null;
     }, 2000);
@@ -94,6 +115,9 @@ const CreateProposalDialog = ({ clientId }: Props) => {
         title: "",
         description: "",
         document_key: "",
+        office_id: undefined,
+        proposal_amount: 0,
+        proposal_submission_date: undefined,
       });
       uploadedFileId.current = null;
     }
@@ -112,31 +136,71 @@ const CreateProposalDialog = ({ clientId }: Props) => {
     }
   }
 
+  const offices = officesData?.offices ?? [];
+
   return (
     <DialogWindow
       title='Add Proposal'
       description='Add a new proposal'
       open={isOpenDialog}
-      size='sm'
+      size='md'
       setOpen={handleCloseDialog}>
       <Form {...form}>
         <CustomForm onSubmit={form.handleSubmit(onSubmit)}>
-          <FormField
-            control={form.control}
-            name='code'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Code</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder='Enter code'
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <FormField
+              control={form.control}
+              name='code'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Code</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder='Enter code'
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name='office_id'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Office</FormLabel>
+                  <Select
+                    onValueChange={(value) => field.onChange(Number(value))}
+                    value={field.value?.toString() ?? ""}
+                    disabled={isLoadingOffices}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue
+                          placeholder={
+                            isLoadingOffices
+                              ? "Loading offices..."
+                              : "Select an office"
+                          }
+                        />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {offices.map((office) => (
+                        <SelectItem
+                          key={office.id}
+                          value={office.id.toString()}>
+                          {office.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
           <FormField
             control={form.control}
@@ -171,6 +235,58 @@ const CreateProposalDialog = ({ clientId }: Props) => {
               </FormItem>
             )}
           />
+
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <FormField
+              control={form.control}
+              name='proposal_amount'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Proposal Amount (₹)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type='number'
+                      step='0.01'
+                      min='0'
+                      placeholder='Enter amount'
+                      {...field}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      value={field.value ?? ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name='proposal_submission_date'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Submission Date</FormLabel>
+                  <FormControl>
+                    <Input
+                      type='date'
+                      {...field}
+                      value={
+                        field.value instanceof Date
+                          ? field.value.toISOString().split("T")[0]
+                          : (field.value ?? "")
+                      }
+                      onChange={(e) => {
+                        const dateValue = e.target.value
+                          ? new Date(e.target.value)
+                          : undefined;
+                        field.onChange(dateValue);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
           <FormField
             control={form.control}

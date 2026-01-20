@@ -1,27 +1,33 @@
 import CustomButton from "@/components/CustomButton";
 import {
   ArrowUpRight,
+  Briefcase,
+  Check,
   CheckCircle2,
   Clock,
   FileText,
+  Link2Off,
   Plus,
 } from "lucide-react";
 import React from "react";
 import NoFetchData from "@/components/NoFetchData";
 import CreateProposalDialog from "./CreateProposalDialog";
 import { trpc } from "@/lib/trpc";
-import ProposalCard from "./ProposalWOCard";
+import ProposalCard from "./ProposalCard";
 import { useHandleParams } from "@/hooks/useHandleParams";
+import WordOrderCard from "./WordOrderCard";
+import { useRouter } from "next/navigation";
 
 interface Props {
   clientId: string;
 }
-const ProposalWOComp = ({ clientId }: Props) => {
-  const { setParam } = useHandleParams();
+const ProposalWOMain = ({ clientId }: Props) => {
+  const { getParam, setParam } = useHandleParams();
+  const router = useRouter();
 
   const { data, isLoading } = trpc.proposalQuery.getProposalsByClient.useQuery(
     { client_id: Number(clientId) },
-    { enabled: !!clientId }
+    { enabled: !!clientId },
   );
 
   const proposals = data?.proposals || [];
@@ -58,11 +64,41 @@ const ProposalWOComp = ({ clientId }: Props) => {
           ) : proposals && proposals.length > 0 ? (
             proposals.map((proposal: any, index: number) => {
               const key = `proposal-${proposal?.id ?? proposal?.proposal_id ?? proposal?.code ?? proposal?.uuid ?? index}`;
+
+              const { proposal: proposalData } = proposal;
+              const { workOrder } = proposal;
+
               return (
-                <ProposalCard
+                <div
                   key={key}
-                  proposal={proposal}
-                />
+                  className='w-full rounded-xl border shadow border-gray-100 bg-gray-50 backdrop-blur-sm p-4'>
+                  <div className='grid grid-cols-1 md:grid-cols-[1fr_72px_1fr] items-stretch gap-y-6 md:gap-y-0 md:gap-x-2'>
+                    <ProposalCard
+                      proposal={proposalData}
+                      workOrder={workOrder}
+                    />
+                    <div className='relative flex items-center justify-center'>
+                      <div className='w-full border-t border-dashed border-gray-400/80' />
+
+                      <div
+                        className={`absolute -translate-y-1/2 top-1/2 inline-flex items-center justify-center rounded-full border bg-white p-1.5 shadow-sm ${
+                          workOrder ? " text-emerald-600" : " text-gray-400"
+                        }`}
+                        aria-label={workOrder ? "Linked" : "Unlinked"}
+                        title={
+                          workOrder ? "Linked with Work Order" : "Unlinked"
+                        }>
+                        {workOrder ? (
+                          <Check className='w-4 h-4' />
+                        ) : (
+                          <Link2Off className='w-4 h-4' />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <WordOrderCard />
+                </div>
               );
             })
           ) : (
@@ -86,32 +122,11 @@ const ProposalWOComp = ({ clientId }: Props) => {
             <ArrowUpRight className='h-4 w-4 text-emerald-700 group-hover:text-white' />
           </div>
         </div>
-        <div className='px-4 pb-4 pt-2 grid grid-cols-1 gap-5'>
-          {/* {completedWorkOrders.length > 0 ? (
-            completedWorkOrders.map((wo: WorkOrder) => (
-              <CompletedWOCard
-                key={wo.id}
-                title={wo.title}
-                description={wo.description || ""}
-                code={wo.code}
-                budget_amount={Number(wo.budget_amount || 0)}
-                expense_amount={Number(wo.expense_amount || 0)}
-              />
-            ))
-          ) : (
-            <div className='py-8'>
-              <NoFetchData
-                Icon={CheckCircle2}
-                title='No completed work orders'
-                description='Completed work orders will appear here.'
-              />
-            </div>
-          )} */}
-        </div>
+        <div className='px-4 pb-4 pt-2 grid grid-cols-1 gap-5'></div>
       </div>
       <CreateProposalDialog clientId={Number(clientId)} />
     </div>
   );
 };
 
-export default ProposalWOComp;
+export default ProposalWOMain;

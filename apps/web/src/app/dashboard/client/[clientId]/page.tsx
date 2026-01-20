@@ -9,7 +9,7 @@ import CustomButton from "@/components/CustomButton";
 import ClientDetailsCard from "./_components/ClientDetailsCard";
 import ClientStats from "./_components/client-stats/ClientStats";
 import PageLoading from "@/components/PageLoading";
-import ProposalWOComp from "./_components/client-proposals-WO/ProposalWOComp";
+import ProposalWOMain from "./_components/client-proposals-WO/proposal-wo/ProposalWOMain";
 import NoFetchData from "@/components/NoFetchData";
 
 type PageProps = {
@@ -74,7 +74,7 @@ const Client = ({ params }: PageProps) => {
             stats={stats}
             clientId={clientId}
           />
-          <ProposalWOComp clientId={clientId} />
+          <ProposalWOMain clientId={clientId} />
         </div>
       ) : (
         <NoFetchData

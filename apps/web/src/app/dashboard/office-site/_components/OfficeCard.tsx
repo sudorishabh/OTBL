@@ -58,7 +58,7 @@ const OfficeCard: React.FC<{ office: Office }> = ({ office }) => {
 
   const handleAddSiteDialogOpen = () => {
     setParams({
-      dialogMode: "create-site",
+      dialog: "create-site",
       officeId: office.id.toString(),
       officeName: office.name,
     });
@@ -66,7 +66,7 @@ const OfficeCard: React.FC<{ office: Office }> = ({ office }) => {
 
   const handleOfficeDetailsDialogOpen = () => {
     setParams({
-      dialogMode: "view-office",
+      dialog: "view-office",
       officeId: office.id.toString(),
       officeName: office.name,
     });

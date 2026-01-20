@@ -6,7 +6,7 @@ import { throwNotFoundError, handleDatabaseOperation } from "../../errors";
 import { handleMutation } from "../../helper/typed-handler";
 import { proposalSchemas } from "@pkg/schema";
 
-const { proposalTable, clientTable } = schema;
+const { proposalTable, clientTable, officeTable } = schema;
 
 export const proposalMutationRouter = router({
   createProposal: managerProcedure
@@ -23,8 +23,22 @@ export const proposalMutationRouter = router({
           throwNotFoundError("Client", input.client_id);
         }
 
+        // Verify office exists
+        const office = await ctx.db
+          .select()
+          .from(officeTable)
+          .where(eq(officeTable.id, input.office_id));
+
+        if (office.length === 0) {
+          throwNotFoundError("Office", input.office_id);
+        }
+        console.log("input", input);
+
         const result = await handleDatabaseOperation(async () => {
-          return ctx.db.insert(proposalTable).values(input);
+          return ctx.db.insert(proposalTable).values({
+            ...input,
+            proposal_amount: input.proposal_amount.toString(),
+          });
         }, "Failed to add proposal");
 
         return {

@@ -154,7 +154,7 @@ export const officeQueryRouter = router({
           const woRows = await ctx.db
             .select({
               status: workOrderTable.status,
-              budget_amount: workOrderTable.budget_amount,
+              budget_amount: workOrderTable.grand_total_amount,
               expense_amount: workOrderTable.expense_amount,
             })
             .from(workOrderTable)

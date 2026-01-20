@@ -5,6 +5,8 @@ import {
   longDescriptionValidator,
   positiveIntValidator,
   documentKeyValidator,
+  currencyValidator,
+  dateValidator,
 } from "../validators";
 
 // Base schemas
@@ -14,6 +16,9 @@ export const baseProposalSchema = z.object({
   title: titleValidator,
   description: longDescriptionValidator,
   document_key: documentKeyValidator,
+  office_id: positiveIntValidator,
+  proposal_amount: currencyValidator,
+  proposal_submission_date: dateValidator,
 });
 
 // Mutation Schemas

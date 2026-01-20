@@ -25,16 +25,18 @@ import { useApiError } from "@/hooks/useApiError";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { siteSchemas, type siteTypes } from "@pkg/schema";
+import useHandleParams from "@/hooks/useHandleParams";
 
 const CreateSiteDialog = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const siteMode = searchParams.get("siteMode");
-  const officeId = searchParams.get("officeId");
-  const officeName = searchParams.get("officeName");
-  const siteId = searchParams.get("siteId");
-  const isAddMode = siteMode === "add";
-  const isEditMode = siteMode === "edit";
+  const { deleteParams, getParam } = useHandleParams();
+  const dialog = getParam("dialog");
+  const officeId = getParam("officeId");
+  const officeName = getParam("officeName");
+  const siteId = getParam("siteId");
+  const isAddMode = dialog === "create-site";
+  const isEditMode = dialog === "update-site";
   const isOpenDialog = isAddMode || isEditMode;
 
   const form = useForm<siteTypes.siteBaseType>({
@@ -107,13 +109,7 @@ const CreateSiteDialog = () => {
   });
 
   const handleClose = useCallback(() => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("siteMode");
-    params.delete("officeId");
-    params.delete("officeName");
-    params.delete("siteId");
-    const paramsString = params.toString();
-    router.push(paramsString ? `?${paramsString}` : window.location.pathname);
+    deleteParams(["dialog", "officeId", "officeName", "siteId"]);
     form.reset({
       name: "",
       address: "",
