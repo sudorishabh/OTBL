@@ -1,7 +1,6 @@
 import CustomButton from "@/components/CustomButton";
 import {
   ArrowUpRight,
-  Briefcase,
   Check,
   CheckCircle2,
   Clock,
@@ -16,14 +15,14 @@ import { trpc } from "@/lib/trpc";
 import ProposalCard from "./ProposalCard";
 import { useHandleParams } from "@/hooks/useHandleParams";
 import WordOrderCard from "./WordOrderCard";
-import { useRouter } from "next/navigation";
+import { type proposalTypes } from "@pkg/schema";
+import CreateWODialog from "../create-wo/CreateWODialog";
 
 interface Props {
   clientId: string;
 }
 const ProposalWOMain = ({ clientId }: Props) => {
-  const { getParam, setParam } = useHandleParams();
-  const router = useRouter();
+  const { setParam } = useHandleParams();
 
   const { data, isLoading } = trpc.proposalQuery.getProposalsByClient.useQuery(
     { client_id: Number(clientId) },
@@ -45,7 +44,7 @@ const ProposalWOMain = ({ clientId }: Props) => {
               text='Create Proposal'
               variant='outline'
               Icon={Plus}
-              onClick={() => setParam("mode", "proposal-add")}
+              onClick={() => setParam("dialog", "create-proposal")}
             />
             <div className='h-8 w-8 rounded-full bg-white border hover:border-0 group flex items-center justify-center hover:bg-emerald-600 relative cursor-pointer'>
               <ArrowUpRight className='h-4 w-4 text-emerald-700 group-hover:text-white' />
@@ -62,21 +61,16 @@ const ProposalWOMain = ({ clientId }: Props) => {
               />
             </div>
           ) : proposals && proposals.length > 0 ? (
-            proposals.map((proposal: any, index: number) => {
-              const key = `proposal-${proposal?.id ?? proposal?.proposal_id ?? proposal?.code ?? proposal?.uuid ?? index}`;
-
-              const { proposal: proposalData } = proposal;
-              const { workOrder } = proposal;
-
-              return (
+            proposals.map(
+              ({
+                workOrder,
+                proposal,
+              }: proposalTypes.getProposalsByClientReturnType) => (
                 <div
-                  key={key}
+                  key={proposal?.id}
                   className='w-full rounded-xl border shadow border-gray-100 bg-gray-50 backdrop-blur-sm p-4'>
                   <div className='grid grid-cols-1 md:grid-cols-[1fr_72px_1fr] items-stretch gap-y-6 md:gap-y-0 md:gap-x-2'>
-                    <ProposalCard
-                      proposal={proposalData}
-                      workOrder={workOrder}
-                    />
+                    <ProposalCard proposal={proposal} />
                     <div className='relative flex items-center justify-center'>
                       <div className='w-full border-t border-dashed border-gray-400/80' />
 
@@ -95,12 +89,15 @@ const ProposalWOMain = ({ clientId }: Props) => {
                         )}
                       </div>
                     </div>
+                    <WordOrderCard
+                      workOrder={workOrder}
+                      proposalId={proposal.id}
+                      proposalTitle={proposal.title}
+                    />
                   </div>
-
-                  <WordOrderCard />
                 </div>
-              );
-            })
+              ),
+            )
           ) : (
             <div className='py-8'>
               <NoFetchData

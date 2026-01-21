@@ -1,42 +1,17 @@
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 
-import { Edit, Mail, MapPin, Phone, Users, Eye, EyeOff } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Edit, MapPin, Phone, Users, Eye, EyeOff } from "lucide-react";
 import CustomButton from "@/components/CustomButton";
 import ContactDialog from "./ContactDialog";
 import { capitalFirstLetter } from "@pkg/utils";
+import { type clientTypes } from "@pkg/schema";
 
 interface Props {
-  client: {
-    address: string;
-    city: string;
-    contact_number: string;
-    created_at: string;
-    email: string;
-    gst_number: string;
-    id: number;
-    name: string;
-    contact_person?: string;
-    pincode: string;
-    state: string;
-    status: string;
-    updated_at: string;
-  };
-  clientUsers?: {
-    client_id: number;
-    contact_number: string;
-    contact_type: string;
-    created_at: string;
-    designation: string;
-    email: string;
-    id: number;
-    name: string;
-    updated_at: string;
-  }[];
+  client: clientTypes.clientType;
+  clientUsers: clientTypes.clientUsersType[];
 }
 
 const ClientDetailsCard = ({ client, clientUsers }: Props) => {
@@ -184,7 +159,6 @@ const ClientDetailsCard = ({ client, clientUsers }: Props) => {
               </div>
             </div> */}
           </div>
-          {/* Contacts are shown in dialog when user clicks the Contacts button */}
         </div>
       </CardContent>
       <ContactDialog

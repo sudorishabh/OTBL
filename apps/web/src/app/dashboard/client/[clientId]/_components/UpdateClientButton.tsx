@@ -1,4 +1,6 @@
+"use client";
 import CustomButton from "@/components/CustomButton";
+import useHandleParams from "@/hooks/useHandleParams";
 import { PencilLine } from "lucide-react";
 import React from "react";
 
@@ -8,7 +10,6 @@ const UpdateClientButton = () => {
       text='Edit details'
       variant='primary'
       Icon={PencilLine}
-      //   onClick={() => setIsEditOfficeDialog(!isEditOfficeDialog)}
     />
   );
 };

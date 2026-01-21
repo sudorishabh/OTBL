@@ -1,5 +1,5 @@
 "use client";
-import React, { use, useState } from "react";
+import React, { use } from "react";
 import Wrapper from "@/components/Wrapper/Wrapper";
 import { trpc } from "@/lib/trpc";
 import { PencilLine, Users } from "lucide-react";
@@ -11,13 +11,14 @@ import ClientStats from "./_components/client-stats/ClientStats";
 import PageLoading from "@/components/PageLoading";
 import ProposalWOMain from "./_components/client-proposals-WO/proposal-wo/ProposalWOMain";
 import NoFetchData from "@/components/NoFetchData";
+import useHandleParams from "@/hooks/useHandleParams";
 
 type PageProps = {
   params: Promise<{ clientId: string }>;
 };
 
 const Client = ({ params }: PageProps) => {
-  const [isEditOfficeDialog, setIsEditOfficeDialog] = useState<boolean>(false);
+  const { setParam } = useHandleParams();
 
   const { clientId } = use(params);
 
@@ -37,15 +38,15 @@ const Client = ({ params }: PageProps) => {
     return <PageLoading />;
   }
 
-  if (clientQuery.isError) {
-    return (
-      <Wrapper
-        title='Client Info'
-        description='Manage Client Info and Work Orders'>
-        <div className='text-sm text-red-600'>Failed to load client.</div>
-      </Wrapper>
-    );
-  }
+  // if (clientQuery.isError || statsQuery.isError) {
+  //   return (
+  //     <Wrapper
+  //       title='Client Info'
+  //       description='Manage Client Info and Work Orders'>
+  //       <div className='text-sm text-red-600'>Failed to load client.</div>
+  //     </Wrapper>
+  //   );
+  // }
 
   const client = clientQuery.data?.client;
   const clientUsers = clientQuery.data?.clientUsers;
@@ -61,14 +62,14 @@ const Client = ({ params }: PageProps) => {
           text='Edit details'
           variant='primary'
           Icon={PencilLine}
-          onClick={() => setIsEditOfficeDialog(!isEditOfficeDialog)}
+          onClick={() => setParam("dialog", "update-client")}
         />
       }>
       {client ? (
         <div className='mt-4 space-y-6'>
           <ClientDetailsCard
             client={client}
-            clientUsers={clientUsers}
+            clientUsers={clientUsers ?? []}
           />
           <ClientStats
             stats={stats}

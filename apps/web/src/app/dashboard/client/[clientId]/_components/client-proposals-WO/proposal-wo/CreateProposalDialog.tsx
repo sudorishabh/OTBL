@@ -28,6 +28,10 @@ import { useHandleParams } from "@/hooks/useHandleParams";
 import CustomUploadDocument from "@/components/CustomUploadDocument";
 import { useApiError } from "@/hooks/useApiError";
 import { proposalSchemas, type proposalTypes } from "@pkg/schema";
+import { z } from "zod";
+
+// Input type for the form (before validation/coercion)
+type ProposalFormInput = z.input<typeof proposalSchemas.baseProposalSchema>;
 
 interface Props {
   clientId: number;
@@ -37,8 +41,8 @@ const CreateProposalDialog = ({ clientId }: Props) => {
   const [isUploading, setIsUploading] = useState(false);
   const { deleteParams, getParam } = useHandleParams();
   const { handleError } = useApiError();
-  const mode = getParam("mode");
-  const isAddMode = mode === "proposal-add";
+  const mode = getParam("dialog");
+  const isAddMode = mode === "create-proposal";
   const isOpenDialog = isAddMode;
 
   // Fetch offices for the dropdown
@@ -48,7 +52,11 @@ const CreateProposalDialog = ({ clientId }: Props) => {
       { enabled: isOpenDialog },
     );
 
-  const form = useForm<proposalTypes.BaseProposalInput>({
+  const form = useForm<
+    ProposalFormInput,
+    unknown,
+    proposalTypes.BaseProposalInput
+  >({
     resolver: zodResolver(proposalSchemas.baseProposalSchema),
     defaultValues: {
       code: "",
@@ -91,7 +99,7 @@ const CreateProposalDialog = ({ clientId }: Props) => {
       return;
     }
     cleanupFile();
-    deleteParams(["mode"]);
+    deleteParams(["dialog"]);
 
     // Delay form reset until after animation completes
     setTimeout(() => {
@@ -124,6 +132,7 @@ const CreateProposalDialog = ({ clientId }: Props) => {
   }, [isAddMode, form]);
 
   async function onSubmit(values: proposalTypes.BaseProposalInput) {
+    // values is now the validated/transformed output type with Date objects
     try {
       console.log(values);
       await addProposal.mutateAsync({ ...values, client_id: clientId });
@@ -262,23 +271,25 @@ const CreateProposalDialog = ({ clientId }: Props) => {
             <FormField
               control={form.control}
               name='proposal_submission_date'
-              render={({ field }) => (
+              render={({ field: { value, onChange, ...fieldProps } }) => (
                 <FormItem>
                   <FormLabel>Submission Date</FormLabel>
                   <FormControl>
                     <Input
                       type='date'
-                      {...field}
+                      {...fieldProps}
                       value={
-                        field.value instanceof Date
-                          ? field.value.toISOString().split("T")[0]
-                          : (field.value ?? "")
+                        value instanceof Date
+                          ? value.toISOString().split("T")[0]
+                          : typeof value === "string"
+                            ? value
+                            : ""
                       }
                       onChange={(e) => {
                         const dateValue = e.target.value
                           ? new Date(e.target.value)
                           : undefined;
-                        field.onChange(dateValue);
+                        onChange(dateValue);
                       }}
                     />
                   </FormControl>

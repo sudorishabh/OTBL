@@ -1,180 +1,166 @@
-// import { eq } from "drizzle-orm";
-// import { schema } from "@pkg/db";
-// import { router } from "../../trpc";
-// import { protectedProcedure } from "../../middleware";
-// import { workOrderSchemas } from "@pkg/schema";
-// import { throwNotFoundError, throwValidationError } from "../../errors";
-// import { handleMutation } from "../../helper/typed-handler";
+import { eq } from "drizzle-orm";
+import { schema } from "@pkg/db";
+import { router } from "../../trpc";
+import { protectedProcedure } from "../../middleware";
+import { workOrderSchemas } from "@pkg/schema";
+import { throwNotFoundError } from "../../errors";
+import { handleMutation } from "../../helper/typed-handler";
 
-// const { workOrderTable, workOrderSiteTable, clientTable } = schema;
+const { workOrderTable, clientTable, proposalTable, officeTable } = schema;
 
-// export const workOrderMutationRouter = router({
-//   createWorkOrder: protectedProcedure
-//     .input(workOrderSchemas.createWorkOrderSchema)
-//     .mutation(
-//       handleMutation(async ({ input, ctx }) => {
-//         // Validate site_ids first
-//         if (!input.site_ids || input.site_ids.length === 0) {
-//           throwValidationError("At least one site must be provided");
-//         }
+export const workOrderMutationRouter = router({
+  createWorkOrder: protectedProcedure
+    .input(workOrderSchemas.createWorkOrderSchema)
+    .mutation(
+      handleMutation(async ({ input, ctx }) => {
+        // Validate client exists
+        const existingClient = await ctx.db
+          .select()
+          .from(clientTable)
+          .where(eq(clientTable.id, input.client_id));
 
-//         // Validate client exists
-//         const existingClient = await ctx.db
-//           .select()
-//           .from(clientTable)
-//           .where(eq(clientTable.id, Number(input.client_id)));
+        if (existingClient.length === 0) {
+          throwNotFoundError("Client");
+        }
 
-//         if (existingClient.length === 0) {
-//           throwNotFoundError("Client");
-//         }
+        // Validate proposal exists
+        const existingProposal = await ctx.db
+          .select()
+          .from(proposalTable)
+          .where(eq(proposalTable.id, input.proposal_id));
 
-//         // Parse numeric values
-//         const clientId = Number(input.client_id);
-//         const officeId = Number(input.office_id);
-//         const proposalId = input.proposal_id ? Number(input.proposal_id) : null;
-//         const technologyUsed = Number(input.technology_used);
-//         const metricTon = input.metric_ton ? input.metric_ton : null;
-//         const metricTonRate = input.metric_ton_rate
-//           ? input.metric_ton_rate
-//           : null;
-//         const budgetAmount = input.budget_amount;
-//         const expenseAmount = input.expense_amount ?? "0";
+        if (existingProposal.length === 0) {
+          throwNotFoundError("Proposal");
+        }
 
-//         // Parse dates
-//         const startDate = new Date(input.start_date);
-//         const endDate = new Date(input.end_date);
-//         const handingOverDate = new Date(input.handing_over_date);
+        // Validate office exists
+        const existingOffice = await ctx.db
+          .select()
+          .from(officeTable)
+          .where(eq(officeTable.id, input.office_id));
 
-//         // Build work order data object - proposal_id is required in DB
-//         const workOrderData: Record<string, unknown> = {
-//           code: input.code,
-//           title: input.title,
-//           client_id: clientId,
-//           office_id: officeId,
-//           proposal_id: proposalId, // This is required - will throw error if null
-//           start_date: startDate,
-//           end_date: endDate,
-//           handing_over_date: handingOverDate,
-//           agreement_number: input.agreement_number,
-//           document_key: input.document_key || "",
-//           metric_ton: metricTon,
-//           metric_ton_rate: metricTonRate,
-//           technology_used: technologyUsed,
-//           activity_type: input.activity_type,
-//           description: input.description || null,
-//           budget_amount: budgetAmount,
-//           expense_amount: expenseAmount,
-//           status: input.status || "pending",
-//         };
+        if (existingOffice.length === 0) {
+          throwNotFoundError("Office");
+        }
 
-//         console.log("Creating work order with data:", workOrderData);
+        // Build work order data object
+        const workOrderData = {
+          code: input.code,
+          agreement_number: input.agreement_number,
+          rate_contract_number: input.rate_contract_number,
+          title: input.title,
+          proposal_id: input.proposal_id,
+          client_id: input.client_id,
+          office_id: input.office_id,
+          start_date: input.start_date,
+          end_date: input.end_date,
+          handing_over_date: input.handing_over_date,
+          agreement_url: input.agreement_url || null,
+          document_key: input.document_key,
+          metric_ton: input.metric_ton?.toString() || null,
+          metric_ton_rate: input.metric_ton_rate?.toString() || null,
+          process_type: input.process_type,
+          description: input.description || null,
+          grand_total_amount: input.grand_total_amount?.toString() || null,
+          expense_amount: input.expense_amount.toString(),
+          created_by: parseInt(ctx.user!.sub),
+        };
 
-//         // Create the work order
-//         const workOrderResult = await ctx.db
-//           .insert(workOrderTable)
-//           .values(workOrderData as any);
+        // Create the work order
+        const workOrderResult = await ctx.db
+          .insert(workOrderTable)
+          .values(workOrderData);
 
-//         const workOrderId = workOrderResult[0].insertId;
-//         console.log("Work order created with ID:", workOrderId);
+        const workOrderId = workOrderResult[0].insertId;
 
-//         // Create work order site entries
-//         const siteIds: number[] = [];
+        return {
+          success: true,
+          workOrderId,
+          clientId: input.client_id,
+        };
+      }),
+    ),
 
-//         for (const siteId of input.site_ids) {
-//           const woSiteData = {
-//             work_order_id: workOrderId,
-//             client_id: clientId,
-//             site_id: Number(siteId),
-//             start_date: startDate,
-//             end_date: endDate,
-//             activity_type: input.activity_type as "insitu" | "exsitu",
-//             metric_ton: metricTon,
-//             metric_ton_rate: metricTonRate,
-//             budget_amount: budgetAmount,
-//             status: input.status || "pending",
-//           };
+  updateWorkOrder: protectedProcedure
+    .input(workOrderSchemas.updateWorkOrderSchema)
+    .mutation(
+      handleMutation(async ({ input, ctx }) => {
+        const { id, ...updateData } = input;
 
-//           await ctx.db.insert(workOrderSiteTable).values(woSiteData);
-//           siteIds.push(Number(siteId));
-//         }
+        const existingWorkOrder = await ctx.db
+          .select()
+          .from(workOrderTable)
+          .where(eq(workOrderTable.id, id));
 
-//         return {
-//           success: true,
-//           workOrderId,
-//           clientId: input.client_id,
-//           sitesLinked: siteIds.length,
-//         };
-//       }),
-//     ),
+        if (existingWorkOrder.length === 0) {
+          throwNotFoundError("Work order");
+        }
 
-//   updateWorkOrder: protectedProcedure.input(editWorkOrderSchema).mutation(
-//     handleMutation(async ({ input, ctx }) => {
-//       const { id, ...updateData } = input;
+        const updateValues: Record<string, unknown> = {};
 
-//       const existingWorkOrder = await ctx.db
-//         .select()
-//         .from(workOrderTable)
-//         .where(eq(workOrderTable.id, id));
+        if (updateData.code) updateValues.code = updateData.code;
+        if (updateData.agreement_number)
+          updateValues.agreement_number = updateData.agreement_number;
+        if (updateData.rate_contract_number)
+          updateValues.rate_contract_number = updateData.rate_contract_number;
+        if (updateData.title) updateValues.title = updateData.title;
+        if (updateData.proposal_id)
+          updateValues.proposal_id = updateData.proposal_id;
+        if (updateData.office_id) updateValues.office_id = updateData.office_id;
+        if (updateData.start_date)
+          updateValues.start_date = updateData.start_date;
+        if (updateData.end_date) updateValues.end_date = updateData.end_date;
+        if (updateData.handing_over_date)
+          updateValues.handing_over_date = updateData.handing_over_date;
+        if (updateData.agreement_url !== undefined)
+          updateValues.agreement_url = updateData.agreement_url || null;
+        if (updateData.document_key)
+          updateValues.document_key = updateData.document_key;
+        if (updateData.metric_ton !== undefined)
+          updateValues.metric_ton = updateData.metric_ton?.toString() || null;
+        if (updateData.metric_ton_rate !== undefined)
+          updateValues.metric_ton_rate =
+            updateData.metric_ton_rate?.toString() || null;
+        if (updateData.process_type)
+          updateValues.process_type = updateData.process_type;
+        if (updateData.description !== undefined)
+          updateValues.description = updateData.description || null;
+        if (updateData.grand_total_amount !== undefined)
+          updateValues.grand_total_amount =
+            updateData.grand_total_amount?.toString() || null;
+        if (updateData.expense_amount !== undefined)
+          updateValues.expense_amount = updateData.expense_amount.toString();
+        if (updateData.status) updateValues.status = updateData.status;
+        if (updateData.cancellation_reason !== undefined)
+          updateValues.cancellation_reason = updateData.cancellation_reason;
 
-//       if (existingWorkOrder.length === 0) {
-//         throwNotFoundError("Work order");
-//       }
+        await ctx.db
+          .update(workOrderTable)
+          .set(updateValues)
+          .where(eq(workOrderTable.id, id));
 
-//       const updateValues: any = {};
+        return { success: true };
+      }),
+    ),
 
-//       if (updateData.code) updateValues.code = updateData.code;
-//       if (updateData.title) updateValues.title = updateData.title;
-//       if (updateData.client_id) updateValues.client_id = updateData.client_id;
-//       if (updateData.start_date)
-//         updateValues.start_date = new Date(updateData.start_date);
-//       if (updateData.end_date)
-//         updateValues.end_date = new Date(updateData.end_date);
-//       if (updateData.handing_over_date)
-//         updateValues.handing_over_date = new Date(updateData.handing_over_date);
-//       if (updateData.agreement_number)
-//         updateValues.agreement_number = updateData.agreement_number;
-//       if (updateData.metric_ton !== undefined)
-//         updateValues.metric_ton = updateData.metric_ton?.toString() || null;
-//       if (updateData.metric_ton_rate !== undefined)
-//         updateValues.metric_ton_rate =
-//           updateData.metric_ton_rate?.toString() || null;
-//       if (updateData.technology_used !== undefined)
-//         updateValues.technology_used = updateData.technology_used || null;
-//       if (updateData.description)
-//         updateValues.description = updateData.description;
-//       if (updateData.budget_amount)
-//         updateValues.budget_amount = updateData.budget_amount.toString();
-//       if (updateData.expense_amount !== undefined)
-//         updateValues.expense_amount = updateData.expense_amount.toString();
-//       if (updateData.status) updateValues.status = updateData.status;
-//       if (updateData.cancellation_reason !== undefined)
-//         updateValues.cancellation_reason = updateData.cancellation_reason;
+  deleteWorkOrder: protectedProcedure
+    .input(workOrderSchemas.deleteWorkOrderSchema)
+    .mutation(
+      handleMutation(async ({ input, ctx }) => {
+        const { id } = input;
 
-//       await ctx.db
-//         .update(workOrderTable)
-//         .set(updateValues)
-//         .where(eq(workOrderTable.id, id));
+        const existingWorkOrder = await ctx.db
+          .select()
+          .from(workOrderTable)
+          .where(eq(workOrderTable.id, id));
 
-//       return { success: true };
-//     }),
-//   ),
+        if (existingWorkOrder.length === 0) {
+          throwNotFoundError("Work order");
+        }
 
-//   deleteWorkOrder: protectedProcedure.input(deleteWorkOrderSchema).mutation(
-//     handleMutation(async ({ input, ctx }) => {
-//       const { id } = input;
+        await ctx.db.delete(workOrderTable).where(eq(workOrderTable.id, id));
 
-//       const existingWorkOrder = await ctx.db
-//         .select()
-//         .from(workOrderTable)
-//         .where(eq(workOrderTable.id, id));
-
-//       if (existingWorkOrder.length === 0) {
-//         throwNotFoundError("Work order");
-//       }
-
-//       await ctx.db.delete(workOrderTable).where(eq(workOrderTable.id, id));
-
-//       return { success: true };
-//     }),
-//   ),
-// });
+        return { success: true };
+      }),
+    ),
+});

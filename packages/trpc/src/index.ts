@@ -10,7 +10,7 @@ import { authMutationRouter } from "./routers/auth/auth.mutation.route";
 import { authQueryRouter } from "./routers/auth/auth.query.route";
 import { clientMutationRouter } from "./routers/client/client.muatation.route";
 import { clientQueryRouter } from "./routers/client/client.query.route";
-// import { workOrderMutationRouter } from "./routers/work-order/work-mutation.mutation.route";
+import { workOrderMutationRouter } from "./routers/work-order/work-mutation.mutation.route";
 // import { workOrderQueryRouter } from "./routers/work-order/work-order.query.route";
 // import { siteActivityMutationRouter } from "./routers/site-activity/site-activity.mutation.route";
 // import { siteActivityQueryRouter } from "./routers/site-activity/site-activity.query.route";
@@ -42,7 +42,7 @@ export const appRouter = router({
   clientQuery: clientQueryRouter,
 
   // Work Order management
-  // workOrderMutation: workOrderMutationRouter,
+  workOrderMutation: workOrderMutationRouter,
   // workOrderQuery: workOrderQueryRouter,
 
   // Site Activity management

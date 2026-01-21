@@ -1,7 +1,3 @@
-/**
- * User roles - defines the hierarchy of roles in the system
- * Higher values mean more permissions
- */
 export const ROLES = {
   ADMIN: "admin",
   MANAGER: "manager",
@@ -12,9 +8,6 @@ export const ROLES = {
 
 export type Role = (typeof ROLES)[keyof typeof ROLES];
 
-/**
- * Role hierarchy levels - used for permission checking
- */
 export const ROLE_HIERARCHY: Record<Role, number> = {
   admin: 5,
   manager: 4,
@@ -23,14 +16,16 @@ export const ROLE_HIERARCHY: Record<Role, number> = {
   viewer: 1,
 };
 
-/**
- * Entity status values
- */
 export const STATUS = {
   ACTIVE: "active",
   INACTIVE: "inactive",
 } as const;
 
+export const WO_PROCESS = {
+  BIOREMEDIATION: "bioremediation",
+  RESTORATION: "restoration",
+} as const;
+
 export type Status = (typeof STATUS)[keyof typeof STATUS];
 
-export default { ROLES, STATUS, ROLE_HIERARCHY };
+export default { ROLES, STATUS, ROLE_HIERARCHY, WO_PROCESS };

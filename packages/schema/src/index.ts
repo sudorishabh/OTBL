@@ -27,6 +27,7 @@ import * as userTypes from "./user/user.type";
 
 // Work Order
 import * as workOrderSchemas from "./work-order/work-order.schema";
+import * as workOrderTypes from "./work-order/work-order.type";
 
 // Validators
 import * as validators from "./validators";
@@ -47,6 +48,7 @@ export {
   userSchemas,
   userTypes,
   workOrderSchemas,
+  workOrderTypes,
   validators,
 };
 

@@ -1,5 +1,6 @@
 import z from "zod";
 import * as proposalSchema from "./proposal.schema";
+import { workOrderType } from "../work-order/work-order.type";
 
 export type BaseProposalInput = z.infer<
   typeof proposalSchema.baseProposalSchema
@@ -10,3 +11,24 @@ export type createProposalType = z.infer<
 export type updateProposalType = z.infer<
   typeof proposalSchema.updateProposalSchema
 >;
+
+export type proposalType = {
+  client_id: number;
+  id: number;
+  office_id: number;
+  code: string;
+  title: string;
+  document_key: string;
+  description: string | null;
+  proposal_amount: string;
+  proposal_submission_date: string;
+  status: "approved" | "rejected";
+  created_by: number | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type getProposalsByClientReturnType = {
+  proposal: proposalType;
+  workOrder: workOrderType | null;
+};

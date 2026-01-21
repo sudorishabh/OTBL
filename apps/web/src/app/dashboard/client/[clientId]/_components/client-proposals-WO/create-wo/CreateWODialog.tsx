@@ -1,372 +1,637 @@
-// import DialogWindow from "@/components/DialogWindow";
-// import React, { useEffect, useState, useRef, useCallback } from "react";
-// import { z } from "zod";
-// import { useForm } from "react-hook-form";
-// import { zodResolver } from "@hookform/resolvers/zod";
-// import { Form } from "@/components/ui/form";
-// import { Card, CardContent } from "@/components/ui/card";
-// import { trpc } from "@/lib/trpc";
-// import CreateWOStep1Basic from "./Steps/CreateWOStep1Basic";
-// import CreateWOStep2Sites from "./Steps/CreateWOStep2Sites";
-// import { useParams } from "next/navigation";
-// import toast from "react-hot-toast";
-// import { Check } from "lucide-react";
-// // import {
-// //   workOrderSchemas,
-// //   type CreateWorkOrderFormInput,
-// // } from "@pkg/trpc/schemas";
-// import { useHandleParams } from "@/hooks/useHandleParams";
-// import CustomUploadDocument from "@/components/CustomUploadDocument";
-// import { useApiError } from "@/hooks/useApiError";
-// import CustomForm from "@/components/CustomForm";
+"use client";
+import React, { useEffect, useState, useCallback } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import DialogWindow from "@/components/DialogWindow";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import CustomButton from "@/components/CustomButton";
+import { trpc } from "@/lib/trpc";
+import CustomForm from "@/components/CustomForm";
+import toast from "react-hot-toast";
+import { useHandleParams } from "@/hooks/useHandleParams";
+import CustomUploadDocument from "@/components/CustomUploadDocument";
+import { useApiError } from "@/hooks/useApiError";
+import { workOrderSchemas, workOrderTypes } from "@pkg/schema";
+import { z } from "zod";
+import { useParams } from "next/navigation";
+import { constants } from "@pkg/utils";
 
-// interface Props {
-//   proposalId: number;
-//   proposalTitle: string;
-// }
+const { WO_PROCESS } = constants;
 
-// // type WorkOrderFormValues = CreateWorkOrderFormInput;
+// Input type for the form (before validation/coercion)
+type WorkOrderFormInput = z.input<typeof workOrderSchemas.baseWorkOrderSchema>;
 
-// const CreateWODialog = ({ proposalId, proposalTitle }: Props) => {
-//   const [step, setStep] = useState<number>(1);
-//   const [isUploading, setIsUploading] = useState(false);
-//   const params = useParams();
-//   const clientId = params?.clientId ? Number(params.clientId) : 0;
-//   const prevOfficeIdRef = useRef<string>("");
-//   const uploadedFileId = useRef<string | null>(null);
-//   const utils = trpc.useUtils();
-//   const { deleteParams, getParam } = useHandleParams();
-//   const { handleError } = useApiError();
+interface Props {
+  proposalId: number;
+  proposalTitle: string;
+}
 
-//   // Cleanup mutation for SharePoint files
-//   const deleteFileMutation = trpc.sharePointMutation.deleteFile.useMutation();
+const CreateWODialog = ({ proposalId, proposalTitle }: Props) => {
+  const [isUploading, setIsUploading] = useState(false);
+  const params = useParams();
+  const clientId = params?.clientId ? Number(params.clientId) : 0;
+  const { deleteParams, getParam } = useHandleParams();
+  const { handleError } = useApiError();
+  const mode = getParam("dialog");
+  const urlProposalId = getParam("proposal-id");
+  const isAddMode = mode === "create-workorder";
+  const isOpenDialog = isAddMode;
 
-//   const cleanupFile = useCallback(() => {
-//     if (uploadedFileId.current) {
-//       deleteFileMutation.mutate({ fileId: uploadedFileId.current });
-//       uploadedFileId.current = null;
-//     }
-//   }, [deleteFileMutation]);
+  // Use proposalId from URL if available, otherwise fall back to prop
+  const effectiveProposalId = urlProposalId
+    ? Number(urlProposalId)
+    : proposalId;
 
-//   const mode = getParam("mode");
-//   const urlProposalId = getParam("proposal-id");
-//   const isAddMode = mode === "wo-add";
-//   const isOpenDialog = isAddMode;
+  // Fetch offices for the dropdown
+  const { data: officesData, isLoading: isLoadingOffices } =
+    trpc.officeQuery.getOffices.useQuery(
+      { searchQuery: "", status: "active" },
+      { enabled: isOpenDialog },
+    );
 
-//   // Use proposalId from URL if available, otherwise fall back to prop
-//   const effectiveProposalId = urlProposalId
-//     ? Number(urlProposalId)
-//     : proposalId;
+  const form = useForm<
+    WorkOrderFormInput,
+    unknown,
+    workOrderTypes.CreateWorkOrderInput
+  >({
+    resolver: zodResolver(workOrderSchemas.createWorkOrderSchema),
+    defaultValues: {
+      code: "",
+      agreement_number: "",
+      rate_contract_number: "",
+      title: "",
+      proposal_id: effectiveProposalId || undefined,
+      client_id: clientId || undefined,
+      office_id: undefined,
+      start_date: undefined,
+      end_date: undefined,
+      handing_over_date: undefined,
+      agreement_url: "",
+      document_key: "",
+      metric_ton: undefined,
+      metric_ton_rate: undefined,
+      process_type: undefined,
+      description: "",
+      grand_total_amount: undefined,
+      expense_amount: 0,
+    },
+  });
 
-//   const form = useForm({
-//     // resolver,
-//     defaultValues: {
-//       code: "",
-//       title: "",
-//       start_date: "",
-//       end_date: "",
-//       handing_over_date: "",
-//       agreement_number: "",
-//       metric_ton: "",
-//       metric_ton_rate: "",
-//       description: "",
-//       budget_amount: "",
-//       expense_amount: "0",
-//       status: "pending",
-//       technology_used: "",
-//       office_id: "",
-//       site_ids: [],
-//       activity_type: "",
-//       document_key: "",
-//       client_id: clientId ? String(clientId) : "",
-//       proposal_id: effectiveProposalId || undefined,
-//     },
-//   });
+  const utils = trpc.useUtils();
 
-//   const steps = [
-//     {
-//       number: 1,
-//       title: "Basic Details",
-//       isActive: step === 1,
-//       isCompleted: step > 1,
-//     },
-//     { number: 2, title: "Sites", isActive: step === 2, isCompleted: step > 2 },
-//   ];
+  const createWorkOrder = trpc.workOrderMutation.createWorkOrder.useMutation({
+    onSuccess: () => {
+      utils.workOrderQuery?.getWorkOrdersByClient?.invalidate?.({
+        client_id: clientId,
+      });
+      utils.clientQuery.getClientStats.invalidate({ id: clientId });
+      utils.proposalQuery.getProposalsByClient.invalidate({
+        client_id: clientId,
+      });
+      toast.success("Work order created successfully!");
+    },
+    onError: (error) => {
+      console.error("Error creating work order:", error);
+      cleanupFile();
+      handleError(error, { showToast: true });
+    },
+  });
 
-//   // Get offices for selection
-//   const getOffices = trpc.officeQuery.getOffices.useQuery({
-//     status: "active",
-//   });
+  /* Cleanup Logic */
+  const uploadedFileId = React.useRef<string | null>(null);
+  const deleteFileMutation = trpc.sharePointMutation.deleteFile.useMutation();
 
-//   // Get technologies
-//   // const getTechnologies = trpc.technologyQuery.getTechnologies.useQuery({
-//   //   status: "active",
-//   // });
+  const cleanupFile = useCallback(() => {
+    if (uploadedFileId.current) {
+      deleteFileMutation.mutate({ fileId: uploadedFileId.current });
+      uploadedFileId.current = null;
+    }
+  }, [deleteFileMutation]);
 
-//   // const technologiesData = getTechnologies?.data?.technologies || [];
-//   // const isGetTechnologiesLoading = getTechnologies.isLoading;
+  const handleCloseDialog = useCallback(() => {
+    if (isUploading) {
+      toast.error("Please wait for the document to finish uploading.");
+      return;
+    }
+    cleanupFile();
+    deleteParams(["dialog", "proposal-id"]);
 
-//   // Watch technology_used to fetch activity types
-//   const selectedTechnologyId = form.watch("technology_used");
+    // Delay form reset until after animation completes
+    setTimeout(() => {
+      form.reset({
+        code: "",
+        agreement_number: "",
+        rate_contract_number: "",
+        title: "",
+        proposal_id: undefined,
+        client_id: undefined,
+        office_id: undefined,
+        start_date: undefined,
+        end_date: undefined,
+        handing_over_date: undefined,
+        agreement_url: "",
+        document_key: "",
+        metric_ton: undefined,
+        metric_ton_rate: undefined,
+        process_type: undefined,
+        description: "",
+        grand_total_amount: undefined,
+        expense_amount: 0,
+      });
+      uploadedFileId.current = null;
+    }, 500);
+  }, [deleteParams, form, cleanupFile, isUploading]);
 
-//   // Get activity types for selected technology
-//   // const getActivityTypes =
-//   //   trpc.technologyQuery.getActivityTypesByTechnology.useQuery(
-//   //     { technology_id: Number(selectedTechnologyId) },
-//   //     { enabled: !!selectedTechnologyId && selectedTechnologyId !== "" },
-//   //   );
+  useEffect(() => {
+    if (isAddMode && effectiveProposalId && clientId) {
+      form.setValue("proposal_id", effectiveProposalId);
+      form.setValue("client_id", clientId);
+    }
+  }, [isAddMode, effectiveProposalId, clientId, form]);
 
-//   // const activityTypesData = getActivityTypes?.data?.activityTypes || [];
-//   // const isGetActivityTypesLoading = getActivityTypes.isLoading;
+  async function onSubmit(values: workOrderTypes.CreateWorkOrderInput) {
+    try {
+      console.log("Submitting work order:", values);
+      await createWorkOrder.mutateAsync(values);
+      // Clear the ref so we don't delete on close
+      uploadedFileId.current = null;
+      handleCloseDialog();
+    } catch (error) {
+      cleanupFile();
+      toast.error("Error submitting form. Please try again.");
+    }
+  }
 
-//   const officesData = getOffices?.data?.offices || [];
-//   const isGetOfficesLoading = getOffices.isLoading;
+  const offices = officesData?.offices ?? [];
 
-//   const handleDialogClose = useCallback(
-//     (open?: boolean) => {
-//       if (open) return; // If trying to open, do nothing
-//       if (isUploading) {
-//         toast.error("Please wait for the document to finish uploading.");
-//         return;
-//       }
-//       cleanupFile();
-//       deleteParams(["mode", "proposal-id"]);
+  // Process type options
+  const processTypeOptions = [
+    { value: WO_PROCESS.BIOREMEDIATION, label: "Bioremediation" },
+    { value: WO_PROCESS.RESTORATION, label: "Restoration" },
+  ];
 
-//       // Delay form reset until after animation completes
-//       setTimeout(() => {
-//         form.reset();
-//         setStep(1);
-//         uploadedFileId.current = null;
-//       }, 500);
-//     },
-//     [isUploading, cleanupFile, deleteParams, form],
-//   );
+  return (
+    <DialogWindow
+      title='Create Work Order'
+      description={`Create a new work order for proposal: ${proposalTitle}`}
+      open={isOpenDialog}
+      size='lg'
+      setOpen={handleCloseDialog}>
+      <Form {...form}>
+        <CustomForm
+          onSubmit={form.handleSubmit(onSubmit, (errors) => {
+            console.error("❌ Form validation failed:", errors);
+            toast.error(
+              "Please check the form for errors. Missing fields: " +
+                Object.keys(errors).join(", "),
+            );
+          })}>
+          {/* Row 1: Code and Title */}
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <FormField
+              control={form.control}
+              name='code'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Work Order Code</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder='Enter work order code'
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-//   // Separate function for step components that doesn't take parameters
-//   const closeDialog = () => {
-//     handleDialogClose(false);
-//   };
+            <FormField
+              control={form.control}
+              name='title'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Title</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder='Enter title'
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
-//   const createWorkOrder = trpc.workOrderMutation.createWorkOrder.useMutation({
-//     onSuccess: () => {
-//       toast.success("Work order created successfully!");
-//       // Clear the ref so we don't delete the file on close
-//       uploadedFileId.current = null;
-//       // Invalidate and refetch work order queries
-//       utils.workOrderQuery.getWorkOrdersByClient.invalidate({
-//         client_id: clientId,
-//       });
-//       utils.clientQuery.getClientStats.invalidate({ id: clientId });
-//       utils.proposalQuery.getProposalsByClient.invalidate({
-//         client_id: clientId,
-//       });
-//       handleDialogClose();
-//     },
-//     onError: (error) => {
-//       cleanupFile();
-//       handleError(error, { showToast: true });
-//     },
-//   });
+          {/* Row 2: Agreement Number and Rate Contract Number */}
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <FormField
+              control={form.control}
+              name='agreement_number'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Agreement Number</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder='Enter agreement number'
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-//   const selectedOfficeId = form.watch("office_id");
-//   const selectedOfficeIdString = selectedOfficeId
-//     ? String(selectedOfficeId)
-//     : "";
+            <FormField
+              control={form.control}
+              name='rate_contract_number'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Rate Contract Number</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder='Enter rate contract number'
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
-//   // Get sites for selected office
-//   const getSites = trpc.siteQuery.getSitesByOfficeId.useQuery(
-//     { office_id: Number(selectedOfficeId) },
-//     { enabled: !!selectedOfficeId && selectedOfficeId !== "" },
-//   );
+          {/* Row 3: Office and Process Type */}
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <FormField
+              control={form.control}
+              name='office_id'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Office</FormLabel>
+                  <Select
+                    onValueChange={(value) => field.onChange(Number(value))}
+                    value={field.value?.toString() ?? ""}
+                    disabled={isLoadingOffices}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue
+                          placeholder={
+                            isLoadingOffices
+                              ? "Loading offices..."
+                              : "Select an office"
+                          }
+                        />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {offices.map((office) => (
+                        <SelectItem
+                          key={office.id}
+                          value={office.id.toString()}>
+                          {office.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-//   const sitesData = getSites?.data;
-//   const isGetSitesLoading = getSites.isLoading;
+            <FormField
+              control={form.control}
+              name='process_type'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Process Type</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder='Select process type' />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {processTypeOptions.map((option) => (
+                        <SelectItem
+                          key={option.value}
+                          value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
-//   const onSubmit = async (values: WorkOrderFormValues) => {
-//     // setAttemptedSubmit(false);
-//     console.log("✅ Form validation passed!");
-//     console.log("Form values:", values);
-//     console.log(
-//       "Site IDs type:",
-//       typeof values.site_ids,
-//       "Is Array:",
-//       Array.isArray(values.site_ids),
-//     );
-//     console.log("Site IDs:", values.site_ids);
+          {/* Row 4: Dates */}
+          <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+            <FormField
+              control={form.control}
+              name='start_date'
+              render={({ field: { value, onChange, ...fieldProps } }) => (
+                <FormItem>
+                  <FormLabel>Start Date</FormLabel>
+                  <FormControl>
+                    <Input
+                      type='date'
+                      {...fieldProps}
+                      value={
+                        value instanceof Date
+                          ? value.toISOString().split("T")[0]
+                          : typeof value === "string"
+                            ? value
+                            : ""
+                      }
+                      onChange={(e) => {
+                        const dateValue = e.target.value
+                          ? new Date(e.target.value)
+                          : undefined;
+                        onChange(dateValue);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-//     // Transform form data to API format
-//     const workOrderData: any = {
-//       activity_type: values.activity_type,
-//       code: values.code,
-//       title: values.title,
-//       office_id: values.office_id,
-//       proposal_id: Number(effectiveProposalId),
+            <FormField
+              control={form.control}
+              name='end_date'
+              render={({ field: { value, onChange, ...fieldProps } }) => (
+                <FormItem>
+                  <FormLabel>End Date</FormLabel>
+                  <FormControl>
+                    <Input
+                      type='date'
+                      {...fieldProps}
+                      value={
+                        value instanceof Date
+                          ? value.toISOString().split("T")[0]
+                          : typeof value === "string"
+                            ? value
+                            : ""
+                      }
+                      onChange={(e) => {
+                        const dateValue = e.target.value
+                          ? new Date(e.target.value)
+                          : undefined;
+                        onChange(dateValue);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-//       // Client ID from URL params
-//       client_id: String(clientId),
-//       description: values.description,
+            <FormField
+              control={form.control}
+              name='handing_over_date'
+              render={({ field: { value, onChange, ...fieldProps } }) => (
+                <FormItem>
+                  <FormLabel>Handing Over Date</FormLabel>
+                  <FormControl>
+                    <Input
+                      type='date'
+                      {...fieldProps}
+                      value={
+                        value instanceof Date
+                          ? value.toISOString().split("T")[0]
+                          : typeof value === "string"
+                            ? value
+                            : ""
+                      }
+                      onChange={(e) => {
+                        const dateValue = e.target.value
+                          ? new Date(e.target.value)
+                          : undefined;
+                        onChange(dateValue);
+                      }}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
-//       // Dates
-//       start_date: values.start_date,
-//       end_date: values.end_date,
-//       handing_over_date: values.handing_over_date,
-//       document_key: values.document_key,
+          {/* Row 5: Metric Ton and Rate */}
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <FormField
+              control={form.control}
+              name='metric_ton'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Metric Ton (Optional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type='number'
+                      step='0.01'
+                      min='0'
+                      placeholder='Enter metric ton'
+                      {...field}
+                      onChange={(e) =>
+                        field.onChange(
+                          e.target.value ? Number(e.target.value) : undefined,
+                        )
+                      }
+                      value={field.value ?? ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-//       // Agreement
-//       agreement_number: values.agreement_number.toString(),
+            <FormField
+              control={form.control}
+              name='metric_ton_rate'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Metric Ton Rate (Optional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type='number'
+                      step='0.01'
+                      min='0'
+                      placeholder='Enter rate per metric ton'
+                      {...field}
+                      onChange={(e) =>
+                        field.onChange(
+                          e.target.value ? Number(e.target.value) : undefined,
+                        )
+                      }
+                      value={field.value ?? ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
-//       // Metrics
-//       metric_ton: values.metric_ton ? values.metric_ton.toString() : undefined,
-//       metric_ton_rate: values.metric_ton_rate
-//         ? values.metric_ton_rate.toString()
-//         : undefined,
+          {/* Row 6: Grand Total and Expense Amount */}
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <FormField
+              control={form.control}
+              name='grand_total_amount'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Grand Total Amount (₹) (Optional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type='number'
+                      step='0.01'
+                      min='0'
+                      placeholder='Enter grand total amount'
+                      {...field}
+                      onChange={(e) =>
+                        field.onChange(
+                          e.target.value ? Number(e.target.value) : undefined,
+                        )
+                      }
+                      value={field.value ?? ""}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-//       budget_amount: values.budget_amount.toString(),
-//       expense_amount: values.expense_amount.toString(),
-//       status: values.status,
-//       technology_used: values.technology_used.toString(),
-//       // Budget and description
+            <FormField
+              control={form.control}
+              name='expense_amount'
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Expense Amount (₹)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type='number'
+                      step='0.01'
+                      min='0'
+                      placeholder='Enter expense amount'
+                      {...field}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                      value={field.value ?? 0}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
-//       // Sites
-//       site_ids: values.site_ids?.map((id: number) => Number(id)),
+          {/* Row 7: Agreement URL (Optional) */}
+          <FormField
+            control={form.control}
+            name='agreement_url'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Agreement URL (Optional)</FormLabel>
+                <FormControl>
+                  <Input
+                    type='url'
+                    placeholder='Enter agreement URL'
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-//       // // Work order sites with activity type
-//       // workOrderSites: values.site_ids?.map((siteId: number) => ({
-//       //   site_id: Number(siteId),
-//       //   start_date: values.start_date,
-//       //   end_date: values.end_date,
-//       //   activity_type: values.activity_type,
-//       // })),
-//     };
+          {/* Row 8: Description */}
+          <FormField
+            control={form.control}
+            name='description'
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description (Optional)</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder='Enter description'
+                    rows={3}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-//     console.log("Submitting work order:", workOrderData);
-//     await createWorkOrder.mutateAsync(workOrderData);
-//   };
+          {/* Row 9: Document Upload */}
+          <FormField
+            control={form.control}
+            name='document_key'
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <CustomUploadDocument
+                    label='Work Order Document'
+                    folderPath={`/WorkOrders`}
+                    onUploadComplete={(path) => {
+                      field.onChange(path);
+                    }}
+                    onUploadingChange={setIsUploading}
+                    onFileChange={(file) => {
+                      uploadedFileId.current = file?.id || null;
+                    }}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-//   // Clear site_ids when office changes
-//   useEffect(() => {
-//     if (
-//       selectedOfficeId &&
-//       String(selectedOfficeId) !== prevOfficeIdRef.current
-//     ) {
-//       console.log(
-//         "Office changed from",
-//         prevOfficeIdRef.current,
-//         "to",
-//         selectedOfficeId,
-//       );
-//       form.setValue("site_ids", [], { shouldValidate: false });
-//       prevOfficeIdRef.current = String(selectedOfficeId);
-//     }
-//   }, [selectedOfficeId, form]);
-
-//   return (
-//     <DialogWindow
-//       title='Create Work Order'
-//       description='Set up a new work order with detailed information and site assignments'
-//       open={isOpenDialog}
-//       setOpen={handleDialogClose}
-//       size='xl'>
-//       <div className='space-y-6'>
-//         <Form {...form}>
-//           <CustomForm
-//             onSubmit={form.handleSubmit(onSubmit, (errors) => {
-//               console.error("❌ Form validation failed:", errors);
-//               toast.error(
-//                 "Please check the form for errors. Missing fields: " +
-//                   Object.keys(errors).join(", "),
-//               );
-//             })}>
-//             {/* Enhanced Stepper */}
-//             <Card className='border-0 shadow-none py-0'>
-//               <CardContent className='p-0 bg-transparent pl-2 mb-2'>
-//                 <div className='flex items-center gap-3'>
-//                   {steps.map((stepItem, index) => (
-//                     <React.Fragment key={stepItem.number}>
-//                       <div className='flex items-center gap-2'>
-//                         <div
-//                           className={`flex size-7 items-center justify-center rounded-full text-xs font-medium transition-colors ${
-//                             stepItem.isCompleted
-//                               ? "bg-emerald-500 text-white"
-//                               : stepItem.isActive
-//                                 ? "bg-sky-700 text-white"
-//                                 : "bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
-//                           }`}>
-//                           {stepItem.isCompleted ? (
-//                             <Check className='size-4' />
-//                           ) : (
-//                             stepItem.number
-//                           )}
-//                         </div>
-//                         <span
-//                           className={`text-sm font-medium ${
-//                             stepItem.isCompleted
-//                               ? "text-emerald-600 dark:text-emerald-400"
-//                               : stepItem.isActive
-//                                 ? "text-sky-700 dark:text-sky-400"
-//                                 : "text-gray-500 dark:text-gray-400"
-//                           }`}>
-//                           {stepItem.title}
-//                         </span>
-//                       </div>
-//                       {index < steps.length - 1 && (
-//                         <div
-//                           className={`h-px w-8 ${
-//                             stepItem.isCompleted
-//                               ? "bg-emerald-400"
-//                               : "bg-gray-300 dark:bg-gray-600"
-//                           }`}
-//                         />
-//                       )}
-//                     </React.Fragment>
-//                   ))}
-//                 </div>
-//               </CardContent>
-//             </Card>
-
-//             {/* Step Content */}
-//             <div className='space-y-6'>
-//               {step === 1 && (
-//                 <CreateWOStep1Basic
-//                   technologiesData={technologiesData}
-//                   isGetTechnologiesLoading={isGetTechnologiesLoading}
-//                   activityTypesData={activityTypesData}
-//                   isGetActivityTypesLoading={isGetActivityTypesLoading}
-//                   selectedTechnologyId={selectedTechnologyId || ""}
-//                   setStep={setStep}
-//                   closeDialog={closeDialog}
-//                   isUploading={isUploading}
-//                   setIsUploading={setIsUploading}
-//                   uploadedFileId={uploadedFileId}
-//                 />
-//               )}
-
-//               {step === 2 && (
-//                 <CreateWOStep2Sites
-//                   officesData={officesData}
-//                   isGetOfficesLoading={isGetOfficesLoading}
-//                   sitesData={sitesData}
-//                   isGetSitesLoading={isGetSitesLoading}
-//                   selectedOfficeId={selectedOfficeIdString}
-//                   setStep={setStep}
-//                   closeDialog={closeDialog}
-//                   isSubmitting={createWorkOrder.isPending}
-//                 />
-//               )}
-//             </div>
-//           </CustomForm>
-//         </Form>
-//       </div>
-//     </DialogWindow>
-//   );
-// };
-
-// export default CreateWODialog;
-
-import React from "react";
-
-const CreateWODialog = () => {
-  return <div>CreateWODialog</div>;
+          {/* Action Buttons */}
+          <div className='flex gap-3 pt-4'>
+            <CustomButton
+              type='button'
+              text='Cancel'
+              variant='outline'
+              className='flex-1'
+              onClick={handleCloseDialog}
+              disabled={createWorkOrder.isPending || isUploading}
+            />
+            <CustomButton
+              type='submit'
+              text='Create Work Order'
+              className='flex-1'
+              variant='primary'
+              loading={form.formState.isSubmitting || createWorkOrder.isPending}
+              disabled={
+                form.formState.isSubmitting ||
+                createWorkOrder.isPending ||
+                isUploading
+              }
+            />
+          </div>
+        </CustomForm>
+      </Form>
+    </DialogWindow>
+  );
 };
 
 export default CreateWODialog;

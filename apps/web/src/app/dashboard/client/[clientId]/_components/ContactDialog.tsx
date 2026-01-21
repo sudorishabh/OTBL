@@ -1,23 +1,12 @@
 import React from "react";
 import { Mail, Phone } from "lucide-react";
 import CustomDialogWindow from "@/components/DialogWindow";
-
-interface ClientUser {
-  client_id: number;
-  contact_number: string;
-  contact_type: string;
-  created_at: string;
-  designation: string;
-  email: string;
-  id: number;
-  name: string;
-  updated_at: string;
-}
+import { clientTypes } from "@pkg/schema";
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  users?: ClientUser[];
+  users?: clientTypes.clientUsersType[];
 }
 
 const ContactDialog = ({ open, onClose, users }: Props) => {
