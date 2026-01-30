@@ -3,6 +3,7 @@ import {
   baseWorkOrderSchema,
   createWorkOrderSchema,
   updateWorkOrderSchema,
+  scheduleOfRateSchema,
 } from "./work-order.schema";
 
 export type workOrderType = {
@@ -17,14 +18,9 @@ export type workOrderType = {
   start_date: string;
   end_date: string;
   handing_over_date: string;
-  agreement_url: string | null;
   document_key: string;
-  metric_ton: string | null;
-  metric_ton_rate: string | null;
-  process_type: string;
+  process_type: "bioremediation" | "restoration" | "bioremediation_restoration";
   description: string | null;
-  grand_total_amount: string | null;
-  expense_amount: string;
   status: "pending" | "completed" | "cancelled";
   cancellation_reason: string | null;
   created_by: number | null;
@@ -32,10 +28,29 @@ export type workOrderType = {
   updated_at: string;
 };
 
+export type ScheduleOfRateType = {
+  id: number;
+  work_order_id: number;
+  activity: string;
+  unit: string;
+  estimated_quantity: string;
+  rc_unit_rate: string;
+  gst_percentage: string;
+  unit_rate_inclusive_gst: string;
+  total_cost: string;
+  transportation_km: string;
+  created_at: string;
+  updated_at: string;
+};
+
 // Input types for forms (before validation/coercion)
 export type BaseWorkOrderInput = z.input<typeof baseWorkOrderSchema>;
+export type ScheduleOfRateInput = z.input<typeof scheduleOfRateSchema>;
 
 // Output types (after validation/coercion)
 export type BaseWorkOrderOutput = z.output<typeof baseWorkOrderSchema>;
-export type CreateWorkOrderInput = z.output<typeof createWorkOrderSchema>;
-export type UpdateWorkOrderInput = z.output<typeof updateWorkOrderSchema>;
+export type CreateWorkOrderType = z.infer<typeof createWorkOrderSchema>;
+export type UpdateWorkOrderType = z.output<typeof updateWorkOrderSchema>;
+export type ScheduleOfRateOutput = z.output<typeof scheduleOfRateSchema>;
+
+export type CreateWorkOrderInputType = z.input<typeof createWorkOrderSchema>;

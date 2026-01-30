@@ -143,31 +143,6 @@ export const proposalTable = mysqlTable(
     index("proposal_status_idx").on(table.status),
   ],
 );
-
-// export const technologyTable = mysqlTable("technologies", {
-//   id: int("id").autoincrement().primaryKey(),
-//   name: varchar("name", { length: 255 }).notNull(),
-//   description: text("description"),
-//   status: varchar("status", {
-//     length: 50,
-//     enum: [STATUS.ACTIVE, STATUS.INACTIVE],
-//   })
-//     .notNull()
-//     .default(STATUS.ACTIVE),
-//   created_at: timestamp("created_at").notNull().defaultNow(),
-//   updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
-// });
-
-// export const activityTypeTable = mysqlTable("activity_types", {
-//   id: int("id").autoincrement().primaryKey(),
-//   technology_id: int("technology_id")
-//     .notNull()
-//     .references(() => technologyTable.id, { onDelete: "cascade" }),
-//   name: varchar("name", { length: 255 }).notNull(),
-//   created_at: timestamp("created_at").notNull().defaultNow(),
-//   updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
-// });
-
 export const officeTable = mysqlTable(
   "offices",
   {
@@ -247,30 +222,11 @@ export const workOrderTable = mysqlTable(
     start_date: timestamp("start_date").notNull(),
     end_date: timestamp("end_date").notNull(),
     handing_over_date: timestamp("handing_over_date").notNull(),
-    agreement_url: text("agreement_url"),
     document_key: varchar("document_key", { length: 255 }).notNull(),
-    metric_ton: decimal("metric_ton", {
-      precision: 10,
-      scale: 2,
-    }),
-    metric_ton_rate: decimal("metric_ton_rate", {
-      precision: 10,
-      scale: 2,
-    }),
     process_type: varchar("process_type", {
       length: 50,
     }).notNull(),
     description: text("description"),
-    grand_total_amount: decimal("grand_total_amount", {
-      precision: 10,
-      scale: 2,
-    }),
-    expense_amount: decimal("expense_amount", {
-      precision: 10,
-      scale: 2,
-    })
-      .notNull()
-      .default("0"),
     status: varchar("status", {
       length: 50,
       enum: [
@@ -328,7 +284,7 @@ export const scheduleOfRatesTable = mysqlTable("schedule_of_rates", {
   transportation_km: decimal("transportation_km", {
     precision: 10,
     scale: 2,
-  }).notNull(),
+  }),
   created_at: timestamp("created_at").notNull().defaultNow(),
 
   updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
@@ -395,24 +351,8 @@ export const workOrderSiteTable = mysqlTable(
     end_date: timestamp("end_date").notNull(),
     process_type: varchar("process_type", {
       length: 50,
-      enum: [ACTIVITY_TYPE.INSITU, ACTIVITY_TYPE.EXSITU],
-    }),
-    // metric_ton: decimal("metric_ton", {
-    //   precision: 10,
-    //   scale: 2,
-    // }),
-    // metric_ton_rate: decimal("metric_ton_rate", {
-    //   precision: 10,
-    //   scale: 2,
-    // }),
-    // budget_amount: decimal("budget_amount", {
-    //   precision: 10,
-    //   scale: 2,
-    // }),
-    // total_expense_amount: decimal("total_expense_amount", {
-    //   precision: 10,
-    //   scale: 2,
-    // }),
+    }).notNull(),
+
     job_number: varchar("job_number", { length: 255 }).notNull(),
     area: varchar("area", { length: 255 }).notNull(),
     installation_type: varchar("installation", { length: 255 }).notNull(),
@@ -497,219 +437,150 @@ export const siteActivityTable = mysqlTable("site_activity_items", {
   updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
 });
 
-// // Zero Day Activity - One time activity
-// export const zeroDayTable = mysqlTable("zero_days", {
-//   id: int("id").autoincrement().primaryKey(),
-//   site_activity_id: int("site_activity_id").references(
-//     () => siteActivityTable.id,
-//     { onDelete: "cascade" },
-//   ),
-//   work_order_site_id: int("work_order_site_id")
-//     .notNull()
-//     .references(() => workOrderSiteTable.id, { onDelete: "cascade" }),
-//   type: varchar("type", {
-//     enum: ["work_estimate", "order", "expense"],
-//     length: 255,
-//   }).notNull(),
-//   amount: decimal("amount", { precision: 10, scale: 2 }),
-//   // Measurement fields
-//   length_metric: decimal("length_metric", { precision: 10, scale: 2 }),
-//   width_metric: decimal("width_metric", { precision: 10, scale: 2 }),
-//   depth_metric: decimal("depth_metric", { precision: 10, scale: 2 }),
-//   volume_informed: decimal("volume_informed", { precision: 10, scale: 2 }),
-//   // Document
-//   document_key: varchar("document_key", { length: 255 }).notNull(),
-//   created_at: timestamp("created_at").notNull().defaultNow(),
-//   updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
-// });
-
-// // Zero Day Sample - One time activity
-// export const zeroDaySampleTable = mysqlTable("zero_day_samples", {
-//   id: int("id").autoincrement().primaryKey(),
-//   site_activity_id: int("site_activity_id").references(
-//     () => siteActivityTable.id,
-//     { onDelete: "cascade" },
-//   ),
-//   work_order_site_id: int("work_order_site_id")
-//     .notNull()
-//     .references(() => workOrderSiteTable.id, { onDelete: "cascade" }),
-//   activity_description: text("activity_description"),
-//   status: varchar("status", {
-//     length: 50,
-//     enum: ["pending", "completed", "cancelled"],
-//   })
-//     .notNull()
-//     .default("pending"),
-//   type: varchar("type", {
-//     enum: ["work_estimate", "order", "expense"],
-//     length: 255,
-//   }).notNull(),
-//   amount: decimal("amount", { precision: 10, scale: 2 }),
-//   // Measurement fields
-//   length: decimal("length", { precision: 10, scale: 2 }),
-//   width: decimal("width", { precision: 10, scale: 2 }),
-//   height: decimal("height", { precision: 10, scale: 2 }),
-//   // A1 = L × W × H
-//   volume_a1: decimal("volume_a1", { precision: 10, scale: 2 }),
-//   // A2 = Density
-//   density_a2: decimal("density_a2", { precision: 10, scale: 2 }),
-//   // A = A1 × A2
-//   result_a: decimal("result_a", { precision: 10, scale: 2 }),
-//   document_key: varchar("document_key", { length: 255 }).notNull(),
-//   created_at: timestamp("created_at").notNull().defaultNow(),
-//   updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
-// });
-
-// // TPH Activity - Can be added multiple times
-// export const tphTable = mysqlTable("tph", {
-//   id: int("id").autoincrement().primaryKey(),
-//   site_activity_id: int("site_activity_id").references(
-//     () => siteActivityTable.id,
-//     { onDelete: "cascade" },
-//   ),
-//   work_order_site_id: int("work_order_site_id")
-//     .notNull()
-//     .references(() => workOrderSiteTable.id, { onDelete: "cascade" }),
-//   activity_description: text("activity_description"),
-//   sample_collection_date: timestamp("sample_collection_date").notNull(),
-//   sample_send_date: timestamp("sample_send_date").notNull(),
-//   sample_report_received: varchar("sample_report_received", {
-//     length: 50,
-//     enum: ["yes", "no"],
-//   }).default("no"),
-//   type: varchar("type", {
-//     enum: ["work_estimate", "order", "expense"],
-//     length: 255,
-//   }).notNull(),
-//   amount: decimal("amount", { precision: 10, scale: 2 }),
-//   document_key: varchar("document_key", { length: 255 }).notNull(),
-//   tph_value: decimal("tph_value", { precision: 10, scale: 2 }),
-//   lab_info: text("lab_info"),
-//   created_at: timestamp("created_at").notNull().defaultNow(),
-//   updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
-// });
-
-// // Oil Zapper Activity - Can be added multiple times
-// export const oilZapperTable = mysqlTable("oil_zappers", {
-//   id: int("id").autoincrement().primaryKey(),
-//   site_activity_id: int("site_activity_id").references(
-//     () => siteActivityTable.id,
-//     { onDelete: "cascade" },
-//   ),
-//   work_order_site_id: int("work_order_site_id")
-//     .notNull()
-//     .references(() => workOrderSiteTable.id, { onDelete: "cascade" }),
-//   activity_description: text("activity_description"),
-//   // Sent information
-//   type: varchar("type", {
-//     enum: ["work_estimate", "order", "expense"],
-//     length: 255,
-//   }).notNull(),
-//   amount: decimal("amount", { precision: 10, scale: 2 }),
-//   length: decimal("length", { precision: 10, scale: 2 }),
-//   width: decimal("width", { precision: 10, scale: 2 }),
-//   depth: decimal("depth", { precision: 10, scale: 2 }),
-//   document_key: varchar("document_key", { length: 255 }).notNull(),
-//   created_at: timestamp("created_at").notNull().defaultNow(),
-//   updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
-// });
-
-// export const cleanUpOilSpillTable = mysqlTable("clean_up_oil_spill", {
-//   id: int("id").autoincrement().primaryKey(),
-//   site_activity_id: int("site_activity_id").references(
-//     () => siteActivityTable.id,
-//     { onDelete: "cascade" },
-//   ),
-//   work_order_site_id: int("work_order_site_id")
-//     .notNull()
-//     .references(() => workOrderSiteTable.id, { onDelete: "cascade" }),
-//   activity_description: text("activity_description"),
-//   // Sent information
-//   type: varchar("type", {
-//     enum: ["work_estimate", "order", "expense"],
-//     length: 255,
-//   }).notNull(),
-//   amount: decimal("amount", { precision: 10, scale: 2 }),
-//   // Area dimension fields
-//   length: decimal("length", { precision: 10, scale: 2 }),
-//   width: decimal("width", { precision: 10, scale: 2 }),
-//   depth: decimal("depth", { precision: 10, scale: 2 }),
-//   document_key: varchar("document_key", { length: 255 }).notNull(),
-//   created_at: timestamp("created_at").notNull().defaultNow(),
-//   updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
-// });
-
-// export const liftingOilSlushTable = mysqlTable("lifting_oil_slush", {
-//   id: int("id").autoincrement().primaryKey(),
-//   site_activity_id: int("site_activity_id").references(
-//     () => siteActivityTable.id,
-//     { onDelete: "cascade" },
-//   ),
-//   work_order_site_id: int("work_order_site_id")
-//     .notNull()
-//     .references(() => workOrderSiteTable.id, { onDelete: "cascade" }),
-//   activity_description: text("activity_description"),
-//   // Sent information
-//   type: varchar("type", {
-//     enum: ["work_estimate", "order", "expense"],
-//     length: 255,
-//   }).notNull(),
-//   amount: decimal("amount", { precision: 10, scale: 2 }),
-//   // Area dimension fields
-//   length: decimal("length", { precision: 10, scale: 2 }),
-//   width: decimal("width", { precision: 10, scale: 2 }),
-//   depth: decimal("depth", { precision: 10, scale: 2 }),
-//   document_key: varchar("document_key", { length: 255 }).notNull(),
-//   created_at: timestamp("created_at").notNull().defaultNow(),
-//   updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
-// });
-
-// export const excavationContSoilTable = mysqlTable("excavation_cont_soil", {
-//   id: int("id").autoincrement().primaryKey(),
-//   site_activity_id: int("site_activity_id").references(
-//     () => siteActivityTable.id,
-//     { onDelete: "cascade" },
-//   ),
-//   work_order_site_id: int("work_order_site_id")
-//     .notNull()
-//     .references(() => workOrderSiteTable.id, { onDelete: "cascade" }),
-//   activity_description: text("activity_description"),
-//   // Sent information
-//   type: varchar("type", {
-//     enum: ["work_estimate", "order", "expense"],
-//     length: 255,
-//   }).notNull(),
-//   amount: decimal("amount", { precision: 10, scale: 2 }),
-//   // Area dimension fields
-//   length: decimal("length", { precision: 10, scale: 2 }),
-//   width: decimal("width", { precision: 10, scale: 2 }),
-//   depth: decimal("depth", { precision: 10, scale: 2 }),
-//   document_key: varchar("document_key", { length: 255 }).notNull(),
-//   created_at: timestamp("created_at").notNull().defaultNow(),
-//   updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
-// });
-
-// export const trnsprtOilSlushTable = mysqlTable("trnsprt_oil_slush", {
-//   id: int("id").autoincrement().primaryKey(),
-//   site_activity_id: int("site_activity_id").references(
-//     () => siteActivityTable.id,
-//     { onDelete: "cascade" },
-//   ),
-//   work_order_site_id: int("work_order_site_id")
-//     .notNull()
-//     .references(() => workOrderSiteTable.id, { onDelete: "cascade" }),
-//   activity_description: text("activity_description"),
-//   // Sent information
-//   type: varchar("type", {
-//     enum: ["work_estimate", "order", "expense"],
-//     length: 255,
-//   }).notNull(),
-//   amount: decimal("amount", { precision: 10, scale: 2 }),
-//   // Area dimension fields
-//   length: decimal("length", { precision: 10, scale: 2 }),
-//   width: decimal("width", { precision: 10, scale: 2 }),
-//   depth: decimal("depth", { precision: 10, scale: 2 }),
-//   document_key: varchar("document_key", { length: 255 }).notNull(),
-//   created_at: timestamp("created_at").notNull().defaultNow(),
-//   updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
-// });
+export const cleaningUpSoilAreaTable = mysqlTable("cleaning_up_soil_area", {
+  id: int("id").autoincrement().primaryKey(),
+  site_activity_id: int("site_activity_id").references(
+    () => siteActivityTable.id,
+    { onDelete: "cascade" },
+  ),
+  work_order_site_id: int("work_order_site_id")
+    .notNull()
+    .references(() => workOrderSiteTable.id, { onDelete: "cascade" }),
+  estimated_quantity: decimal("estimated_quantity", {
+    precision: 10,
+    scale: 2,
+  }).notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }),
+  transportation_km: decimal("transportation_km", {
+    precision: 10,
+    scale: 2,
+  }),
+  type: varchar("type", {
+    enum: ["sub_wo", "estimate", "expense"],
+    length: 255,
+  }).notNull(),
+});
+export const liftingRecoveryOilSlushTable = mysqlTable(
+  "lifting_recovery_oil_slush",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    site_activity_id: int("site_activity_id").references(
+      () => siteActivityTable.id,
+      { onDelete: "cascade" },
+    ),
+    work_order_site_id: int("work_order_site_id")
+      .notNull()
+      .references(() => workOrderSiteTable.id, { onDelete: "cascade" }),
+    estimated_quantity: decimal("estimated_quantity", {
+      precision: 10,
+      scale: 2,
+    }).notNull(),
+    amount: decimal("amount", { precision: 10, scale: 2 }),
+    transportation_km: decimal("transportation_km", {
+      precision: 10,
+      scale: 2,
+    }),
+    type: varchar("type", {
+      enum: ["sub_wo", "estimate", "expense"],
+      length: 255,
+    }).notNull(),
+  },
+);
+export const excavationContSoilTable = mysqlTable("excavation_cont_soil", {
+  id: int("id").autoincrement().primaryKey(),
+  site_activity_id: int("site_activity_id").references(
+    () => siteActivityTable.id,
+    { onDelete: "cascade" },
+  ),
+  work_order_site_id: int("work_order_site_id")
+    .notNull()
+    .references(() => workOrderSiteTable.id, { onDelete: "cascade" }),
+  estimated_quantity: decimal("estimated_quantity", {
+    precision: 10,
+    scale: 2,
+  }).notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }),
+  transportation_km: decimal("transportation_km", {
+    precision: 10,
+    scale: 2,
+  }),
+  type: varchar("type", {
+    enum: ["sub_wo", "estimate", "expense"],
+    length: 255,
+  }).notNull(),
+});
+export const transportationContSoilTable = mysqlTable(
+  "transportation_cont_soil",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    site_activity_id: int("site_activity_id").references(
+      () => siteActivityTable.id,
+      { onDelete: "cascade" },
+    ),
+    work_order_site_id: int("work_order_site_id")
+      .notNull()
+      .references(() => workOrderSiteTable.id, { onDelete: "cascade" }),
+    estimated_quantity: decimal("estimated_quantity", {
+      precision: 10,
+      scale: 2,
+    }).notNull(),
+    amount: decimal("amount", { precision: 10, scale: 2 }),
+    transportation_km: decimal("transportation_km", {
+      precision: 10,
+      scale: 2,
+    }),
+    type: varchar("type", {
+      enum: ["sub_wo", "estimate", "expense"],
+      length: 255,
+    }).notNull(),
+  },
+);
+export const refillingExcavatedContSoilTable = mysqlTable(
+  "refilling_excavated_cont_soil",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    site_activity_id: int("site_activity_id").references(
+      () => siteActivityTable.id,
+      { onDelete: "cascade" },
+    ),
+    work_order_site_id: int("work_order_site_id")
+      .notNull()
+      .references(() => workOrderSiteTable.id, { onDelete: "cascade" }),
+    estimated_quantity: decimal("estimated_quantity", {
+      precision: 10,
+      scale: 2,
+    }).notNull(),
+    amount: decimal("amount", { precision: 10, scale: 2 }),
+    transportation_km: decimal("transportation_km", {
+      precision: 10,
+      scale: 2,
+    }),
+    type: varchar("type", {
+      enum: ["sub_wo", "estimate", "expense"],
+      length: 255,
+    }).notNull(),
+  },
+);
+export const bioremediationContSoilTable = mysqlTable("biorem_cont_soil", {
+  id: int("id").autoincrement().primaryKey(),
+  site_activity_id: int("site_activity_id").references(
+    () => siteActivityTable.id,
+    { onDelete: "cascade" },
+  ),
+  work_order_site_id: int("work_order_site_id")
+    .notNull()
+    .references(() => workOrderSiteTable.id, { onDelete: "cascade" }),
+  estimated_quantity: decimal("estimated_quantity", {
+    precision: 10,
+    scale: 2,
+  }).notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }),
+  transportation_km: decimal("transportation_km", {
+    precision: 10,
+    scale: 2,
+  }),
+  type: varchar("type", {
+    enum: ["sub_wo", "estimate", "expense"],
+    length: 255,
+  }).notNull(),
+});

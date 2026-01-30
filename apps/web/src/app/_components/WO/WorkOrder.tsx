@@ -1,16 +1,19 @@
 "use client";
 import React, { useState } from "react";
-import Wrapper from "@/components/Wrapper/Wrapper";
+import Wrapper from "@/components/wrapper/Wrapper";
 import { trpc } from "@/lib/trpc";
-// import PageFetchingData from "@/components/PageFetchingData";
 import { capitalFirstLetter } from "@pkg/utils";
 import { useRouter } from "next/navigation";
 import WorkOrderDetailsCard from "./_components/WorkOrderDetailsCard";
 import WorkOrderStats from "./_components/WorkOrderStats";
-import SiteDetailsDialog from "./_components/SiteDetailsDialog";
-import { Calendar, MapPin, Phone, User } from "lucide-react";
+import { Calendar, MapPin } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
+import ScheduleOfRatesTable from "./_components/ScheduleOfRatesTable";
+import AddWorkOrderSiteDialog from "./_components/AddWorkOrderSiteDialog";
+import SiteDetailDialog from "./_components/SiteDetailDialog";
+import useHandleParams from "@/hooks/useHandleParams";
+import CustomButton from "@/components/CustomButton";
 
 interface Props {
   workOrderId: string;
@@ -18,13 +21,14 @@ interface Props {
 
 const WorkOrder = ({ workOrderId }: Props) => {
   const router = useRouter();
+  const { setParam } = useHandleParams();
   const [selectedSite, setSelectedSite] = useState<any>(null);
   const [siteDialogOpen, setSiteDialogOpen] = useState(false);
 
   // Fetch work order details from the backend
   const workOrderQuery = trpc.workOrderQuery.getWorkOrderDetails.useQuery(
     { id: Number(workOrderId) },
-    { enabled: !!workOrderId }
+    { enabled: !!workOrderId },
   );
 
   if (workOrderQuery.isLoading) {
@@ -54,7 +58,7 @@ const WorkOrder = ({ workOrderId }: Props) => {
     );
   }
 
-  const { workOrder, sites, stats } = data;
+  const { workOrder, sites, stats, scheduleOfRates } = data as any;
 
   // Transform sites data for the components - only use fields from schema
   const sitesForSiteComponent = sites.map((s: any) => ({
@@ -86,16 +90,32 @@ const WorkOrder = ({ workOrderId }: Props) => {
 
   const statsForComponent = {
     totalSites: stats.total_sites || 0,
-    completedActivities: 0,
-    totalBudgetAmount: workOrder?.budget_amount?.toString() || "0",
-    totalExpenseAmount: workOrder?.expense_amount?.toString() || "0",
-    budgetUtilization:
-      workOrder?.budget_amount && Number(workOrder.budget_amount) > 0
-        ? (Number(workOrder.expense_amount || 0) /
-            Number(workOrder.budget_amount)) *
-          100
-        : 0,
+    completedActivities:
+      sitesForSiteComponent.filter((s: any) => s.status === "completed")
+        ?.length || 0,
+    totalBudgetAmount: sitesForSiteComponent
+      .reduce(
+        (acc: number, curr: any) => acc + Number(curr.budget_amount || 0),
+        0,
+      )
+      .toString(),
+    totalExpenseAmount: sitesForSiteComponent
+      .reduce(
+        (acc: number, curr: any) =>
+          acc + Number(curr.total_expense_amount || 0),
+        0,
+      )
+      .toString(),
+    budgetUtilization: 0,
   };
+
+  // Calculate budget utilization
+  if (Number(statsForComponent.totalBudgetAmount) > 0) {
+    statsForComponent.budgetUtilization =
+      (Number(statsForComponent.totalExpenseAmount) /
+        Number(statsForComponent.totalBudgetAmount)) *
+      100;
+  }
 
   // Transform workOrder for the component
   const workOrderForComponent = {
@@ -106,8 +126,10 @@ const WorkOrder = ({ workOrderId }: Props) => {
     date: workOrder?.start_date
       ? new Date(workOrder.start_date).toISOString()
       : new Date().toISOString(),
-    budget_amount: workOrder?.budget_amount?.toString() || "0",
-    expense_amount: workOrder?.expense_amount?.toString() || "0",
+    process_type: workOrder?.process_type,
+    rate_contract_number: workOrder?.rate_contract_number,
+    document_key: workOrder?.document_key,
+    agreement_number: workOrder?.agreement_number,
     status: workOrder?.status as "pending" | "completed" | "cancelled",
     cancellation_reason: workOrder?.cancellation_reason,
     created_at: workOrder?.created_at
@@ -131,12 +153,30 @@ const WorkOrder = ({ workOrderId }: Props) => {
         <WorkOrderDetailsCard workOrder={workOrderForComponent} />
         <WorkOrderStats stats={statsForComponent} />
 
-        {/* Horizontal Sites Section */}
-        {sitesForSiteComponent.length > 0 && (
-          <div className='rounded-lg border bg-white p-6'>
-            <h2 className='text-lg font-semibold mb-4'>
+        <div className='rounded-lg border bg-white p-6'>
+          <div className='flex items-center justify-between mb-4'>
+            <h2 className='text-lg font-semibold'>
               Work Order Sites ({sitesForSiteComponent.length})
             </h2>
+            <div className=' bg-whit rounded-lg px- py-'>
+              {scheduleOfRates && scheduleOfRates.length > 0 && (
+                <div className='flex gap-4 justify-end'>
+                  <CustomButton
+                    text='View Schedule of Rates'
+                    variant='outline'
+                    onClick={() => setParam("dialog", "schedule-of-rates")}
+                  />
+                  <CustomButton
+                    variant='primary'
+                    text='Add Site'
+                    onClick={() => setParam("dialog", "create-wo-site")}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {sitesForSiteComponent.length > 0 ? (
             <div className='relative'>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100'>
                 {sitesForSiteComponent.map((site: any) => (
@@ -193,19 +233,9 @@ const WorkOrder = ({ workOrderId }: Props) => {
                               className='bg-orange-800/15 text-orange-800'>
                               {capitalFirstLetter(user.user_name)}
                             </Badge>
-                          )
+                          ),
                         )}
                       </div>
-
-                      {/* <div className='flex items-center gap-2'>
-                        <User className='w-4 h-4 shrink-0' />
-                        <p className='line-clamp-1'>{site.contact_person}</p>
-                      </div>
-
-                      <div className='flex items-center gap-2'>
-                        <Phone className='w-4 h-4 shrink-0' />
-                        <p className='line-clamp-1'>{site.contact_number}</p>
-                      </div> */}
                     </div>
 
                     <div className='mt-3 pt-3 border-t'>
@@ -217,14 +247,26 @@ const WorkOrder = ({ workOrderId }: Props) => {
                 ))}
               </div>
             </div>
-          </div>
-        )}
+          ) : (
+            <div className='text-center py-8 text-gray-500'>
+              No sites added yet. Click &quot;Add Site&quot; to get started.
+            </div>
+          )}
+        </div>
 
-        {/* Site Details Dialog */}
-        <SiteDetailsDialog
-          site={selectedSite}
-          open={siteDialogOpen}
-          setOpen={setSiteDialogOpen}
+        <ScheduleOfRatesTable scheduleOfRates={scheduleOfRates} />
+        <AddWorkOrderSiteDialog
+          workOrder={workOrder}
+          scheduleOfRates={scheduleOfRates}
+          onSuccess={() => workOrderQuery.refetch()}
+        />
+        <SiteDetailDialog
+          isOpen={siteDialogOpen}
+          onClose={() => {
+            setSiteDialogOpen(false);
+            setSelectedSite(null);
+          }}
+          siteData={selectedSite}
         />
       </div>
     </Wrapper>

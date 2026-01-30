@@ -11,7 +11,7 @@ const HeaderNotice = ({ notice }: Props) => {
     <Card className='border-blue-200 bg-blue-50/50 shadow-sm py-1'>
       <CardContent className='p-4'>
         <div className='flex items-start gap-3'>
-          <div className='flex-shrink-0'>
+          <div className='shrink-0'>
             <Info className='h-5 w-5 text-[#035864] mt-0.5' />
           </div>
           <div className='flex-1'>

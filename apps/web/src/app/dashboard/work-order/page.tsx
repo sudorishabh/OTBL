@@ -1,11 +1,11 @@
 "use client";
-import Wrapper from "@/components/Wrapper/Wrapper";
+import Wrapper from "@/components/wrapper/Wrapper";
 import React, { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import CustomButton from "@/components/CustomButton";
 import WorkOrderTable from "./_components/WorkOrderTable";
 import { trpc } from "@/lib/trpc";
-import PageLoading from "@/components/PageLoading";
+import PageLoading from "@/components/loading/PageLoading";
 import { useWorkOrderManagementContext } from "@/contexts/WorkOrderManagementContext";
 import WorkOrderSearchNFilter from "./_components/WorkOrderSearchNFilter";
 import { IWorkOrder } from "@/types/work-order.types";

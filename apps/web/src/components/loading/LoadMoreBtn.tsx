@@ -1,5 +1,5 @@
 import React from "react";
-import CustomButton from "./CustomButton";
+import CustomButton from "../CustomButton";
 
 interface Props {
   onClick: () => void;

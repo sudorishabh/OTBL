@@ -3,24 +3,57 @@ import {
   titleValidator,
   codeValidator,
   agreementNumberValidator,
-  dateValidator,
   documentKeyValidator,
-  optionalUrlValidator,
   positiveIntValidator,
-  nonNegativeNumberValidator,
   longDescriptionValidator,
+  searchQueryValidator,
+  dateValidator,
 } from "../validators";
+import { createSiteSchema } from "../site/site.schema";
 
 // Enums
+export const activityTypeEnum = z.enum(["insitu", "exsitu"]);
+
 export const workOrderStatusEnum = z.enum([
   "pending",
   "completed",
   "cancelled",
 ]);
 
-export const processTypeEnum = z.enum(["bioremediation", "restoration"]);
+export const processTypeEnum = z.enum([
+  "bioremediation",
+  "restoration",
+  "bioremediation_restoration",
+]);
 
-// Base work order schema for creation
+// Activity types for schedule of rates
+export const woActivityEnum = z.enum([
+  "cleaning_up_soil_area",
+  "lifting_oily_slush_or_recovery_of_oil",
+  "excavation_oil_contaminated_soil",
+  "transportation_contaminated_soil",
+  "refilling_excavated_oil_contaminated_soil_land",
+  "bioremediation_oil_contaminated_soil",
+]);
+
+// Schedule of Rates schema
+export const scheduleOfRateSchema = z.object({
+  activity: woActivityEnum,
+  unit: z
+    .string()
+    .min(1, "Unit is required")
+    .max(10, "Unit cannot exceed 10 characters"),
+  estimated_quantity: z.number().min(0, "Quantity cannot be negative"),
+  rc_unit_rate: z.number().min(0, "Rate cannot be negative"),
+  gst_percentage: z.number().min(0, "Min 1"),
+  unit_rate_inclusive_gst: z.number().min(0, "Rate cannot be negative"),
+  total_cost: z.number().min(0, "Total cost cannot be negative"),
+  transportation_km: z
+    .number()
+    .min(0, "Distance cannot be negative")
+    .optional(),
+});
+
 export const baseWorkOrderSchema = z.object({
   code: codeValidator,
   agreement_number: agreementNumberValidator,
@@ -30,55 +63,22 @@ export const baseWorkOrderSchema = z.object({
     .min(1, "Rate contract number is required")
     .max(255, "Rate contract number cannot exceed 255 characters"),
   title: titleValidator,
-  proposal_id: positiveIntValidator,
-  client_id: positiveIntValidator,
-  office_id: positiveIntValidator,
   start_date: dateValidator,
   end_date: dateValidator,
   handing_over_date: dateValidator,
-  agreement_url: optionalUrlValidator,
   document_key: documentKeyValidator,
-  metric_ton: z.coerce
-    .number()
-    .min(0, "Metric ton cannot be negative")
-    .max(999999.99, "Metric ton value is too large")
-    .optional(),
-  metric_ton_rate: z.coerce
-    .number()
-    .min(0, "Rate cannot be negative")
-    .max(999999.99, "Rate value is too large")
-    .optional(),
   process_type: processTypeEnum,
   description: longDescriptionValidator,
-  grand_total_amount: z.coerce
-    .number()
-    .min(0, "Amount cannot be negative")
-    .optional(),
-  expense_amount: nonNegativeNumberValidator.default(0),
+  schedule_of_rates: z
+    .array(scheduleOfRateSchema)
+    .min(1, "At least one schedule of rate entry is required"),
 });
 
-// Schema for creating a work order - refines dates
-export const createWorkOrderSchema = baseWorkOrderSchema
-  .refine(
-    (data) => {
-      return data.end_date >= data.start_date;
-    },
-    {
-      message: "End date must be on or after start date",
-      path: ["end_date"],
-    },
-  )
-  .refine(
-    (data) => {
-      return data.handing_over_date >= data.end_date;
-    },
-    {
-      message: "Handing over date must be on or after end date",
-      path: ["handing_over_date"],
-    },
-  );
+export const createWorkOrderSchema = baseWorkOrderSchema.extend({
+  proposal_id: positiveIntValidator,
+  client_id: positiveIntValidator,
+});
 
-// Schema for updating a work order
 export const updateWorkOrderSchema = baseWorkOrderSchema
   .partial()
   .extend({
@@ -109,7 +109,39 @@ export const getWorkOrdersByClientSchema = z.object({
   client_id: positiveIntValidator,
 });
 
+// Schema for getting work orders by office
+export const getWorkOrdersByOfficeSchema = z.object({
+  office_id: positiveIntValidator,
+});
+
 // Schema for getting work order by id
-export const getWorkOrderByIdSchema = z.object({
+export const getWorkOrderSchema = z.object({
   id: positiveIntValidator,
+});
+
+export const getAllWorkOrdersPaginatedSchema = z.object({
+  page: z.number().min(1).default(1),
+  limit: z.number().min(1).max(100).default(10),
+  searchQuery: z.string().optional(),
+  status: z.string().optional(),
+  office_id: z.number().optional(),
+  workOrderOrder: z.enum(["asc", "desc", "latest", "oldest"]).optional(),
+});
+
+export const addWorkOrderSiteSchema = z.object({
+  work_order_id: positiveIntValidator,
+  client_id: positiveIntValidator,
+  site_id: positiveIntValidator.optional(), // Optional if creating new site
+  date: dateValidator,
+  end_date: dateValidator,
+  process_type: z.string().min(1, "Process type is required"),
+  job_number: z.string().min(1, "Job number is required"),
+  area: z.string().min(1, "Area is required"),
+  installation_type: z.string().min(1, "Installation type is required"),
+  joint_estimate_number: z.string().min(1, "Joint estimate number is required"),
+  land_owner_name: z.string().min(1, "Land owner name is required"),
+  remarks: z.string().optional(),
+  selected_activities: z.array(z.string()).optional(),
+  // New Site Fields - conditional validation would be better but simple optional here for payload
+  new_site: createSiteSchema.optional(),
 });

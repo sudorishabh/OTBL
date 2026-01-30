@@ -1,6 +1,6 @@
 "use client";
 import React, { use } from "react";
-import Wrapper from "@/components/Wrapper/Wrapper";
+import Wrapper from "@/components/wrapper/Wrapper";
 import { trpc } from "@/lib/trpc";
 import { PencilLine, Users } from "lucide-react";
 import { capitalFirstLetter } from "@pkg/utils";
@@ -8,10 +8,15 @@ import { useRouter } from "next/navigation";
 import CustomButton from "@/components/CustomButton";
 import ClientDetailsCard from "./_components/ClientDetailsCard";
 import ClientStats from "./_components/client-stats/ClientStats";
-import PageLoading from "@/components/PageLoading";
-import ProposalWOMain from "./_components/client-proposals-WO/proposal-wo/ProposalWOMain";
+import PageLoading from "@/components/loading/PageLoading";
 import NoFetchData from "@/components/NoFetchData";
 import useHandleParams from "@/hooks/useHandleParams";
+import dynamic from "next/dynamic";
+import { Suspense } from "react";
+
+const ProposalWOMain = dynamic(
+  () => import("./_components/client-proposals-WO/proposal-wo/ProposalWOMain"),
+);
 
 type PageProps = {
   params: Promise<{ clientId: string }>;
@@ -75,7 +80,12 @@ const Client = ({ params }: PageProps) => {
             stats={stats}
             clientId={clientId}
           />
-          <ProposalWOMain clientId={clientId} />
+          <Suspense
+            fallback={
+              <div className='h-[200px] w-full animate-pulse rounded-lg bg-gray-200' />
+            }>
+            <ProposalWOMain clientId={clientId} />
+          </Suspense>
         </div>
       ) : (
         <NoFetchData

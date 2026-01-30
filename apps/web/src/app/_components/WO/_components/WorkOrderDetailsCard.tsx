@@ -2,7 +2,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
-import { Calendar, FileText, IndianRupee, Building, Hash } from "lucide-react";
+import { Calendar, FileText, Building, Hash, ExternalLink } from "lucide-react";
 
 interface Props {
   workOrder: {
@@ -11,8 +11,10 @@ interface Props {
     title: string;
     description: string | null;
     date: string;
-    budget_amount: string | null;
-    expense_amount: string | null;
+    process_type?: string | null;
+    rate_contract_number?: string | null;
+    document_key?: string | null;
+    agreement_number?: string | null;
     status: "pending" | "completed" | "cancelled";
     cancellation_reason: string | null;
     created_at: string;
@@ -37,7 +39,7 @@ const WorkOrderDetailsCard = ({ workOrder }: Props) => {
   };
 
   return (
-    <Card className='relative shadow-sm border-[0.1rem] bg-gradient-to-br border-emerald-300 from-white to-gray-50'>
+    <Card className='relative shadow-sm border-[0.1rem] bg-linear-to-br border-emerald-300 from-white to-gray-50'>
       <CardHeader className='pb-3'>
         <div className='flex items-start justify-between'>
           <div>
@@ -60,26 +62,24 @@ const WorkOrderDetailsCard = ({ workOrder }: Props) => {
       </CardHeader>
 
       <CardContent>
-        <div className='flex flex-wrap items-center gap-x-8 gap-y-4 text-sm'>
-          <div className='flex flex-1 items-center gap-3'>
-            <div className='size-7 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center'>
-              <Building className='size-3.5 text-cyan-800' />
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-sm'>
+          <div className='flex items-center gap-3'>
+            <div className='size-8 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0'>
+              <Building className='size-4 text-cyan-800' />
             </div>
             <div className='min-w-0 flex-1'>
               <div className='text-[11px] uppercase tracking-wide text-gray-500'>
                 Office
               </div>
-              <p className='text-gray-700 font-medium break-words line-clamp-1'>
+              <p className='text-gray-700 font-medium break-words'>
                 {workOrder.office.name}
               </p>
             </div>
           </div>
 
-          <div className='hidden sm:block h-8 w-px bg-gray-200' />
-
-          <div className='flex flex-1 items-center gap-3'>
-            <div className='size-7 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center'>
-              <Calendar className='size-3.5 text-cyan-800' />
+          <div className='flex items-center gap-3'>
+            <div className='size-8 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0'>
+              <Calendar className='size-4 text-cyan-800' />
             </div>
             <div>
               <div className='text-[11px] uppercase tracking-wide text-gray-500'>
@@ -91,44 +91,77 @@ const WorkOrderDetailsCard = ({ workOrder }: Props) => {
             </div>
           </div>
 
-          <div className='hidden sm:block h-8 w-px bg-gray-200' />
-
-          <div className='flex flex-1 items-center gap-3'>
-            <div className='size-7 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center'>
-              <IndianRupee className='size-3.5 text-cyan-800' />
+          <div className='flex items-center gap-3'>
+            <div className='size-8 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0'>
+              <FileText className='size-4 text-cyan-800' />
             </div>
             <div>
               <div className='text-[11px] uppercase tracking-wide text-gray-500'>
-                Budget Amount
+                Process Type
               </div>
-              <div className='text-gray-700 font-medium'>
-                ₹
-                {workOrder.budget_amount
-                  ? Number(workOrder.budget_amount).toLocaleString()
-                  : "0"}
+              <div className='text-gray-700 font-medium capitalize'>
+                {workOrder.process_type || "N/A"}
               </div>
             </div>
           </div>
 
-          <div className='hidden sm:block h-8 w-px bg-gray-200' />
-
-          <div className='flex flex-1 items-center gap-3 min-w-0'>
-            <div className='size-7 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center'>
-              <IndianRupee className='size-3.5 text-cyan-800' />
+          <div className='flex items-center gap-3'>
+            <div className='size-8 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0'>
+              <Hash className='size-4 text-cyan-800' />
             </div>
-            <div className='min-w-0'>
+            <div>
               <div className='text-[11px] uppercase tracking-wide text-gray-500'>
-                Expense Amount
+                Agreement Number
               </div>
               <div className='text-gray-700 font-medium'>
-                ₹
-                {workOrder.expense_amount
-                  ? Number(workOrder.expense_amount).toLocaleString()
-                  : "0"}
+                {workOrder.agreement_number || "N/A"}
+              </div>
+            </div>
+          </div>
+
+          <div className='flex items-center gap-3'>
+            <div className='size-8 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0'>
+              <Hash className='size-4 text-cyan-800' />
+            </div>
+            <div>
+              <div className='text-[11px] uppercase tracking-wide text-gray-500'>
+                Rate Contract Number
+              </div>
+              <div className='text-gray-700 font-medium'>
+                {workOrder.rate_contract_number || "N/A"}
               </div>
             </div>
           </div>
         </div>
+
+        {/* PDF Document Link - Prominent Section */}
+        {workOrder.document_key && (
+          <div className='mt-6 p-4 rounded-xl bg-linear-to-r from-emerald-50 via-teal-50 to-cyan-50 border border-emerald-200/60 shadow-sm'>
+            <div className='flex items-center justify-between gap-4 flex-wrap'>
+              <div className='flex items-center gap-3'>
+                <div className='size-10 rounded-lg bg-linear-to-br from-emerald-500 to-teal-600 flex items-center justify-center shrink-0 shadow-md'>
+                  <FileText className='size-5 text-white' />
+                </div>
+                <div>
+                  <div className='text-xs font-medium text-emerald-700 uppercase tracking-wide'>
+                    Work Order Document
+                  </div>
+                  <div className='text-sm text-gray-600 max-w-xs truncate'>
+                    {workOrder.document_key}
+                  </div>
+                </div>
+              </div>
+              <a
+                href={workOrder.document_key}
+                target='_blank'
+                rel='noopener noreferrer'
+                className='inline-flex items-center gap-2 px-4 py-2.5 bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-sm font-medium rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5'>
+                <span>View PDF</span>
+                <ExternalLink className='size-4' />
+              </a>
+            </div>
+          </div>
+        )}
 
         {workOrder.description && (
           <div className='mt-4 pt-4 border-t border-gray-200'>

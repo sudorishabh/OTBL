@@ -1,5 +1,5 @@
 import CustomButton from "@/components/CustomButton";
-import CustomInput from "@/components/CustomInput";
+import Input from "@/components/custom-form-input/Input";
 import { useUserManagementContext } from "@/contexts/UserManagementContext";
 import { useDebounce } from "@/hooks/useDebounce";
 import useHandleParams from "@/hooks/useHandleParams";
@@ -46,7 +46,7 @@ const UserSearchNFilter = ({
       {showSearchAndFilter ? (
         <div className=' flex items-center gap-4'>
           <div className='flex-1 w-80'>
-            <CustomInput
+            <Input
               mode='standalone'
               value={localSearchQuery}
               onChange={setLocalSearchQuery}
@@ -57,7 +57,7 @@ const UserSearchNFilter = ({
 
           <div className='flex items-center gap-3 text-xs'>
             {showRoleFilter && (
-              <CustomInput
+              <Input
                 mode='standalone'
                 value={filters.role}
                 onChange={(value) =>
@@ -83,7 +83,7 @@ const UserSearchNFilter = ({
               />
             )}
 
-            <CustomInput
+            <Input
               mode='standalone'
               value={filters.status}
               onChange={(value) =>

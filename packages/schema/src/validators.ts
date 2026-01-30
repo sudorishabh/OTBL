@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { Schema, z } from "zod";
 
 // =============================================================================
 // STRING VALIDATORS
@@ -59,7 +59,7 @@ export const mobileValidator = z
   .trim()
   .regex(
     /^(\+91[\-\s]?)?[6-9]\d{9}$/,
-    "Please enter a valid Indian mobile number (10 digits starting with 6-9)"
+    "Please enter a valid Indian mobile number (10 digits starting with 6-9)",
   );
 
 export const optionalMobileValidator = z
@@ -67,7 +67,7 @@ export const optionalMobileValidator = z
   .trim()
   .regex(
     /^(\+91[\-\s]?)?[6-9]\d{9}$/,
-    "Please enter a valid Indian mobile number (10 digits starting with 6-9)"
+    "Please enter a valid Indian mobile number (10 digits starting with 6-9)",
   )
   .optional()
   .or(z.literal(""));
@@ -86,7 +86,7 @@ export const passwordValidator = z
 
 export const strongPasswordValidator = passwordValidator.regex(
   /[!@#$%^&*(),.?":{}|<>]/,
-  "Password must contain at least one special character (!@#$%^&*)"
+  "Password must contain at least one special character (!@#$%^&*)",
 );
 
 export const loginPasswordValidator = z
@@ -138,7 +138,7 @@ export const gstNumberValidator = z
   .length(15, "GST number must be exactly 15 characters")
   .regex(
     /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/,
-    "Please enter a valid GST number (e.g., 22AAAAA0000A1Z5)"
+    "Please enter a valid GST number (e.g., 22AAAAA0000A1Z5)",
   );
 
 export const optionalGstNumberValidator = z
@@ -150,7 +150,7 @@ export const optionalGstNumberValidator = z
       !val ||
       val.length === 0 ||
       /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(val),
-    "Please enter a valid GST number (e.g., 22AAAAA0000A1Z5)"
+    "Please enter a valid GST number (e.g., 22AAAAA0000A1Z5)",
   )
   .optional()
   .or(z.literal(""));
@@ -167,7 +167,7 @@ export const codeValidator = z
   .max(50, "Code cannot exceed 50 characters")
   .regex(
     /^[A-Za-z0-9\-_]+$/,
-    "Code can only contain letters, numbers, hyphens, and underscores"
+    "Code can only contain letters, numbers, hyphens, and underscores",
   );
 
 export const agreementNumberValidator = z
@@ -224,22 +224,29 @@ export const rateValidator = z
  * Date validator - accepts string or Date
  * - Coerces to Date object
  */
+// export const dateValidator = z.date({
+//   message: "Please enter a valid date",
+// });
 export const dateValidator = z.coerce.date({
   message: "Please enter a valid date",
 });
 
-export const optionalDateValidator = z.coerce.date().optional().nullable();
+export const optionalDateValidator = z
+  .string()
+  .datetime()
+  .optional()
+  .nullable();
 
 export const dateStringValidator = z
   .string({ message: "Date is required" })
   .refine(
     (val: string) => !isNaN(Date.parse(val)),
-    "Please enter a valid date"
+    "Please enter a valid date",
   );
 
 export const createDateRangeValidator = (
   startField: string,
-  endField: string
+  endField: string,
 ) => {
   return z.object({}).refine(
     (data: Record<string, unknown>) => {
@@ -251,7 +258,7 @@ export const createDateRangeValidator = (
     {
       message: `${endField.replace("_", " ")} must be on or after ${startField.replace("_", " ")}`,
       path: [endField],
-    }
+    },
   );
 };
 

@@ -62,12 +62,15 @@ const ProposalWOMain = ({ clientId }: Props) => {
             </div>
           ) : proposals && proposals.length > 0 ? (
             proposals.map(
-              ({
-                workOrder,
-                proposal,
-              }: proposalTypes.getProposalsByClientReturnType) => (
+              (
+                {
+                  workOrder,
+                  proposal,
+                }: proposalTypes.getProposalsByClientReturnType,
+                index,
+              ) => (
                 <div
-                  key={proposal?.id}
+                  key={proposal?.id || index}
                   className='w-full rounded-xl border shadow border-gray-100 bg-gray-50 backdrop-blur-sm p-4'>
                   <div className='grid grid-cols-1 md:grid-cols-[1fr_72px_1fr] items-stretch gap-y-6 md:gap-y-0 md:gap-x-2'>
                     <ProposalCard proposal={proposal} />

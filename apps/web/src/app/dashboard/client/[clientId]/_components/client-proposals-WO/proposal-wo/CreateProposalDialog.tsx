@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import DialogWindow from "@/components/DialogWindow";
@@ -22,10 +22,11 @@ import {
 } from "@/components/ui/select";
 import CustomButton from "@/components/CustomButton";
 import { trpc } from "@/lib/trpc";
-import CustomForm from "@/components/CustomForm";
+import CustomForm from "@/components/custom-form-input/Form";
 import toast from "react-hot-toast";
 import { useHandleParams } from "@/hooks/useHandleParams";
-import CustomUploadDocument from "@/components/CustomUploadDocument";
+import DeferredFilePicker from "@/components/DeferredFilePicker";
+import { useSharePointUpload } from "@/hooks/useSharePointUpload";
 import { useApiError } from "@/hooks/useApiError";
 import { proposalSchemas, type proposalTypes } from "@pkg/schema";
 import { z } from "zod";
@@ -38,12 +39,27 @@ interface Props {
 }
 
 const CreateProposalDialog = ({ clientId }: Props) => {
-  const [isUploading, setIsUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { deleteParams, getParam } = useHandleParams();
   const { handleError } = useApiError();
   const mode = getParam("dialog");
   const isAddMode = mode === "create-proposal";
   const isOpenDialog = isAddMode;
+
+  const {
+    uploadFile,
+    deleteFile,
+    isUploading,
+    isDeleting,
+    progress,
+    reset: resetUpload,
+  } = useSharePointUpload({
+    folderPath: "/Proposals",
+    conflictBehavior: "replace",
+  });
+
+  const [uploadedUrl, setUploadedUrl] = useState<string>("");
+  const [uploadedFileId, setUploadedFileId] = useState<string>("");
 
   // Fetch offices for the dropdown
   const { data: officesData, isLoading: isLoadingOffices } =
@@ -82,23 +98,11 @@ const CreateProposalDialog = ({ clientId }: Props) => {
     },
   });
 
-  /* Cleanup Logic */
-  const uploadedFileId = React.useRef<string | null>(null);
-  const deleteFileMutation = trpc.sharePointMutation.deleteFile.useMutation();
-
-  const cleanupFile = useCallback(() => {
-    if (uploadedFileId.current) {
-      deleteFileMutation.mutate({ fileId: uploadedFileId.current });
-      uploadedFileId.current = null;
-    }
-  }, [deleteFileMutation]);
-
   const handleCloseDialog = useCallback(() => {
     if (isUploading) {
       toast.error("Please wait for the document to finish uploading.");
       return;
     }
-    cleanupFile();
     deleteParams(["dialog"]);
 
     // Delay form reset until after animation completes
@@ -112,9 +116,12 @@ const CreateProposalDialog = ({ clientId }: Props) => {
         proposal_amount: 0,
         proposal_submission_date: undefined,
       });
-      uploadedFileId.current = null;
-    }, 2000);
-  }, [deleteParams, form, cleanupFile, isUploading]);
+      setSelectedFile(null);
+      setUploadedUrl("");
+      setUploadedFileId("");
+      resetUpload();
+    }, 500);
+  }, [deleteParams, form, isUploading, resetUpload]);
 
   useEffect(() => {
     if (isAddMode) {
@@ -127,25 +134,98 @@ const CreateProposalDialog = ({ clientId }: Props) => {
         proposal_amount: 0,
         proposal_submission_date: undefined,
       });
-      uploadedFileId.current = null;
+      setSelectedFile(null);
+      setUploadedUrl("");
+      setUploadedFileId("");
+      resetUpload();
     }
-  }, [isAddMode, form]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAddMode]);
+
+  // Handle file selection - set a placeholder document_key
+  const handleFileSelect = useCallback(
+    (file: File | null) => {
+      setSelectedFile(file);
+      // If a new file is selected, clear any previous upload URL
+      if (file) {
+        setUploadedUrl("");
+        setUploadedFileId("");
+        // Set a placeholder value to pass validation
+        // This will be replaced with the actual URL after upload
+        form.setValue("document_key", `pending:${file.name}`, {
+          shouldValidate: true,
+        });
+      } else {
+        // Only clear if we don't have an uploaded URL
+        if (!uploadedUrl) {
+          form.setValue("document_key", "", { shouldValidate: true });
+        }
+      }
+    },
+    [form, uploadedUrl],
+  );
+
+  // Wrapper for delete to update local state and delete from SharePoint
+  const handleDeleteFile = useCallback(async () => {
+    if (uploadedFileId) {
+      try {
+        await deleteFile(uploadedFileId);
+      } catch (error) {
+        console.error("Failed to delete file from SharePoint", error);
+        // We continue to clear local state even if server delete fails
+      }
+    }
+
+    setSelectedFile(null);
+    setUploadedUrl("");
+    setUploadedFileId("");
+    form.setValue("document_key", "", { shouldValidate: true });
+    resetUpload();
+  }, [form, resetUpload, deleteFile, uploadedFileId]);
 
   async function onSubmit(values: proposalTypes.BaseProposalInput) {
-    // values is now the validated/transformed output type with Date objects
     try {
-      console.log(values);
-      await addProposal.mutateAsync({ ...values, client_id: clientId });
-      // Clear the ref so we don't delete on close
-      uploadedFileId.current = null;
+      let documentPath = values.document_key;
+
+      // Upload file to SharePoint if a file was selected but not yet uploaded (still pending)
+      if (selectedFile && !uploadedUrl && documentPath.startsWith("pending:")) {
+        const uploadResult = await uploadFile(selectedFile);
+        if (!uploadResult) {
+          // Upload failed, error already shown by hook
+          return;
+        }
+        documentPath = uploadResult.webUrl;
+        setUploadedUrl(documentPath);
+        setUploadedFileId(uploadResult.id);
+      } else if (uploadedUrl) {
+        documentPath = uploadedUrl;
+      }
+
+      // If document_key still starts with "pending:", it means something went wrong
+      if (documentPath.startsWith("pending:")) {
+        toast.error("Please upload a document");
+        return;
+      }
+
+      // Create the proposal with the document path
+      await addProposal.mutateAsync({
+        ...values,
+        client_id: clientId,
+        document_key: documentPath,
+      });
       handleCloseDialog();
     } catch (error) {
-      cleanupFile();
+      // If failure happens after upload, we could try to cleanup
+      if (uploadedFileId) {
+        await deleteFile(uploadedFileId);
+      }
       toast.error("Error submitting form. Please try again.");
     }
   }
 
   const offices = officesData?.offices ?? [];
+  const isSubmitting =
+    form.formState.isSubmitting || addProposal.isPending || isUploading;
 
   return (
     <DialogWindow
@@ -302,19 +382,19 @@ const CreateProposalDialog = ({ clientId }: Props) => {
           <FormField
             control={form.control}
             name='document_key'
-            render={({ field }) => (
+            render={({ field: _field }) => (
               <FormItem>
                 <FormControl>
-                  <CustomUploadDocument
+                  <DeferredFilePicker
                     label='Proposal Document'
-                    folderPath={`/Proposals`}
-                    onUploadComplete={(path) => {
-                      field.onChange(path);
-                    }}
-                    onUploadingChange={setIsUploading}
-                    onFileChange={(file) => {
-                      uploadedFileId.current = file?.id || null;
-                    }}
+                    selectedFile={selectedFile}
+                    onFileSelect={handleFileSelect}
+                    isUploading={isUploading}
+                    uploadProgress={progress}
+                    isUploaded={!!uploadedUrl}
+                    uploadedUrl={uploadedUrl}
+                    onDelete={handleDeleteFile}
+                    isDeleting={isDeleting}
                   />
                 </FormControl>
                 <FormMessage />
@@ -324,11 +404,11 @@ const CreateProposalDialog = ({ clientId }: Props) => {
 
           <CustomButton
             type='submit'
-            text='Submit'
+            text={isUploading ? "Uploading..." : "Submit"}
             className='w-full'
             variant='primary'
-            loading={form.formState.isSubmitting || addProposal.isPending}
-            disabled={form.formState.isSubmitting || addProposal.isPending}
+            loading={isSubmitting}
+            disabled={isSubmitting}
           />
         </CustomForm>
       </Form>

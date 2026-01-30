@@ -13,7 +13,9 @@ export const siteMutationRouter = router({
     handleMutation(async ({ input, ctx }) => {
       const { operator_ids, ...siteData } = input;
 
-      ctx.db.transaction(async (tx) => {
+      let siteId: number | undefined;
+
+      await ctx.db.transaction(async (tx) => {
         const [createdSite] = await tx
           .insert(siteTable)
           .values(siteData)
@@ -22,6 +24,8 @@ export const siteMutationRouter = router({
         if (!createdSite) {
           throwNotFoundError("Site");
         }
+
+        siteId = createdSite.id;
 
         if (operator_ids && operator_ids.length > 0) {
           const users = await tx
@@ -45,7 +49,7 @@ export const siteMutationRouter = router({
         }
       });
 
-      return { success: true };
+      return { success: true, id: siteId! };
     }),
   ),
 

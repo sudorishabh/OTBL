@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
-import LoadMoreBtn from "@/components/LoadMoreBtn";
+import LoadMoreBtn from "@/components/loading/LoadMoreBtn";
 import { useWorkOrderManagementContext } from "@/contexts/WorkOrderManagementContext";
 import { IWorkOrder, IWorkOrderPagination } from "@/types/work-order.types";
 

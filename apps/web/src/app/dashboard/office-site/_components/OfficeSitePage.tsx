@@ -5,8 +5,8 @@ import NoFetchData from "@/components/NoFetchData";
 import CreateOfficeDialog from "./office-site-dialogs/CreateOfficeDialog";
 import { trpc } from "@/lib/trpc";
 import { useOfficeManagementContext } from "@/contexts/OfficeManagementContext";
-import CustomInput from "@/components/CustomInput";
-import PageLoading from "@/components/PageLoading";
+import Input from "@/components/custom-form-input/Input";
+import PageLoading from "@/components/loading/PageLoading";
 import CustomButton from "@/components/CustomButton";
 
 const OfficeSitePage = () => {
@@ -33,7 +33,7 @@ const OfficeSitePage = () => {
         <div className='flex justify-between items-center mb-6'>
           <div className='flex items-center gap-4'>
             <div className='flex-1 w-80'>
-              <CustomInput
+              <Input
                 mode='standalone'
                 type='text'
                 placeholder='Search offices by name, address, contact...'
@@ -45,7 +45,7 @@ const OfficeSitePage = () => {
             </div>
             <div className='flex items-center gap-3 text-xs'>
               {/* Status Filter */}
-              <CustomInput
+              <Input
                 mode='standalone'
                 isSelect
                 selectOptions={[

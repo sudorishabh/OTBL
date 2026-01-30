@@ -8,14 +8,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import Loading from "./Loading";
+import Loading from "./loading/Loading";
 
-/**
- * heightMode options:
- * - 'auto': Height adjusts to content, no minimum (default behavior)
- * - 'fixed': Uses a fixed height based on size (consistent height regardless of content)
- * - 'full': Takes full available viewport height
- */
 type HeightMode = "auto" | "fixed" | "full";
 
 interface Props {
@@ -26,16 +20,9 @@ interface Props {
   title?: string;
   size: "sm" | "md" | "lg" | "xl" | "full";
   description?: string;
-  /**
-   * @deprecated Use `heightMode` instead. This prop will be removed in future versions.
-   */
+
   heightFull?: boolean;
-  /**
-   * Controls dialog height behavior:
-   * - 'auto': Adjusts to content (may shrink with less content)
-   * - 'fixed': Fixed height based on dialog size (consistent height)
-   * - 'full': Full viewport height
-   */
+
   heightMode?: HeightMode;
   isLoading?: boolean;
 }
@@ -101,7 +88,7 @@ const DialogWindow = ({
           // Height based on mode
           getHeightClasses(),
           // Custom className
-          className
+          className,
         )}>
         {/* Header - Fixed, never scrolls */}
         {(title || description) && (
@@ -122,7 +109,7 @@ const DialogWindow = ({
             // Negative margin to extend scroll area edge-to-edge, then add padding back
             "-mx-6 px-6",
             // Add some bottom padding for breathing room
-            "pb-1"
+            "pb-1",
           )}>
           {isLoading ? (
             <div className='h-full flex items-center justify-center min-h-[200px]'>

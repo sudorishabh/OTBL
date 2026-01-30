@@ -29,7 +29,6 @@ export const userMutationRouter = router({
           throwConflictError("User with this email already exists");
         }
 
-        // Hash the password before storing
         const hashedPassword = await hashPassword(input.password);
 
         await handleDatabaseOperation(

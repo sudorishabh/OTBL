@@ -1,7 +1,11 @@
-import Wrapper from "@/components/Wrapper/Wrapper";
+import Wrapper from "@/components/wrapper/Wrapper";
 import React from "react";
 import CreateClientButton from "./_components/CreateClientButton";
-import ClientsPage from "./_components/ClientsPage";
+import { Suspense } from "react";
+import PageLoading from "@/components/loading/PageLoading";
+import dynamic from "next/dynamic";
+
+const ClientsPage = dynamic(() => import("./_components/ClientsPage"));
 
 const page = () => {
   return (
@@ -9,7 +13,9 @@ const page = () => {
       title='Clients'
       description='Manage and monitor all your clients and their contacts'
       button={<CreateClientButton />}>
-      <ClientsPage />
+      <Suspense fallback={<PageLoading />}>
+        <ClientsPage />
+      </Suspense>
     </Wrapper>
   );
 };

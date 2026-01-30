@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import { trpc } from "@/lib/trpc";
 import CustomButton from "@/components/CustomButton";
-import CustomForm from "@/components/CustomForm";
+import CustomForm from "@/components/custom-form-input/Form";
 import {
   CheckCircle2,
   Mail,
@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useRouter, useSearchParams } from "next/navigation";
-import CustomInput from "@/components/CustomInput";
+import Input from "@/components/custom-form-input/Input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useApiError } from "@/hooks/useApiError";
 import { cn } from "@/lib/utils";
@@ -172,7 +172,7 @@ const AddOfficeDialog = () => {
               </div>
 
               <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                <CustomInput
+                <Input
                   control={form.control}
                   fieldName='name'
                   Label='Office Name'
@@ -180,7 +180,7 @@ const AddOfficeDialog = () => {
                   placeholder='Enter office name'
                 />
 
-                <CustomInput
+                <Input
                   control={form.control}
                   fieldName='email'
                   Label='Email'
@@ -190,7 +190,7 @@ const AddOfficeDialog = () => {
                 />
               </div>
 
-              <CustomInput
+              <Input
                 control={form.control}
                 fieldName='address'
                 Label='Address'
@@ -199,28 +199,28 @@ const AddOfficeDialog = () => {
               />
 
               <div className='grid grid-cols-1 md:grid-cols-4 gap-4'>
-                <CustomInput
+                <Input
                   control={form.control}
                   fieldName='state'
                   Label='State'
                   LabelIcon={Globe}
                   placeholder='Enter state'
                 />
-                <CustomInput
+                <Input
                   control={form.control}
                   fieldName='city'
                   Label='City'
                   LabelIcon={Globe}
                   placeholder='Enter city'
                 />
-                <CustomInput
+                <Input
                   control={form.control}
                   fieldName='pincode'
                   Label='Pincode'
                   LabelIcon={Hash}
                   placeholder='Enter pincode'
                 />
-                <CustomInput
+                <Input
                   control={form.control}
                   fieldName='gst_number'
                   Label='GST Number'
@@ -249,7 +249,7 @@ const AddOfficeDialog = () => {
                   className='w-full'>
                   <div className='px-4 pt-4 border-b bg-gray-50'>
                     <div className='flex justify-between items-center flex-1 mb-4'>
-                      <CustomInput
+                      <Input
                         mode='standalone'
                         placeholder={
                           activeStaffTab === "managers"

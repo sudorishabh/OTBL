@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import CustomButton from "@/components/CustomButton";
-import CustomForm from "@/components/CustomForm";
+import CustomForm from "@/components/custom-form-input/Form";
 import { Button } from "@/components/ui/button";
 import { Plus, Trash2, Users, UserPlus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";

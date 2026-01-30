@@ -2,7 +2,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthContext } from "@/contexts/AuthContext";
-import PageLoading from "@/components/PageLoading";
+import PageLoading from "@/components/loading/PageLoading";
 
 type ProtectedRouteProps = {
   children: React.ReactNode;

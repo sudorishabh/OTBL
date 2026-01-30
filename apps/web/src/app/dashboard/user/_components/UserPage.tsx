@@ -1,23 +1,26 @@
 "use client";
 import React from "react";
-import { Plus } from "lucide-react";
-import CustomButton from "@/components/CustomButton";
-import UserTable from "./UserTable";
-import CategorizedUsers from "./CategorizedUsers";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserSearchNFilter from "./UserSearchNFilter";
 import AddUserDialog from "./CreateUserDialog";
 import { useHandleParams } from "@/hooks/useHandleParams";
 import ScrollToTop from "@/app/_components/ScrollToTop";
+import { Suspense } from "react";
+import dynamic from "next/dynamic";
+import Loading from "@/components/loading/Loading";
+
+const UserTable = dynamic(() => import("./UserTable"));
+
+const CategorizedUsers = dynamic(() => import("./CategorizedUsers"));
 
 const UserPage = () => {
   const { getParam, setParam } = useHandleParams();
-  const isUserTab = getParam("tab") || "all";
+  const currentTab = getParam("tab") || "all";
 
   return (
     <>
       <Tabs
-        value={isUserTab}
+        value={currentTab}
         onValueChange={(value) => setParam("tab", value)}
         className='w-full mt-8'>
         <div className='flex justify-between items-center flex-1 mb-4'>
@@ -37,11 +40,15 @@ const UserPage = () => {
         </div>
 
         <TabsContent value='all'>
-          <UserTable />
+          <Suspense fallback={<Loading />}>
+            <UserTable />
+          </Suspense>
         </TabsContent>
 
         <TabsContent value='categorized'>
-          <CategorizedUsers />
+          <Suspense fallback={<Loading />}>
+            <CategorizedUsers />
+          </Suspense>
         </TabsContent>
       </Tabs>
       <AddUserDialog />

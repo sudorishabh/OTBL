@@ -1,4 +1,4 @@
-import PageLoading from "@/components/PageLoading";
+import PageLoading from "@/components/loading/PageLoading";
 import { useClientManagementContext } from "@/contexts/ClientManagementContext";
 import { trpc } from "@/lib/trpc";
 import React from "react";
@@ -56,7 +56,7 @@ const ClientsTab = ({ tab }: Props) => {
     },
     {
       enabled: isClientTab,
-    }
+    },
   );
 
   const hasClients = clients?.length > 0;
@@ -82,7 +82,7 @@ const ClientsTab = ({ tab }: Props) => {
           key={client.id}
           client={client}
           contacts={clients?.filter(
-            (c: ClientContact) => c.client_id === client.id
+            (c: ClientContact) => c.client_id === client.id,
           )}
         />
       ))}

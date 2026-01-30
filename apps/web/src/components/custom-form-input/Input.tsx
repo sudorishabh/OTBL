@@ -6,7 +6,7 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Input as InputComponent } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -29,7 +29,7 @@ import {
   FieldValues,
   RegisterOptions,
 } from "react-hook-form";
-import { Textarea } from "./ui/textarea";
+import { Textarea } from "../ui/textarea";
 
 interface SelectOption {
   label: string;
@@ -80,8 +80,8 @@ interface CommonProps {
 type Props<TFieldValues extends FieldValues = FieldValues> = CommonProps &
   (FormModeProps<TFieldValues> | StandaloneModeProps);
 
-const CustomInput = <TFieldValues extends FieldValues = FieldValues>(
-  props: Props<TFieldValues>
+const Input = <TFieldValues extends FieldValues = FieldValues>(
+  props: Props<TFieldValues>,
 ) => {
   const {
     Label,
@@ -107,7 +107,7 @@ const CustomInput = <TFieldValues extends FieldValues = FieldValues>(
 
   const renderInputElement = (
     value: any,
-    onChangeHandler: (val: any) => void
+    onChangeHandler: (val: any) => void,
   ) => {
     if (isSelect && selectOptions) {
       return (
@@ -209,7 +209,7 @@ const CustomInput = <TFieldValues extends FieldValues = FieldValues>(
               </div>
             );
           })()}
-        <Input
+        <InputComponent
           type={type ?? "text"}
           className={`${inputIcon ? "pl-10" : ""} bg-white ${
             inputIconButton ? "pr-10" : ""
@@ -257,14 +257,14 @@ const CustomInput = <TFieldValues extends FieldValues = FieldValues>(
   if (mode === "standalone") {
     const standaloneProps = props as StandaloneModeProps & CommonProps;
     const [internalValue, setInternalValue] = React.useState(
-      standaloneProps.defaultValue || ""
+      standaloneProps.defaultValue || "",
     );
     const currentValue = standaloneProps.value ?? internalValue;
 
     return renderWrapper(
       renderInputElement(currentValue, (val) => {
         setInternalValue(val);
-      })
+      }),
     );
   }
 
@@ -299,4 +299,4 @@ const CustomInput = <TFieldValues extends FieldValues = FieldValues>(
   );
 };
 
-export default CustomInput;
+export default Input;

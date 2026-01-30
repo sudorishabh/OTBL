@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import CustomButton from "@/components/CustomButton";
-import CustomInput from "@/components/CustomInput";
+import Input from "@/components/custom-form-input/Input";
 import { userSchemas, type userTypes } from "@pkg/schema";
 import { trpc } from "@/lib/trpc";
 import toast from "react-hot-toast";
@@ -315,7 +315,7 @@ const CreateUserDialog = () => {
         <form
           onSubmit={form.handleSubmit(onSubmit)}
           className='space-y-4 px-3.5 py-4'>
-          <CustomInput
+          <Input
             control={form.control}
             fieldName='name'
             Label='Name'
@@ -323,7 +323,7 @@ const CreateUserDialog = () => {
             placeholder='Enter user name'
           />
 
-          <CustomInput
+          <Input
             control={form.control}
             fieldName='email'
             Label='Email'
@@ -333,7 +333,7 @@ const CreateUserDialog = () => {
           />
 
           {!isDisplayEditMode && (
-            <CustomInput
+            <Input
               control={form.control}
               fieldName='password'
               Label='Password'
@@ -347,7 +347,7 @@ const CreateUserDialog = () => {
             />
           )}
 
-          <CustomInput
+          <Input
             control={form.control}
             fieldName='contact_number'
             Label='Contact Number'
@@ -357,7 +357,7 @@ const CreateUserDialog = () => {
             optional
           />
 
-          <CustomInput
+          <Input
             control={form.control}
             fieldName='role'
             Label='Role'

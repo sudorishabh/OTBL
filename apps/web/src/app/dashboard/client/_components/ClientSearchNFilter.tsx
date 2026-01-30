@@ -1,5 +1,5 @@
 import CustomButton from "@/components/CustomButton";
-import CustomInput from "@/components/CustomInput";
+import Input from "@/components/custom-form-input/Input";
 import { useClientManagementContext } from "@/contexts/ClientManagementContext";
 import { Search, X, UserPlus } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -48,7 +48,7 @@ const ClientSearchNFilter = ({ type, clients = [] }: Props) => {
   return (
     <div className='flex items-center gap-4'>
       <div className='w-80'>
-        <CustomInput
+        <Input
           mode='standalone'
           type='text'
           placeholder={
@@ -65,7 +65,7 @@ const ClientSearchNFilter = ({ type, clients = [] }: Props) => {
       <div className='flex items-center gap-3 text-xs'>
         {/* Filter - Status for Clients, Client for Contacts */}
         {isClientsTab ? (
-          <CustomInput
+          <Input
             mode='standalone'
             isSelect
             selectOptions={[
@@ -84,7 +84,7 @@ const ClientSearchNFilter = ({ type, clients = [] }: Props) => {
             className='!h-8 w-[140px] text-xs'
           />
         ) : (
-          <CustomInput
+          <Input
             mode='standalone'
             isSelect
             selectOptions={[

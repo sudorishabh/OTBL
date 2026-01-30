@@ -29,6 +29,10 @@ import * as userTypes from "./user/user.type";
 import * as workOrderSchemas from "./work-order/work-order.schema";
 import * as workOrderTypes from "./work-order/work-order.type";
 
+// Site Activity
+import * as siteActivitySchemas from "./site-activity/site-activity.schema";
+import * as siteActivityTypes from "./site-activity/site-activity.type";
+
 // Validators
 import * as validators from "./validators";
 
@@ -49,6 +53,8 @@ export {
   userTypes,
   workOrderSchemas,
   workOrderTypes,
+  siteActivitySchemas,
+  siteActivityTypes,
   validators,
 };
 

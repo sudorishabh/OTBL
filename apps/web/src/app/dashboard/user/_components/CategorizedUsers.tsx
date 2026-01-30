@@ -2,7 +2,7 @@ import React from "react";
 import { trpc } from "@/lib/trpc";
 // import type { CategorizedUsers } from "@/types/user.types";
 import { capitalFirstLetter, constants } from "@pkg/utils";
-import Loading from "@/components/Loading";
+import Loading from "@/components/loading/Loading";
 import DialogWindow from "@/components/DialogWindow";
 import useHandleParams from "@/hooks/useHandleParams";
 import { useUserManagementContext } from "@/contexts/UserManagementContext";

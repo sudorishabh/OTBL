@@ -126,16 +126,16 @@ export const clientQueryRouter = router({
         const woRows = await ctx.db
           .select({
             status: workOrderTable.status,
-            budget_amount: workOrderTable.grand_total_amount,
-            expense_amount: workOrderTable.expense_amount,
+            // budget_amount: workOrderTable.grand_total_amount,
+            // expense_amount: workOrderTable.expense_amount,
           })
           .from(workOrderTable)
           .where(eq(workOrderTable.client_id, input.clientId));
 
         for (const row of woRows) {
           if (row.status === "completed") completedWorkOrders += 1;
-          totalBudgetAmount += Number(row.budget_amount);
-          totalExpenseAmount += Number(row.expense_amount);
+          // totalBudgetAmount += Number(row.budget_amount);
+          // totalExpenseAmount += Number(row.expense_amount);
         }
       }
 

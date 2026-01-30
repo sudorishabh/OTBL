@@ -20,7 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import CustomButton from "@/components/CustomButton";
-import CustomForm from "@/components/CustomForm";
+import CustomForm from "@/components/custom-form-input/Form";
 import { trpc } from "@/lib/trpc";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useApiError } from "@/hooks/useApiError";

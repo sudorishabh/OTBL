@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -25,10 +25,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal } from "lucide-react";
-import LoadMoreBtn from "@/components/LoadMoreBtn";
+import LoadMoreBtn from "@/components/loading/LoadMoreBtn";
 import { useUserManagementContext } from "@/contexts/UserManagementContext";
 import { trpc } from "@/lib/trpc";
-import Loading from "@/components/Loading";
+import Loading from "@/components/loading/Loading";
 import { capitalFirstLetter, capitalizeEachWord } from "@pkg/utils";
 import useHandleParams from "@/hooks/useHandleParams";
 import NoFetchData from "@/components/NoFetchData";
@@ -200,7 +200,7 @@ const UserTable = () => {
         </TableHeader>
         <TableBody>
           {allUsersList?.map((user) => (
-            <TableRow key={user.id}>
+            <TableRow key={user.id + user.email}>
               <TableCell className='pl-6'>
                 <StatusIndicator
                   status={user.status as "active" | "inactive"}
@@ -227,7 +227,7 @@ const UserTable = () => {
                   <>
                     {[...user.offices, ...user.sites].map((uo) => (
                       <Badge
-                        key={uo.id}
+                        key={uo.id + uo.name}
                         variant='outline'
                         className={`text-xs px-1.5 ${uo.type === "office" ? "bg-cyan-800/15" : "bg-orange-800/15"}`}>
                         {capitalFirstLetter(uo.name) || "Unknown Office"}
@@ -282,7 +282,6 @@ const UserTable = () => {
         </TableBody>
       </Table>
 
-      {/* User Count Footer */}
       <div className='flex justify-between items-center px-4 py-2 text-xs text-muted-foreground border-t'>
         <span>
           Showing {allUsersList.length} of{" "}
