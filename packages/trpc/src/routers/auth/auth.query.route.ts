@@ -10,8 +10,9 @@ import { schema } from "@pkg/db";
 import { constants } from "@pkg/utils";
 import { router } from "../../trpc";
 import { protectedProcedure, publicProcedure } from "../../middleware";
-import { handleDatabaseOperation } from "../../errors";
+import { fromDatabaseError } from "../../errors";
 import { handleQuery } from "../../helper/typed-handler";
+
 const { STATUS } = constants;
 const { userTable } = schema;
 
@@ -20,21 +21,16 @@ export const authQueryRouter = router({
     handleQuery(async ({ ctx }) => {
       try {
         if (ctx.user) {
-          const existingUser = await handleDatabaseOperation(
-            async () => {
-              return ctx.db
-                .select({
-                  id: userTable.id,
-                  name: userTable.name,
-                  email: userTable.email,
-                  role: userTable.role,
-                  status: userTable.status,
-                })
-                .from(userTable)
-                .where(eq(userTable.id, parseInt(ctx.user!.sub)));
-            },
-            "Failed to fetch user by ID"
-          );
+          const existingUser = await ctx.db
+            .select({
+              id: userTable.id,
+              name: userTable.name,
+              email: userTable.email,
+              role: userTable.role,
+              status: userTable.status,
+            })
+            .from(userTable)
+            .where(eq(userTable.id, parseInt(ctx.user!.sub)));
 
           const user = existingUser[0];
 
@@ -59,7 +55,7 @@ export const authQueryRouter = router({
         // Verify refresh token using the REFRESH secret
         const verificationResult = verifyRefreshTokenSafe(
           refreshToken,
-          ctx.appEnv.JWT.REFRESH_SECRET
+          ctx.appEnv.JWT.REFRESH_SECRET,
         );
 
         if (!verificationResult.success) {
@@ -72,18 +68,16 @@ export const authQueryRouter = router({
         const payload = verificationResult.payload;
 
         // Fetch user from database to ensure they still exist and are active
-        const existingUser = await handleDatabaseOperation(async () => {
-          return ctx.db
-            .select({
-              id: userTable.id,
-              name: userTable.name,
-              email: userTable.email,
-              role: userTable.role,
-              status: userTable.status,
-            })
-            .from(userTable)
-            .where(eq(userTable.id, parseInt(payload.sub)));
-        }, "Failed to fetch user by ID");
+        const existingUser = await ctx.db
+          .select({
+            id: userTable.id,
+            name: userTable.name,
+            email: userTable.email,
+            role: userTable.role,
+            status: userTable.status,
+          })
+          .from(userTable)
+          .where(eq(userTable.id, parseInt(payload.sub)));
 
         const user = existingUser[0];
 
@@ -104,13 +98,13 @@ export const authQueryRouter = router({
         const newAccessToken = signToken(
           tokenPayload,
           ctx.appEnv.JWT.SECRET,
-          ctx.appEnv.JWT.EXPIRES_IN
+          ctx.appEnv.JWT.EXPIRES_IN,
         );
 
         const newRefreshToken = signRefreshToken(
           tokenPayload,
           ctx.appEnv.JWT.REFRESH_SECRET,
-          ctx.appEnv.JWT.REFRESH_EXPIRES_IN
+          ctx.appEnv.JWT.REFRESH_EXPIRES_IN,
         );
 
         // Set new cookies with rotated tokens
@@ -128,13 +122,15 @@ export const authQueryRouter = router({
           user,
         };
       } catch (error) {
+        // For auth queries, we return a failed state rather than throwing
+        // This allows the UI to handle unauthenticated state gracefully
         console.error("[Auth] Get current user error:", error);
         return {
           success: false,
           user: null,
         };
       }
-    })
+    }),
   ),
 
   hasRole: protectedProcedure.query(({ ctx }) => {

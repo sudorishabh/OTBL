@@ -1,4 +1,3 @@
-import { eq } from "drizzle-orm";
 import {
   signToken,
   signRefreshToken,
@@ -7,16 +6,13 @@ import {
   verifyPassword,
   type UserRole,
 } from "@pkg/auth";
+import { eq } from "drizzle-orm";
 import { schema } from "@pkg/db";
 import { constants } from "@pkg/utils";
 import { publicProcedure } from "../../middleware";
 import { router } from "../../trpc";
 import { authSchemas } from "@pkg/schema";
-import {
-  throwUnauthorizedError,
-  throwInternalError,
-  handleDatabaseOperation,
-} from "../../errors";
+import { unauthorized, internal, fromDatabaseError } from "../../errors";
 import { handleMutation } from "../../helper/typed-handler";
 
 const { STATUS } = constants;
@@ -27,81 +23,90 @@ export const authMutationRouter = router({
     handleMutation(async ({ input, ctx }) => {
       const { email, password } = input;
 
+      // Fetch user by email
+      let users;
       try {
-        const users = await handleDatabaseOperation(async () => {
-          return ctx.db
-            .select({
-              id: userTable.id,
-              name: userTable.name,
-              email: userTable.email,
-              role: userTable.role,
-              status: userTable.status,
-              password: userTable.password,
-            })
-            .from(userTable)
-            .where(eq(userTable.email, email));
-        }, "Failed to fetch user by email");
-
-        const user = users?.[0];
-
-        if (!user) {
-          throwUnauthorizedError("Invalid email or password, please try again");
-        }
-
-        if (user.status !== STATUS.ACTIVE) {
-          throwUnauthorizedError(
-            "The account is inactive, please contact support",
-          );
-        }
-
-        const isPasswordValid = await verifyPassword(password, user.password);
-        if (!isPasswordValid) {
-          throwUnauthorizedError("Invalid email or password, please try again");
-        }
-        const payload = {
-          sub: user.id.toString(),
-          email: user.email,
-          role: user.role as UserRole,
-        };
-
-        const accessToken = signToken(
-          payload,
-          ctx.appEnv.JWT.SECRET,
-          ctx.appEnv.JWT.EXPIRES_IN,
-        );
-
-        const refreshToken = signRefreshToken(
-          payload,
-          ctx.appEnv.JWT.REFRESH_SECRET,
-          ctx.appEnv.JWT.REFRESH_EXPIRES_IN,
-        );
-
-        setAuthenticationCookies({
-          res: ctx.res,
-          accessToken,
-          refreshToken,
-          accessExpiresIn: ctx.appEnv.JWT.EXPIRES_IN,
-          refreshExpiresIn: ctx.appEnv.JWT.REFRESH_EXPIRES_IN,
-          node_env: ctx.appEnv.NODE_ENV,
-        });
-
-        return {
-          success: true,
-          user: {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
-            status: user.status,
-          },
-        };
+        users = await ctx.db
+          .select({
+            id: userTable.id,
+            name: userTable.name,
+            email: userTable.email,
+            role: userTable.role,
+            status: userTable.status,
+            password: userTable.password,
+          })
+          .from(userTable)
+          .where(eq(userTable.email, email));
       } catch (error) {
-        if (error instanceof Error && error.name === "TRPCError") {
-          throw error;
-        }
-        console.error("[Auth] Login error:", error);
-        throwInternalError("An unexpected error occurred during login");
+        throw fromDatabaseError(error, "Fetching user for login");
       }
+
+      const user = users?.[0];
+
+      // Check if user exists
+      if (!user) {
+        throw unauthorized("Invalid email or password, please try again.", {
+          devMessage: `No user found with email: ${email}`,
+        });
+      }
+
+      // Check if account is active
+      if (user.status !== STATUS.ACTIVE) {
+        throw unauthorized(
+          "Your account is inactive. Please contact support.",
+          {
+            devMessage: `User ${email} has status: ${user.status}`,
+          },
+        );
+      }
+
+      // Verify password
+      const isPasswordValid = await verifyPassword(password, user.password);
+      if (!isPasswordValid) {
+        throw unauthorized("Invalid email or password, please try again.", {
+          devMessage: "Password verification failed",
+        });
+      }
+
+      // Create tokens
+      const payload = {
+        sub: user.id.toString(),
+        email: user.email,
+        role: user.role as UserRole,
+      };
+
+      const accessToken = signToken(
+        payload,
+        ctx.appEnv.JWT.SECRET,
+        ctx.appEnv.JWT.EXPIRES_IN,
+      );
+
+      const refreshToken = signRefreshToken(
+        payload,
+        ctx.appEnv.JWT.REFRESH_SECRET,
+        ctx.appEnv.JWT.REFRESH_EXPIRES_IN,
+      );
+
+      // Set cookies
+      setAuthenticationCookies({
+        res: ctx.res,
+        accessToken,
+        refreshToken,
+        accessExpiresIn: ctx.appEnv.JWT.EXPIRES_IN,
+        refreshExpiresIn: ctx.appEnv.JWT.REFRESH_EXPIRES_IN,
+        node_env: ctx.appEnv.NODE_ENV,
+      });
+
+      return {
+        success: true,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          status: user.status,
+        },
+      };
     }),
   ),
 
@@ -115,8 +120,11 @@ export const authMutationRouter = router({
           message: "Logged out successfully",
         };
       } catch (error) {
-        console.error("[Auth] Logout error:", error);
-        throwInternalError("An unexpected error occurred during logout");
+        throw internal("Failed to clear authentication cookies", {
+          cause: error,
+          userMessage:
+            "An unexpected error occurred during logout. Please try again.",
+        });
       }
     }),
   ),

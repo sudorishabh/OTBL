@@ -37,7 +37,7 @@ export const processTypeOptions = [
 ];
 
 export const WO_ACTIVITIES = {
-  CLEANING_UP_SOIL_AREA: "cleaning_up_soil_area",
+  clean_soil_area: "clean_soil_area",
   LIFTING_OILY_SLUSH_OR_RECOVERY_OF_OIL:
     "lifting_oily_slush_or_recovery_of_oil",
   EXCAVATION_OIL_CONTAMINATED_SOIL: "excavation_oil_contaminated_soil",
@@ -63,7 +63,7 @@ export const GST_PERCENTAGE = 18;
 
 export const allActivityOptions = [
   {
-    value: WO_ACTIVITIES.CLEANING_UP_SOIL_AREA,
+    value: WO_ACTIVITIES.clean_soil_area,
     label: "Cleaning Up Soil Area",
     isBioremediation: false,
   },

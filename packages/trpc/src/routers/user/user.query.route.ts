@@ -5,7 +5,7 @@ import { router } from "../../trpc";
 import { protectedProcedure } from "../../core";
 import { z } from "zod";
 import { hasAnyRole, hasRole } from "../../authorization";
-import { throwNotFoundError, handleDatabaseOperation } from "../../errors";
+import { notFound, fromDatabaseError } from "../../errors";
 import { handleProtectedQuery } from "../../helper/typed-handler";
 import { userSchemas, userTypes } from "@pkg/schema";
 
@@ -33,7 +33,9 @@ export const userQueryRouter = router({
         .limit(1);
 
       if (!userData) {
-        throwNotFoundError("User");
+        throw notFound("User", userId, {
+          userMessage: "Your account could not be found. Please log in again.",
+        });
       }
 
       return userData;
@@ -71,17 +73,12 @@ export const userQueryRouter = router({
             ) ?? userQuery;
         }
 
-        // Count total after applying filters
         const [totalResult] = await ctx.db
           .select({ count: count() })
           .from(userTable)
           .where(userQuery);
 
-        if (!totalResult) {
-          throwNotFoundError("User");
-        }
-
-        const total = totalResult.count;
+        const total = totalResult?.count || 0;
 
         if (total === 0) {
           return {
@@ -184,8 +181,8 @@ export const userQueryRouter = router({
           };
         });
 
-        const totalPages = Math.ceil(totalResult?.count / limit);
-        const hasMore = offset + users.length < totalResult.count;
+        const totalPages = Math.ceil(total / limit);
+        const hasMore = offset + users.length < total;
 
         return {
           users: usersWithOfficesAndSites,
@@ -221,46 +218,92 @@ export const userQueryRouter = router({
           .limit(1);
 
         if (!user) {
-          throwNotFoundError("User");
+          throw notFound("User", input.id);
         }
 
         return user;
       }),
     ),
 
-  // Get managers and operators for office assignment
-  getManagersAndOperators: protectedProcedure.use(hasRole(ROLES.ADMIN)).query(
-    handleProtectedQuery(async ({ ctx }) => {
-      const users = await ctx.db
-        .select({
-          id: userTable.id,
-          name: userTable.name,
-          email: userTable.email,
-          contact_number: userTable.contact_number,
-          role: userTable.role,
-          status: userTable.status,
-        })
-        .from(userTable)
-        .where(
-          and(
-            eq(userTable.status, STATUS.ACTIVE),
-            or(
-              eq(userTable.role, ROLES.MANAGER),
-              eq(userTable.role, ROLES.OPERATOR),
-            ),
-          ),
-        )
-        .orderBy(asc(userTable.name));
+  getUsersByRole: protectedProcedure
+    .input(
+      z.object({
+        role: z.enum([ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF, ROLES.OPERATOR]),
+        page: z.number().default(1),
+        limit: z.number().default(100),
+        search: z.string().optional().default(""),
+      }),
+    )
+    .query(
+      handleProtectedQuery(async ({ input, ctx }) => {
+        const { page, limit, role, search } = input;
+        const offset = (page - 1) * limit;
 
-      const managers = users.filter((user: any) => user.role === ROLES.MANAGER);
+        let condition = eq(userTable.role, role);
 
-      const operators = users.filter(
-        (user: any) => user.role === ROLES.OPERATOR,
-      );
+        if (search && search.trim() !== "") {
+          condition =
+            and(
+              condition,
+              or(
+                like(userTable.name, `%${search}%`),
+                like(userTable.email, `%${search}%`),
+                like(userTable.contact_number, `%${search}%`),
+              ),
+            ) ?? condition;
+        }
 
-      return { managers, operators };
-    }),
-  ),
+        // Get total count first
+        const [totalResult] = await ctx.db
+          .select({ count: count() })
+          .from(userTable)
+          .where(condition);
+
+        const total = totalResult?.count || 0;
+
+        if (total === 0) {
+          return {
+            users: [],
+            pagination: {
+              page,
+              limit,
+              total,
+              hasMore: false,
+              totalPages: 0,
+            },
+          };
+        }
+
+        const users = await ctx.db
+          .select({
+            id: userTable.id,
+            name: userTable.name,
+            email: userTable.email,
+            contact_number: userTable.contact_number,
+            role: userTable.role,
+            status: userTable.status,
+          })
+          .from(userTable)
+          .where(condition)
+          .orderBy(asc(userTable.name))
+          .limit(limit)
+          .offset(offset);
+
+        const totalPages = Math.ceil(total / limit);
+        const hasMore = offset + users.length < total;
+
+        return {
+          users,
+          pagination: {
+            page,
+            limit,
+            total,
+            hasMore,
+            totalPages,
+          },
+        };
+      }),
+    ),
 
   // Get 8 users from each role category
   getCategories8User: protectedProcedure.query(
@@ -276,9 +319,11 @@ export const userQueryRouter = router({
         created_at: userTable.created_at,
       };
 
-      const fetchEightByRole = (role: (typeof ROLES)[keyof typeof ROLES]) =>
-        handleDatabaseOperation(() =>
-          ctx.db
+      const fetchEightByRole = async (
+        role: (typeof ROLES)[keyof typeof ROLES],
+      ) => {
+        try {
+          return await ctx.db
             .select(userInfoNeeded)
             .from(userTable)
             .where(
@@ -289,14 +334,17 @@ export const userQueryRouter = router({
               ),
             )
             .orderBy(desc(userTable.created_at))
-            .limit(8),
-        );
+            .limit(8);
+        } catch (error) {
+          throw fromDatabaseError(error, `Fetching ${role} users`);
+        }
+      };
 
       const totalUserByRole = async (
         role: (typeof ROLES)[keyof typeof ROLES],
       ) => {
-        return await handleDatabaseOperation(() =>
-          ctx.db
+        try {
+          return await ctx.db
             .select({ count: count() })
             .from(userTable)
             .where(
@@ -304,8 +352,10 @@ export const userQueryRouter = router({
                 not(eq(userTable.role, ROLES.ADMIN)),
                 eq(userTable.role, role),
               ),
-            ),
-        );
+            );
+        } catch (error) {
+          throw fromDatabaseError(error, `Counting ${role} users`);
+        }
       };
 
       const [

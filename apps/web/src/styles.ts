@@ -1,6 +1,4 @@
-export const primaryColor = "";
-export const cardBGColor = "";
-export const backgroundColor = "";
-export const textPrimaryColor = "";
-export const textSecondaryColor = "";
-export const accentColor = "#035864";
+export const skeletonsParentStyle = "flex flex-col gap-6 w-full";
+export const skeletonStyle = "w-full bg-white";
+
+export const skeletonStyleGray = "w-full bg-gray-200/60";

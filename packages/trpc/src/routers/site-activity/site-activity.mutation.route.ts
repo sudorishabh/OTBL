@@ -207,7 +207,7 @@
 //           case "lifting_oil_slush":
 //             table = liftingOilSlushTable;
 //             break;
-//           case "excavation_cont_soil":
+//           case "excav_cont_soil":
 //             table = excavationContSoilTable;
 //             break;
 //           case "trnsprt_oil_slush":
@@ -265,7 +265,7 @@
 //           case "lifting_oil_slush":
 //             table = liftingOilSlushTable;
 //             break;
-//           case "excavation_cont_soil":
+//           case "excav_cont_soil":
 //             table = excavationContSoilTable;
 //             break;
 //           case "trnsprt_oil_slush":

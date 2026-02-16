@@ -1,8 +1,6 @@
 import React from "react";
 import { trpc } from "@/lib/trpc";
-// import type { CategorizedUsers } from "@/types/user.types";
 import { capitalFirstLetter, constants } from "@pkg/utils";
-import Loading from "@/components/loading/Loading";
 import DialogWindow from "@/components/DialogWindow";
 import useHandleParams from "@/hooks/useHandleParams";
 import { useUserManagementContext } from "@/contexts/UserManagementContext";
@@ -26,6 +24,7 @@ import UserTable from "./UserTable";
 import CustomButton from "@/components/CustomButton";
 import UserSearchNFilter from "./UserSearchNFilter";
 import StatusIndicator from "../../../../components/StatusIndicator";
+import UserPageSkeleton from "./skeleton/UserPageSkeleton";
 
 const { ROLES } = constants;
 
@@ -47,7 +46,7 @@ const CategorizedUsers = () => {
   } = categorizedUsers?.data ?? {};
 
   if (categorizedUsers.isLoading) {
-    return <Loading />;
+    return <UserPageSkeleton />;
   }
 
   const handleOpenCategoryDialog = (
@@ -185,14 +184,10 @@ const CategorizedUsers = () => {
             ? `All users with ${getParam("role")?.toLowerCase()} role`
             : ""
         }
-        // heightFull={true}
         heightMode='full'
         size='full'>
         <div className='max-w-150 mt-1 mb-5'>
-          <UserSearchNFilter
-            showResetButton={false}
-            showRoleFilter={false}
-          />
+          <UserSearchNFilter />
         </div>
         <UserTable />
       </DialogWindow>

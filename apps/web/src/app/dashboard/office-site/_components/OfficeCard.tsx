@@ -1,11 +1,15 @@
-import { Plus } from "lucide-react";
+import { Info, Plus } from "lucide-react";
 import React from "react";
-import SitesTable from "./OfficeSiteTable";
+import OfficeSiteTable from "./OfficeSiteTable";
 import { capitalizeEachWord, capitalFirstLetter } from "@pkg/utils";
 import CustomButton from "@/components/CustomButton";
-import AddSiteDialog from "./office-site-dialogs/CreateSiteDialog";
 import useHandleParams from "@/hooks/useHandleParams";
-import OfficeDetailsDialog from "./office-site-dialogs/OfficeDetailsDialog";
+import dynamic from "next/dynamic";
+import { Suspense } from "react";
+import PageLoading from "@/components/loading/PageLoading";
+const CreateSiteDialog = dynamic(
+  () => import("./office-site-dialogs/CreateSiteDialog"),
+);
 
 type Site = {
   id: number;
@@ -38,7 +42,7 @@ type Office = {
   status: string;
   created_at: string;
   updated_at: string;
-  //   sites: Site[];
+  siteCount: number;
   operators: {
     id: number;
     name: string;
@@ -81,9 +85,10 @@ const OfficeCard: React.FC<{ office: Office }> = ({ office }) => {
               <h3 className='text-gray-800 font-medium'>
                 {capitalizeEachWord(office.name)}
               </h3>
-              <div className='bg-sky-100 group rounded-full text-xs text-sky-800 flex items-center px-2.5 py-0.5 max-w-full'>
-                <span className='text-sky-700 text-[11px] font-medium'>
-                  Info...
+              <div className='bg-sky-100 group rounded-full text-xs text-sky-800 flex items-center px-2.5 py-1 max-w-full'>
+                <span className='flex items-center justify-center gap-1 text-sky-700 text-[11.5px] font-medium'>
+                  <Info className='size-3.5' />
+                  Information
                 </span>
 
                 <div className='hidden group-hover:block absolute left-0 top-full mt-2 w-80 sm:w-96 bg-white border border-gray-200 rounded-md drop-shadow-xl p-3 text-sm text-gray-700 z-30'>
@@ -145,13 +150,18 @@ const OfficeCard: React.FC<{ office: Office }> = ({ office }) => {
           <div className='mt-1'></div>
         </div>
         <div className='text-right flex items-center gap-4'>
-          <div
-            className={`inline-block px-2 py-0.5 text-xs rounded-full font-medium ${
-              office.status === "Active"
-                ? "bg-green-100 text-green-800"
-                : "bg-gray-100 text-gray-800"
-            }`}>
-            {capitalFirstLetter(office.status)}
+          <div className='rounded-full flex items-center gap-2 border px-1.5 py-1.5 bg-gray-100'>
+            <span className='text-xs font-medium px-2 py-0.5 rounded-full'>
+              {office.siteCount} {office.siteCount === 1 ? "Site" : "Sites"}
+            </span>
+            <span
+              className={`text-xs font-medium px-2 py-0.5 rounded-full border border-green-200 ${
+                office.status === "active"
+                  ? "bg-green-200 text-green-900"
+                  : "bg-gray-200 text-gray-900"
+              }`}>
+              {capitalFirstLetter(office.status)}
+            </span>
           </div>
 
           <CustomButton
@@ -167,14 +177,19 @@ const OfficeCard: React.FC<{ office: Office }> = ({ office }) => {
           />
         </div>
       </div>
+      <OfficeSiteTable officeId={office.id} />
 
-      <div className='mt-  p- rounded-xl '>
-        <div className='flex items-center'></div>
-        <SitesTable officeId={office.id} />
-      </div>
+      {office.siteCount > 6 && (
+        <div className='flex items-center justify-center pt-3'>
+          <p className='text-sm text-gray-500'>
+            {office.siteCount - 6} more sites
+          </p>
+        </div>
+      )}
 
-      <AddSiteDialog />
-      <OfficeDetailsDialog />
+      <Suspense fallback={<PageLoading />}>
+        <CreateSiteDialog />
+      </Suspense>
     </div>
   );
 };

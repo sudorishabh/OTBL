@@ -1,11 +1,11 @@
-import PageLoading from "@/components/loading/PageLoading";
 import { useClientManagementContext } from "@/contexts/ClientManagementContext";
 import { trpc } from "@/lib/trpc";
 import React from "react";
 import ClientCard from "./ClientCard";
-import { useSearchParams } from "next/navigation";
 import NoFetchData from "@/components/NoFetchData";
 import { Webhook } from "lucide-react";
+import ClientPageSkeleton from "./skeleton/ClientPageSkeleton";
+import Error from "@/components/Error";
 interface ClientContact {
   id: number;
   client_id: number;
@@ -48,6 +48,7 @@ const ClientsTab = ({ tab }: Props) => {
   const {
     data: clients,
     isLoading,
+    isError,
     error,
   } = trpc.clientQuery.getClients.useQuery(
     {
@@ -59,31 +60,40 @@ const ClientsTab = ({ tab }: Props) => {
     },
   );
 
-  const hasClients = clients?.length > 0;
-
   if (isLoading) {
-    return <PageLoading />;
+    return <ClientPageSkeleton />;
   }
+
+  if (isError) {
+    return (
+      <Error
+        variant='default'
+        message={error.message}
+      />
+    );
+  }
+
+  const hasClients = clients && clients.length > 0;
 
   if (!hasClients) {
     return (
       <NoFetchData
         Icon={Webhook}
         title='No Clients Found'
-        description='Add a client to get started'
+        description='Add clients to manage them'
       />
     );
   }
 
   return (
-    <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4'>
+    <div
+      className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1
+     gap-4'>
       {clients?.map((client: Client) => (
         <ClientCard
           key={client.id}
           client={client}
-          contacts={clients?.filter(
-            (c: ClientContact) => c.client_id === client.id,
-          )}
+          contactsCount={+client?.contact_number || 0}
         />
       ))}
     </div>

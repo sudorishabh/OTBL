@@ -144,16 +144,14 @@ const DeferredFilePicker: React.FC<DeferredFilePickerProps> = ({
   };
 
   return (
-    <div className={cn("w-full space-y-2", className)}>
-      <div className='text-sm font-medium text-gray-700'>{label}</div>
-
+    <div className={cn("w-full", className)}>
       {!selectedFile ? (
-        // Empty state - show dropzone
+        // Empty state - compact inline dropzone
         <div
           onClick={() => fileInputRef.current?.click()}
           onDragOver={handleDragOver}
           onDrop={handleDrop}
-          className='border-2 border-dashed border-gray-300 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-50 hover:border-primary/50 transition-all'>
+          className='group border border-dashed border-gray-300 rounded-md px-3 py-2 flex items-center gap-2 cursor-pointer hover:bg-gray-50/50 hover:border-primary/40 transition-all'>
           <input
             type='file'
             ref={fileInputRef}
@@ -161,121 +159,108 @@ const DeferredFilePicker: React.FC<DeferredFilePickerProps> = ({
             className='hidden'
             accept={allowedExtensions.join(",")}
           />
-          <Upload className='h-8 w-8 text-gray-400 mb-2' />
-          <p className='text-sm text-gray-500 font-medium'>
-            Click or drag file to select
-          </p>
-          <p className='text-xs text-gray-400 mt-1'>
-            Max size: {maxSizeMB}MB. Allowed: {allowedExtensions.join(" ")}
-          </p>
+          <Upload className='h-4 w-4 text-gray-400 group-hover:text-primary/60 transition-colors' />
+          <span className='text-sm text-gray-500 group-hover:text-gray-600'>
+            {label}
+          </span>
+          <span className='text-xs text-gray-400 ml-auto hidden sm:inline'>
+            {allowedExtensions.slice(0, 3).join(", ")}
+            {allowedExtensions.length > 3 ? "..." : ""} • {maxSizeMB}MB
+          </span>
         </div>
       ) : (
-        // File selected state
-        <div className='border border-gray-200 rounded-lg p-4 bg-white shadow-sm'>
-          <div className='flex items-center justify-between mb-2'>
-            <div className='flex items-center space-x-3 overflow-hidden flex-1'>
-              <div
-                className={cn(
-                  "p-2 rounded-full",
-                  isUploaded ? "bg-green-100" : "bg-primary/10",
-                )}>
-                {isUploading ? (
-                  <Loader2 className='h-5 w-5 text-primary animate-spin' />
-                ) : isUploaded ? (
-                  <CheckCircle className='h-5 w-5 text-green-600' />
-                ) : (
-                  <FileText className='h-5 w-5 text-primary' />
-                )}
-              </div>
-              <div className='truncate flex-1'>
-                <p className='text-sm font-medium truncate'>
-                  {selectedFile.name}
-                </p>
-                <p className='text-xs text-gray-500'>
-                  {formatFileSize(selectedFile.size)}
-                  {isUploaded && (
-                    <span className='text-green-600 ml-2'>• Uploaded</span>
-                  )}
-                </p>
-              </div>
-            </div>
-
-            <div className='shrink-0 ml-2'>
-              {!isUploading && !isDeleting && !isUploaded && (
-                <Button
-                  size='sm'
-                  variant='ghost'
-                  type='button'
-                  onClick={handleClear}
-                  className='h-8 w-8 p-0 text-gray-500 hover:text-red-500'>
-                  <X className='h-4 w-4' />
-                </Button>
-              )}
-              {isUploaded && !isDeleting && (
-                <CheckCircle className='h-5 w-5 text-green-500' />
-              )}
-            </div>
+        // File selected state - compact horizontal bar
+        <div className='border border-gray-200 rounded-md px-3 py-2 bg-white flex items-center gap-2'>
+          {/* Icon */}
+          <div
+            className={cn(
+              "shrink-0 p-1.5 rounded-md",
+              isUploaded
+                ? "bg-green-50"
+                : isUploading
+                  ? "bg-primary/5"
+                  : "bg-gray-50",
+            )}>
+            {isUploading ? (
+              <Loader2 className='h-3.5 w-3.5 text-primary animate-spin' />
+            ) : isUploaded ? (
+              <CheckCircle className='h-3.5 w-3.5 text-green-600' />
+            ) : isDeleting ? (
+              <Loader2 className='h-3.5 w-3.5 text-red-500 animate-spin' />
+            ) : (
+              <FileText className='h-3.5 w-3.5 text-gray-500' />
+            )}
           </div>
 
-          {/* Upload progress */}
-          {isUploading && (
-            <div className='space-y-1'>
-              <Progress
-                value={uploadProgress}
-                className='h-2'
-              />
-              <p className='text-xs text-gray-500 text-center'>
-                Uploading... {uploadProgress}%
-              </p>
+          {/* File info */}
+          <div className='flex-1 min-w-0'>
+            <div className='flex items-center gap-2'>
+              <span className='text-sm font-medium text-gray-700 truncate max-w-[180px]'>
+                {selectedFile.name}
+              </span>
+              <span className='text-xs text-gray-400 shrink-0'>
+                {formatFileSize(selectedFile.size)}
+              </span>
             </div>
-          )}
+            {/* Status indicators */}
+            {isUploading && (
+              <div className='flex items-center gap-2 mt-0.5'>
+                <Progress
+                  value={uploadProgress}
+                  className='h-1 flex-1 max-w-[120px]'
+                />
+                <span className='text-xs text-gray-400'>{uploadProgress}%</span>
+              </div>
+            )}
+            {isDeleting && (
+              <span className='text-xs text-red-500'>Deleting...</span>
+            )}
+            {!isUploading && !isUploaded && !isDeleting && (
+              <span className='text-xs text-amber-600 flex items-center gap-1'>
+                <span className='w-1.5 h-1.5 bg-amber-500 rounded-full' />
+                Pending upload
+              </span>
+            )}
+          </div>
 
-          {/* Deleting state */}
-          {isDeleting && (
-            <div className='flex items-center justify-center py-2'>
-              <Loader2 className='h-4 w-4 animate-spin mr-2 text-red-500' />
-              <p className='text-xs text-red-500'>Deleting...</p>
-            </div>
-          )}
-
-          {/* Pending upload message */}
-          {!isUploading && !isUploaded && !isDeleting && (
-            <p className='text-xs text-amber-600 mt-2 flex items-center'>
-              <span className='inline-block w-2 h-2 bg-amber-500 rounded-full mr-2' />
-              File will be uploaded when you submit the form
-            </p>
-          )}
-
-          {/* Uploaded state actions */}
-          {isUploaded && !isDeleting && (
-            <div className='mt-2 flex gap-2'>
-              {uploadedUrl && (
-                <Button
-                  variant='outline'
-                  size='sm'
-                  type='button'
-                  className='flex-1'
-                  onClick={() => window.open(uploadedUrl, "_blank")}>
-                  View File
-                </Button>
-              )}
-              {onDelete && (
-                <Button
-                  variant='destructive'
-                  size='sm'
-                  type='button'
-                  className='flex-1'
-                  onClick={handleDelete}>
-                  Delete
-                </Button>
-              )}
-            </div>
-          )}
+          {/* Actions */}
+          <div className='shrink-0 flex items-center gap-1'>
+            {isUploaded && !isDeleting && uploadedUrl && (
+              <Button
+                variant='ghost'
+                size='sm'
+                type='button'
+                className='h-7 px-2 text-xs text-gray-600 hover:text-primary'
+                onClick={() => window.open(uploadedUrl, "_blank")}>
+                View
+              </Button>
+            )}
+            {isUploaded && !isDeleting && onDelete && (
+              <Button
+                variant='ghost'
+                size='sm'
+                type='button'
+                className='h-7 w-7 p-0 text-gray-400 hover:text-red-500 hover:bg-red-50'
+                onClick={handleDelete}>
+                <X className='h-3.5 w-3.5' />
+              </Button>
+            )}
+            {!isUploading && !isDeleting && !isUploaded && (
+              <Button
+                size='sm'
+                variant='ghost'
+                type='button'
+                onClick={handleClear}
+                className='h-7 w-7 p-0 text-gray-400 hover:text-red-500 hover:bg-red-50'>
+                <X className='h-3.5 w-3.5' />
+              </Button>
+            )}
+          </div>
         </div>
       )}
 
       {/* Helper text */}
-      {helperText && <p className='text-xs text-gray-500'>{helperText}</p>}
+      {helperText && <p className='text-xs text-gray-400 mt-1'>{helperText}</p>}
     </div>
   );
 };

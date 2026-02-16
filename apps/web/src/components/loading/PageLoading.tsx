@@ -1,9 +1,17 @@
+import { cn } from "@/lib/utils";
 import React from "react";
 
-const PageLoading = () => {
+interface Props {
+  fromSuspense?: boolean;
+}
+
+const PageLoading = ({ fromSuspense }: Props) => {
   return (
     <div
-      className='min-h-screen z-50 grid place-items-center bg-white/70 backdrop-blur-sm'
+      className={cn(
+        "z-50 grid place-items-center bg-white/70 backdrop-blur-sm",
+        fromSuspense ? "h-full" : "min-h-screen",
+      )}
       role='status'
       aria-live='polite'
       aria-busy='true'>

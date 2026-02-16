@@ -1,9 +1,468 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "5ab8dce5-d558-4250-9753-0239edaca899",
+  "id": "4c831b65-0dba-4816-9111-808cbd1360fb",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
+    "bio_oil_zapping": {
+      "name": "bio_oil_zapping",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "site_activity_id": {
+          "name": "site_activity_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "work_order_site_id": {
+          "name": "work_order_site_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "bio_sample_id": {
+          "name": "bio_sample_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "estimated_quantity": {
+          "name": "estimated_quantity",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "intended_quantity": {
+          "name": "intended_quantity",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "bio_oil_zapping_site_activity_id_site_activity_items_id_fk": {
+          "name": "bio_oil_zapping_site_activity_id_site_activity_items_id_fk",
+          "tableFrom": "bio_oil_zapping",
+          "tableTo": "site_activity_items",
+          "columnsFrom": [
+            "site_activity_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "bio_oil_zapping_work_order_site_id_work_order_sites_id_fk": {
+          "name": "bio_oil_zapping_work_order_site_id_work_order_sites_id_fk",
+          "tableFrom": "bio_oil_zapping",
+          "tableTo": "work_order_sites",
+          "columnsFrom": [
+            "work_order_site_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "bio_oil_zapping_bio_sample_id_bio_samples_id_fk": {
+          "name": "bio_oil_zapping_bio_sample_id_bio_samples_id_fk",
+          "tableFrom": "bio_oil_zapping",
+          "tableTo": "bio_samples",
+          "columnsFrom": [
+            "bio_sample_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "bio_oil_zapping_id": {
+          "name": "bio_oil_zapping_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "bio_samples": {
+      "name": "bio_samples",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "site_activity_id": {
+          "name": "site_activity_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "work_order_site_id": {
+          "name": "work_order_site_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "biorem_cont_soil_id": {
+          "name": "biorem_cont_soil_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "tph_document_url": {
+          "name": "tph_document_url",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tph_value": {
+          "name": "tph_value",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estimated_quantity": {
+          "name": "estimated_quantity",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "bio_samples_site_activity_id_site_activity_items_id_fk": {
+          "name": "bio_samples_site_activity_id_site_activity_items_id_fk",
+          "tableFrom": "bio_samples",
+          "tableTo": "site_activity_items",
+          "columnsFrom": [
+            "site_activity_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "bio_samples_work_order_site_id_work_order_sites_id_fk": {
+          "name": "bio_samples_work_order_site_id_work_order_sites_id_fk",
+          "tableFrom": "bio_samples",
+          "tableTo": "work_order_sites",
+          "columnsFrom": [
+            "work_order_site_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "bio_samples_biorem_cont_soil_id_biorem_cont_soil_id_fk": {
+          "name": "bio_samples_biorem_cont_soil_id_biorem_cont_soil_id_fk",
+          "tableFrom": "bio_samples",
+          "tableTo": "biorem_cont_soil",
+          "columnsFrom": [
+            "biorem_cont_soil_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "bio_samples_id": {
+          "name": "bio_samples_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "biorem_cont_soil": {
+      "name": "biorem_cont_soil",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "site_activity_id": {
+          "name": "site_activity_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "work_order_site_id": {
+          "name": "work_order_site_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estimated_quantity": {
+          "name": "estimated_quantity",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount": {
+          "name": "amount",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "transportation_km": {
+          "name": "transportation_km",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "biorem_cont_soil_site_activity_id_site_activity_items_id_fk": {
+          "name": "biorem_cont_soil_site_activity_id_site_activity_items_id_fk",
+          "tableFrom": "biorem_cont_soil",
+          "tableTo": "site_activity_items",
+          "columnsFrom": [
+            "site_activity_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "biorem_cont_soil_work_order_site_id_work_order_sites_id_fk": {
+          "name": "biorem_cont_soil_work_order_site_id_work_order_sites_id_fk",
+          "tableFrom": "biorem_cont_soil",
+          "tableTo": "work_order_sites",
+          "columnsFrom": [
+            "work_order_site_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "biorem_cont_soil_id": {
+          "name": "biorem_cont_soil_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "clean_soil_area": {
+      "name": "clean_soil_area",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "site_activity_id": {
+          "name": "site_activity_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "work_order_site_id": {
+          "name": "work_order_site_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estimated_quantity": {
+          "name": "estimated_quantity",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount": {
+          "name": "amount",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "transportation_km": {
+          "name": "transportation_km",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "clean_soil_area_site_activity_id_site_activity_items_id_fk": {
+          "name": "clean_soil_area_site_activity_id_site_activity_items_id_fk",
+          "tableFrom": "clean_soil_area",
+          "tableTo": "site_activity_items",
+          "columnsFrom": [
+            "site_activity_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "clean_soil_area_work_order_site_id_work_order_sites_id_fk": {
+          "name": "clean_soil_area_work_order_site_id_work_order_sites_id_fk",
+          "tableFrom": "clean_soil_area",
+          "tableTo": "work_order_sites",
+          "columnsFrom": [
+            "work_order_site_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "clean_soil_area_id": {
+          "name": "clean_soil_area_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
     "client_contacts": {
       "name": "client_contacts",
       "columns": {
@@ -198,6 +657,295 @@
       "compositePrimaryKeys": {
         "clients_id": {
           "name": "clients_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "excav_cont_soil": {
+      "name": "excav_cont_soil",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "site_activity_id": {
+          "name": "site_activity_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "work_order_site_id": {
+          "name": "work_order_site_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estimated_quantity": {
+          "name": "estimated_quantity",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount": {
+          "name": "amount",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "transportation_km": {
+          "name": "transportation_km",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "excav_cont_soil_site_activity_id_site_activity_items_id_fk": {
+          "name": "excav_cont_soil_site_activity_id_site_activity_items_id_fk",
+          "tableFrom": "excav_cont_soil",
+          "tableTo": "site_activity_items",
+          "columnsFrom": [
+            "site_activity_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "excav_cont_soil_work_order_site_id_work_order_sites_id_fk": {
+          "name": "excav_cont_soil_work_order_site_id_work_order_sites_id_fk",
+          "tableFrom": "excav_cont_soil",
+          "tableTo": "work_order_sites",
+          "columnsFrom": [
+            "work_order_site_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "excav_cont_soil_id": {
+          "name": "excav_cont_soil_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "lifting_oil_slush": {
+      "name": "lifting_oil_slush",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "site_activity_id": {
+          "name": "site_activity_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "work_order_site_id": {
+          "name": "work_order_site_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estimated_quantity": {
+          "name": "estimated_quantity",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount": {
+          "name": "amount",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "transportation_km": {
+          "name": "transportation_km",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "lifting_oil_slush_site_activity_id_site_activity_items_id_fk": {
+          "name": "lifting_oil_slush_site_activity_id_site_activity_items_id_fk",
+          "tableFrom": "lifting_oil_slush",
+          "tableTo": "site_activity_items",
+          "columnsFrom": [
+            "site_activity_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "lifting_oil_slush_work_order_site_id_work_order_sites_id_fk": {
+          "name": "lifting_oil_slush_work_order_site_id_work_order_sites_id_fk",
+          "tableFrom": "lifting_oil_slush",
+          "tableTo": "work_order_sites",
+          "columnsFrom": [
+            "work_order_site_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "lifting_oil_slush_id": {
+          "name": "lifting_oil_slush_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "measurement_sheets": {
+      "name": "measurement_sheets",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "work_order_site_id": {
+          "name": "work_order_site_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "document_url": {
+          "name": "document_url",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "measurement_sheets_work_order_site_id_work_order_sites_id_fk": {
+          "name": "measurement_sheets_work_order_site_id_work_order_sites_id_fk",
+          "tableFrom": "measurement_sheets",
+          "tableTo": "work_order_sites",
+          "columnsFrom": [
+            "work_order_site_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "measurement_sheets_id": {
+          "name": "measurement_sheets_id",
           "columns": [
             "id"
           ]
@@ -632,6 +1380,116 @@
       },
       "checkConstraint": {}
     },
+    "refill_excav_soil": {
+      "name": "refill_excav_soil",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "site_activity_id": {
+          "name": "site_activity_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "work_order_site_id": {
+          "name": "work_order_site_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estimated_quantity": {
+          "name": "estimated_quantity",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount": {
+          "name": "amount",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "transportation_km": {
+          "name": "transportation_km",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "refill_excav_soil_site_activity_id_site_activity_items_id_fk": {
+          "name": "refill_excav_soil_site_activity_id_site_activity_items_id_fk",
+          "tableFrom": "refill_excav_soil",
+          "tableTo": "site_activity_items",
+          "columnsFrom": [
+            "site_activity_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "refill_excav_soil_work_order_site_id_work_order_sites_id_fk": {
+          "name": "refill_excav_soil_work_order_site_id_work_order_sites_id_fk",
+          "tableFrom": "refill_excav_soil",
+          "tableTo": "work_order_sites",
+          "columnsFrom": [
+            "work_order_site_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "refill_excav_soil_id": {
+          "name": "refill_excav_soil_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
     "schedule_of_rates": {
       "name": "schedule_of_rates",
       "columns": {
@@ -665,14 +1523,14 @@
         },
         "estimated_quantity": {
           "name": "estimated_quantity",
-          "type": "decimal(10,2)",
+          "type": "decimal(20,2)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "rc_unit_rate": {
           "name": "rc_unit_rate",
-          "type": "decimal(10,2)",
+          "type": "decimal(20,2)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -685,16 +1543,16 @@
           "autoincrement": false,
           "default": "'18'"
         },
-        "unit_rate_inclusive_gst": {
-          "name": "unit_rate_inclusive_gst",
-          "type": "decimal(10,2)",
+        "unit_rate_inc_gst": {
+          "name": "unit_rate_inc_gst",
+          "type": "decimal(20,2)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "total_cost": {
           "name": "total_cost",
-          "type": "decimal(10,2)",
+          "type": "decimal(20,2)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -703,7 +1561,7 @@
           "name": "transportation_km",
           "type": "decimal(10,2)",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "created_at": {
@@ -1056,6 +1914,116 @@
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
+    "trans_cont_soil": {
+      "name": "trans_cont_soil",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "site_activity_id": {
+          "name": "site_activity_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "work_order_site_id": {
+          "name": "work_order_site_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "estimated_quantity": {
+          "name": "estimated_quantity",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount": {
+          "name": "amount",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "transportation_km": {
+          "name": "transportation_km",
+          "type": "decimal(10,2)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "trans_cont_soil_site_activity_id_site_activity_items_id_fk": {
+          "name": "trans_cont_soil_site_activity_id_site_activity_items_id_fk",
+          "tableFrom": "trans_cont_soil",
+          "tableTo": "site_activity_items",
+          "columnsFrom": [
+            "site_activity_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "trans_cont_soil_work_order_site_id_work_order_sites_id_fk": {
+          "name": "trans_cont_soil_work_order_site_id_work_order_sites_id_fk",
+          "tableFrom": "trans_cont_soil",
+          "tableTo": "work_order_sites",
+          "columnsFrom": [
+            "work_order_site_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "trans_cont_soil_id": {
+          "name": "trans_cont_soil_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
     "users": {
       "name": "users",
       "columns": {
@@ -1170,6 +2138,82 @@
       },
       "checkConstraint": {}
     },
+    "work_order_site_docs": {
+      "name": "work_order_site_docs",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "work_order_site_id": {
+          "name": "work_order_site_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "document_url": {
+          "name": "document_url",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "type": {
+          "name": "type",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "work_order_site_docs_work_order_site_id_work_order_sites_id_fk": {
+          "name": "work_order_site_docs_work_order_site_id_work_order_sites_id_fk",
+          "tableFrom": "work_order_site_docs",
+          "tableTo": "work_order_sites",
+          "columnsFrom": [
+            "work_order_site_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "work_order_site_docs_id": {
+          "name": "work_order_site_docs_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
     "work_order_sites": {
       "name": "work_order_sites",
       "columns": {
@@ -1219,7 +2263,7 @@
           "name": "process_type",
           "type": "varchar(50)",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "autoincrement": false
         },
         "job_number": {
@@ -1453,32 +2497,11 @@
           "notNull": true,
           "autoincrement": false
         },
-        "agreement_url": {
-          "name": "agreement_url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "document_key": {
           "name": "document_key",
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true,
-          "autoincrement": false
-        },
-        "metric_ton": {
-          "name": "metric_ton",
-          "type": "decimal(10,2)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "metric_ton_rate": {
-          "name": "metric_ton_rate",
-          "type": "decimal(10,2)",
-          "primaryKey": false,
-          "notNull": false,
           "autoincrement": false
         },
         "process_type": {
@@ -1494,21 +2517,6 @@
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
-        },
-        "grand_total_amount": {
-          "name": "grand_total_amount",
-          "type": "decimal(10,2)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "expense_amount": {
-          "name": "expense_amount",
-          "type": "decimal(10,2)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "'0'"
         },
         "status": {
           "name": "status",

@@ -31,7 +31,6 @@ import { useApiError } from "@/hooks/useApiError";
 import { proposalSchemas, type proposalTypes } from "@pkg/schema";
 import { z } from "zod";
 
-// Input type for the form (before validation/coercion)
 type ProposalFormInput = z.input<typeof proposalSchemas.baseProposalSchema>;
 
 interface Props {
@@ -61,7 +60,6 @@ const CreateProposalDialog = ({ clientId }: Props) => {
   const [uploadedUrl, setUploadedUrl] = useState<string>("");
   const [uploadedFileId, setUploadedFileId] = useState<string>("");
 
-  // Fetch offices for the dropdown
   const { data: officesData, isLoading: isLoadingOffices } =
     trpc.officeQuery.getOffices.useQuery(
       { searchQuery: "", status: "active" },
@@ -91,9 +89,9 @@ const CreateProposalDialog = ({ clientId }: Props) => {
     onSuccess: () => {
       utils.proposalQuery.getProposalsByClient.invalidate();
       toast.success("Proposal added");
+      handleCloseDialog();
     },
     onError: (error) => {
-      console.error("Error adding proposal:", error);
       handleError(error, { showToast: true });
     },
   });
@@ -105,7 +103,6 @@ const CreateProposalDialog = ({ clientId }: Props) => {
     }
     deleteParams(["dialog"]);
 
-    // Delay form reset until after animation completes
     setTimeout(() => {
       form.reset({
         code: "",
@@ -208,12 +205,11 @@ const CreateProposalDialog = ({ clientId }: Props) => {
       }
 
       // Create the proposal with the document path
-      await addProposal.mutateAsync({
+      addProposal.mutate({
         ...values,
         client_id: clientId,
         document_key: documentPath,
       });
-      handleCloseDialog();
     } catch (error) {
       // If failure happens after upload, we could try to cleanup
       if (uploadedFileId) {

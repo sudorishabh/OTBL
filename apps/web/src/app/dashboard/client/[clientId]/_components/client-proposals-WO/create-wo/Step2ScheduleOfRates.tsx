@@ -54,12 +54,12 @@ const Step2ScheduleOfRates: React.FC<Step2ScheduleOfRatesProps> = ({
 
   const addScheduleOfRate = () => {
     append({
-      activity: "cleaning_up_soil_area" as const,
+      activity: "clean_soil_area" as const,
       unit: WO_UNITS.MT,
       estimated_quantity: 0,
       rc_unit_rate: 0,
       gst_percentage: GST_PERCENTAGE,
-      unit_rate_inclusive_gst: 0,
+      unit_rate_inc_gst: 0,
       total_cost: 0,
       transportation_km: 0,
     });
@@ -75,7 +75,7 @@ const Step2ScheduleOfRates: React.FC<Step2ScheduleOfRatesProps> = ({
     const totalCost = Number(unitRateInclusiveGst) * Number(quantity);
 
     form.setValue(
-      `schedule_of_rates.${index}.unit_rate_inclusive_gst`,
+      `schedule_of_rates.${index}.unit_rate_inc_gst`,
       Number(unitRateInclusiveGst.toFixed(2)),
     );
     form.setValue(
@@ -246,7 +246,7 @@ const Step2ScheduleOfRates: React.FC<Step2ScheduleOfRatesProps> = ({
                   <TableCell>
                     <FormField
                       control={form.control}
-                      name={`schedule_of_rates.${index}.unit_rate_inclusive_gst`}
+                      name={`schedule_of_rates.${index}.unit_rate_inc_gst`}
                       render={({ field }) => (
                         <Input
                           type='number'

@@ -1,8 +1,9 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import dynamic from "next/dynamic";
 import PageLoading from "@/components/loading/PageLoading";
 import { Suspense } from "react";
+import useHandleParams from "@/hooks/useHandleParams";
 
 const WorkOrder = dynamic(() => import("@/app/_components/WO/WorkOrder"));
 
@@ -12,9 +13,13 @@ type PageProps = {
 
 const WorkOrderPage = ({ params }: PageProps) => {
   const { workOrderId } = React.use(params);
+
   return (
     <Suspense fallback={<PageLoading />}>
-      <WorkOrder workOrderId={workOrderId} />
+      <WorkOrder
+        workOrderId={workOrderId}
+        from='client'
+      />
     </Suspense>
   );
 };

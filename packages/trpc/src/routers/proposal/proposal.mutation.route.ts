@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { schema } from "@pkg/db";
 import { router } from "../../trpc";
 import { managerProcedure } from "../../middleware";
-import { throwNotFoundError, handleDatabaseOperation } from "../../errors";
+import { notFound, fromDatabaseError } from "../../errors";
 import { handleMutation } from "../../helper/typed-handler";
 import { proposalSchemas } from "@pkg/schema";
 
@@ -20,7 +20,9 @@ export const proposalMutationRouter = router({
           .where(eq(clientTable.id, input.client_id));
 
         if (client.length === 0) {
-          throwNotFoundError("Client", input.client_id);
+          throw notFound("Client", input.client_id, {
+            userMessage: "The selected client doesn't exist.",
+          });
         }
 
         // Verify office exists
@@ -30,21 +32,24 @@ export const proposalMutationRouter = router({
           .where(eq(officeTable.id, input.office_id));
 
         if (office.length === 0) {
-          throwNotFoundError("Office", input.office_id);
+          throw notFound("Office", input.office_id, {
+            userMessage: "The selected office doesn't exist.",
+          });
         }
-        console.log("input", input);
 
-        const result = await handleDatabaseOperation(async () => {
-          return ctx.db.insert(proposalTable).values({
+        try {
+          const result = await ctx.db.insert(proposalTable).values({
             ...input,
             proposal_amount: input.proposal_amount.toString(),
           });
-        }, "Failed to add proposal");
 
-        return {
-          success: true,
-          proposalId: result[0].insertId,
-        };
+          return {
+            success: true,
+            proposalId: result[0].insertId,
+          };
+        } catch (error) {
+          throw fromDatabaseError(error, "Creating proposal");
+        }
       }),
     ),
 });

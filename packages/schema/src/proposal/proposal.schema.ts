@@ -36,3 +36,7 @@ export const updateProposalSchema = createProposalSchema.extend({
 export const getProposalsByClientSchema = z.object({
   client_id: positiveIntValidator,
 });
+
+export const getProposalByIdSchema = z.object({
+  proposal_id: positiveIntValidator,
+});

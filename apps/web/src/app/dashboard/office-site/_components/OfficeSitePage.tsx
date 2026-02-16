@@ -1,30 +1,62 @@
 "use client";
 import { Building2, Search, X } from "lucide-react";
-import OfficeCard from "./OfficeCard";
 import NoFetchData from "@/components/NoFetchData";
-import CreateOfficeDialog from "./office-site-dialogs/CreateOfficeDialog";
 import { trpc } from "@/lib/trpc";
 import { useOfficeManagementContext } from "@/contexts/OfficeManagementContext";
 import Input from "@/components/custom-form-input/Input";
-import PageLoading from "@/components/loading/PageLoading";
 import CustomButton from "@/components/CustomButton";
+import dynamic from "next/dynamic";
+import { Suspense } from "react";
+import OfficeClientPageSkeleton from "./skeleton/OfficeClientPageSkeleton";
+import Error from "@/components/Error";
+
+const CreateOfficeDialog = dynamic(
+  () => import("./office-site-dialogs/CreateOfficeDialog"),
+);
+const OfficeDetailsDialog = dynamic(
+  () => import("./office-site-dialogs/OfficeDetailsDialog"),
+);
+const OfficeCard = dynamic(() => import("./OfficeCard"));
 
 const OfficeSitePage = () => {
   const { setSearchQuery, filters, setFilters, searchQuery, resetFilters } =
     useOfficeManagementContext();
 
-  const { data: officesQuery, isLoading: officesLoading } =
-    trpc.officeQuery.getOffices.useQuery({
-      status: filters.status,
-      searchQuery: searchQuery,
-    });
+  const {
+    data: officesQuery,
+    isLoading: isOfficesQueryLoading,
+    isError,
+    error,
+  } = trpc.officeQuery.getOffices.useQuery({
+    status: filters.status,
+    searchQuery: searchQuery,
+  });
   const isOffice = (officesQuery?.offices?.length ?? 0) > 0;
   const offices = officesQuery?.offices ?? [];
 
   const hasActiveFilters = searchQuery !== "" || filters.status !== "all";
 
-  if (officesLoading) {
-    return <PageLoading />;
+  if (isOfficesQueryLoading) {
+    return <OfficeClientPageSkeleton />;
+  }
+
+  if (isError && error) {
+    return (
+      <Error
+        variant='default'
+        message={error.message}
+      />
+    );
+  }
+
+  if (!isOffice) {
+    return (
+      <NoFetchData
+        Icon={Building2}
+        title='No Offices Found'
+        description='Add offices to manage them'
+      />
+    );
   }
 
   return (
@@ -37,6 +69,7 @@ const OfficeSitePage = () => {
                 mode='standalone'
                 type='text'
                 placeholder='Search offices by name, address, contact...'
+                disabled={isOfficesQueryLoading}
                 value={searchQuery}
                 onChange={setSearchQuery}
                 inputIcon={Search}
@@ -44,7 +77,6 @@ const OfficeSitePage = () => {
               />
             </div>
             <div className='flex items-center gap-3 text-xs'>
-              {/* Status Filter */}
               <Input
                 mode='standalone'
                 isSelect
@@ -53,12 +85,13 @@ const OfficeSitePage = () => {
                   { label: "Active", value: "active" },
                   { label: "Inactive", value: "inactive" },
                 ]}
+                disabled={isOfficesQueryLoading}
                 placeholder='All Status'
                 value={filters.status}
                 onChange={(value) =>
                   setFilters({ status: value as "all" | "active" | "inactive" })
                 }
-                className='!h-8 w-[140px] text-xs'
+                className='h-8! w-[140px] text-xs'
               />
 
               {/* Reset Button */}
@@ -74,8 +107,7 @@ const OfficeSitePage = () => {
             </div>
           </div>
         </div>
-
-        {isOffice ? (
+        <Suspense fallback={<OfficeClientPageSkeleton />}>
           <div className='space-y-6'>
             <div className='grid grid-cols-1 sm:grid-cols-1 gap-4'>
               {offices.map((office) => (
@@ -86,15 +118,11 @@ const OfficeSitePage = () => {
               ))}
             </div>
           </div>
-        ) : (
-          <NoFetchData
-            Icon={Building2}
-            title='No offices found'
-            description='Start by adding your first office location.'
-          />
-        )}
+        </Suspense>
       </div>
+
       <CreateOfficeDialog />
+      <OfficeDetailsDialog />
     </>
   );
 };

@@ -6,15 +6,7 @@ import useHandleParams from "@/hooks/useHandleParams";
 import { Search, X } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 
-interface Props {
-  showResetButton?: boolean;
-  showRoleFilter?: boolean;
-}
-
-const UserSearchNFilter = ({
-  showResetButton = true,
-  showRoleFilter = true,
-}: Props) => {
+const UserSearchNFilter = () => {
   const { searchQuery, setSearchQuery, filters, setFilters, resetFilters } =
     useUserManagementContext();
   const { getParam } = useHandleParams();
@@ -39,11 +31,13 @@ const UserSearchNFilter = ({
   const hasActiveFilters =
     searchQuery !== "" || filters.role !== "all" || filters.status !== "all";
 
-  const showSearchAndFilter = !getParam("tab") || getParam("tab") === "all";
+  const isAllUsers = !getParam("tab") || getParam("tab") === "all";
+
+  const isCategoryDialog = getParam("dialog") === "categorized";
 
   return (
     <>
-      {showSearchAndFilter ? (
+      {isAllUsers || isCategoryDialog ? (
         <div className=' flex items-center gap-4'>
           <div className='flex-1 w-80'>
             <Input
@@ -56,7 +50,7 @@ const UserSearchNFilter = ({
           </div>
 
           <div className='flex items-center gap-3 text-xs'>
-            {showRoleFilter && (
+            {!isCategoryDialog && (
               <Input
                 mode='standalone'
                 value={filters.role}
@@ -101,7 +95,7 @@ const UserSearchNFilter = ({
               className='h-8! w-[140px] text-xs cursor-pointer'
             />
 
-            {hasActiveFilters && showResetButton && (
+            {hasActiveFilters && !isCategoryDialog && (
               <CustomButton
                 text='Reset'
                 onClick={resetFilters}

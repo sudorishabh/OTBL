@@ -11,7 +11,7 @@ const {
   getAllWorkOrdersPaginatedSchema,
 } = workOrderSchemas;
 
-import { throwNotFoundError, handleDatabaseOperation } from "../../errors";
+import { notFound, fromDatabaseError } from "../../errors";
 import { handleQuery } from "../../helper/typed-handler";
 
 const {
@@ -70,36 +70,32 @@ export const workOrderQueryRouter = router({
               ? desc(workOrderTable.created_at)
               : asc(workOrderTable.created_at);
 
-      const [totalResult] = await ctx.db
-        .select({ count: count() })
-        .from(workOrderTable)
-        .leftJoin(clientTable, eq(workOrderTable.client_id, clientTable.id))
-        .leftJoin(officeTable, eq(workOrderTable.office_id, officeTable.id))
-        .where(conditions);
+      try {
+        const [totalResult] = await ctx.db
+          .select({ count: count() })
+          .from(workOrderTable)
+          .leftJoin(clientTable, eq(workOrderTable.client_id, clientTable.id))
+          .leftJoin(officeTable, eq(workOrderTable.office_id, officeTable.id))
+          .where(conditions);
 
-      if (!totalResult) {
-        throw throwNotFoundError("Work orders not found");
-      }
+        const total = totalResult?.count ?? 0;
 
-      const total = totalResult.count;
+        if (total === 0) {
+          return {
+            workOrders: [],
+            pagination: {
+              page,
+              limit,
+              total,
+              hasMore: false,
+              totalPages: 0,
+            },
+          };
+        }
 
-      if (total === 0) {
-        return {
-          workOrders: [],
-          pagination: {
-            page,
-            limit,
-            total,
-            hasMore: false,
-            totalPages: 0,
-          },
-        };
-      }
+        const offset = (page - 1) * limit;
 
-      const offset = (page - 1) * limit;
-
-      const workOrders = await handleDatabaseOperation(async () => {
-        return ctx.db
+        const workOrders = await ctx.db
           .select({
             id: workOrderTable.id,
             code: workOrderTable.code,
@@ -123,29 +119,31 @@ export const workOrderQueryRouter = router({
           .limit(limit)
           .offset(offset)
           .orderBy(orderBy);
-      }, "Failed to fetch work orders");
 
-      const totalPages = Math.ceil(total / limit);
-      const hasMore = offset + workOrders.length < total;
+        const totalPages = Math.ceil(total / limit);
+        const hasMore = offset + workOrders.length < total;
 
-      return {
-        workOrders,
-        pagination: {
-          page,
-          limit,
-          total,
-          hasMore,
-          totalPages,
-        },
-      };
+        return {
+          workOrders,
+          pagination: {
+            page,
+            limit,
+            total,
+            hasMore,
+            totalPages,
+          },
+        };
+      } catch (error) {
+        throw fromDatabaseError(error, "Fetching work orders");
+      }
     }),
   ),
 
   // Get all work orders (no pagination)
   getWorkOrders: publicProcedure.query(
     handleQuery(async ({ ctx }) => {
-      return handleDatabaseOperation(async () => {
-        return ctx.db
+      try {
+        return await ctx.db
           .select({
             id: workOrderTable.id,
             code: workOrderTable.code,
@@ -167,7 +165,9 @@ export const workOrderQueryRouter = router({
           .from(workOrderTable)
           .leftJoin(clientTable, eq(workOrderTable.client_id, clientTable.id))
           .leftJoin(officeTable, eq(workOrderTable.office_id, officeTable.id));
-      }, "Failed to fetch work orders");
+      } catch (error) {
+        throw fromDatabaseError(error, "Fetching all work orders");
+      }
     }),
   ),
 
@@ -175,66 +175,141 @@ export const workOrderQueryRouter = router({
   getWorkOrder: publicProcedure.input(getWorkOrderSchema).query(
     handleQuery(async ({ input, ctx }) => {
       const { id } = input;
+      try {
+        const workOrders = await ctx.db
+          .select({
+            id: workOrderTable.id,
+            code: workOrderTable.code,
+            title: workOrderTable.title,
+            client_id: workOrderTable.client_id,
+            client_name: clientTable.name,
+            client_email: clientTable.email,
+            client_contact: clientTable.contact_number,
+            office_id: workOrderTable.office_id,
+            office_name: officeTable.name,
+            start_date: workOrderTable.start_date,
+            end_date: workOrderTable.end_date,
+            handing_over_date: workOrderTable.handing_over_date,
+            agreement_number: workOrderTable.agreement_number,
+            rate_contract_number: workOrderTable.rate_contract_number,
+            document_key: workOrderTable.document_key,
+            process_type: workOrderTable.process_type,
+            proposal_id: workOrderTable.proposal_id,
+            description: workOrderTable.description,
+            status: workOrderTable.status,
+            cancellation_reason: workOrderTable.cancellation_reason,
+            created_at: workOrderTable.created_at,
+            updated_at: workOrderTable.updated_at,
+          })
+          .from(workOrderTable)
+          .leftJoin(clientTable, eq(workOrderTable.client_id, clientTable.id))
+          .leftJoin(officeTable, eq(workOrderTable.office_id, officeTable.id))
+          .where(eq(workOrderTable.id, id));
 
-      const workOrders = await ctx.db
-        .select({
-          id: workOrderTable.id,
-          code: workOrderTable.code,
-          title: workOrderTable.title,
-          client_id: workOrderTable.client_id,
-          client_name: clientTable.name,
-          client_email: clientTable.email,
-          client_contact: clientTable.contact_number,
-          office_id: workOrderTable.office_id,
-          office_name: officeTable.name,
-          start_date: workOrderTable.start_date,
-          end_date: workOrderTable.end_date,
-          handing_over_date: workOrderTable.handing_over_date,
-          agreement_number: workOrderTable.agreement_number,
-          rate_contract_number: workOrderTable.rate_contract_number,
-          document_key: workOrderTable.document_key,
-          process_type: workOrderTable.process_type,
-          proposal_id: workOrderTable.proposal_id,
-          description: workOrderTable.description,
-          status: workOrderTable.status,
-          cancellation_reason: workOrderTable.cancellation_reason,
-          created_at: workOrderTable.created_at,
-          updated_at: workOrderTable.updated_at,
-        })
-        .from(workOrderTable)
-        .leftJoin(clientTable, eq(workOrderTable.client_id, clientTable.id))
-        .leftJoin(officeTable, eq(workOrderTable.office_id, officeTable.id))
-        .where(eq(workOrderTable.id, id));
-
-      if (workOrders.length === 0) {
-        throwNotFoundError("Work order");
+        if (workOrders.length === 0) {
+          throw notFound("Work order", id);
+        }
+        return workOrders[0];
+      } catch (error) {
+        // Re-throw AppError instances
+        if (error && typeof error === "object" && "errorCode" in error) {
+          throw error;
+        }
+        throw fromDatabaseError(error, "Fetching work order details");
       }
+    }),
+  ),
 
-      const workOrder = workOrders[0];
+  getWorkOrderSites: publicProcedure.input(getWorkOrderSchema).query(
+    handleQuery(async ({ input, ctx }) => {
+      const { id, limit, page, search, sort_by, sort_order } = input;
 
-      const woSites = await ctx.db
-        .select({
-          id: workOrderSiteTable.id,
-          site_id: workOrderSiteTable.site_id,
-          site_name: siteTable.name,
-          site_address: siteTable.address,
-          site_city: siteTable.city,
-          site_state: siteTable.state,
-          //   start_date: workOrderSiteTable.start_date,
-          end_date: workOrderSiteTable.end_date,
-          //   metric_ton: workOrderSiteTable.metric_ton,
-          //   metric_ton_rate: workOrderSiteTable.metric_ton_rate,
-          //   budget_amount: workOrderSiteTable.budget_amount,
-          status: workOrderSiteTable.status,
-        })
-        .from(workOrderSiteTable)
-        .leftJoin(siteTable, eq(workOrderSiteTable.site_id, siteTable.id))
-        .where(eq(workOrderSiteTable.work_order_id, id));
+      try {
+        // Calculate total count
+        const [totalResult] = await ctx.db
+          .select({ count: count() })
+          .from(workOrderSiteTable)
+          .leftJoin(siteTable, eq(workOrderSiteTable.site_id, siteTable.id))
+          .where(eq(workOrderSiteTable.work_order_id, id));
 
-      return {
-        ...workOrder,
-        sites: woSites,
-      };
+        const total = totalResult?.count ?? 0;
+
+        if (total === 0) {
+          return {
+            sites: [],
+            pagination: {
+              page,
+              limit,
+              total,
+              hasMore: false,
+              totalPages: 0,
+            },
+          };
+        }
+
+        const offset = (page - 1) * limit;
+
+        const woSites = await ctx.db
+          .select({
+            id: workOrderSiteTable.id,
+            site_id: workOrderSiteTable.site_id,
+            site_name: siteTable.name,
+            site_address: siteTable.address,
+            site_city: siteTable.city,
+            site_state: siteTable.state,
+            site_pincode: siteTable.pincode,
+            end_date: workOrderSiteTable.end_date,
+            status: workOrderSiteTable.status,
+          })
+          .from(workOrderSiteTable)
+          .leftJoin(siteTable, eq(workOrderSiteTable.site_id, siteTable.id))
+          .where(eq(workOrderSiteTable.work_order_id, id))
+          .limit(limit)
+          .offset(offset);
+
+        // Fetch users for the fetched sites
+        const sitesUsers = await Promise.all(
+          woSites.map((woSite) =>
+            ctx.db
+              .select({
+                site_id: siteUserTable.site_id,
+                user_id: siteUserTable.user_id,
+                user_name: userTable.name,
+                user_email: userTable.email,
+                user_contact_number: userTable.contact_number,
+                user_role: userTable.role,
+              })
+              .from(siteUserTable)
+              .leftJoin(userTable, eq(siteUserTable.user_id, userTable.id))
+              .where(eq(siteUserTable.site_id, woSite.site_id!)),
+          ),
+        );
+
+        const sitesWithDetails = woSites.map((woSite, index) => ({
+          ...woSite,
+          users: sitesUsers[index],
+        }));
+
+        const totalPages = Math.ceil(total / limit);
+        const hasMore = offset + sitesWithDetails.length < total;
+
+        return {
+          sites: sitesWithDetails,
+          pagination: {
+            page,
+            limit,
+            total,
+            hasMore,
+            totalPages,
+          },
+        };
+      } catch (error) {
+        // Re-throw AppError instances
+        if (error && typeof error === "object" && "errorCode" in error) {
+          throw error;
+        }
+        throw fromDatabaseError(error, "Fetching work order sites");
+      }
     }),
   ),
 
@@ -245,8 +320,8 @@ export const workOrderQueryRouter = router({
       handleQuery(async ({ input, ctx }) => {
         const { office_id } = input;
 
-        return handleDatabaseOperation(async () => {
-          return ctx.db
+        try {
+          return await ctx.db
             .select({
               id: workOrderTable.id,
               code: workOrderTable.code,
@@ -266,7 +341,9 @@ export const workOrderQueryRouter = router({
             .leftJoin(clientTable, eq(workOrderTable.client_id, clientTable.id))
             .where(eq(workOrderTable.office_id, office_id))
             .orderBy(desc(workOrderTable.created_at));
-        }, "Failed to fetch work orders for office");
+        } catch (error) {
+          throw fromDatabaseError(error, "Fetching work orders for office");
+        }
       }),
     ),
 
@@ -277,8 +354,8 @@ export const workOrderQueryRouter = router({
       handleQuery(async ({ input, ctx }) => {
         const { client_id } = input;
 
-        return handleDatabaseOperation(async () => {
-          return ctx.db
+        try {
+          return await ctx.db
             .select({
               id: workOrderTable.id,
               code: workOrderTable.code,
@@ -297,7 +374,9 @@ export const workOrderQueryRouter = router({
             .from(workOrderTable)
             .leftJoin(officeTable, eq(workOrderTable.office_id, officeTable.id))
             .where(eq(workOrderTable.client_id, client_id));
-        }, "Failed to fetch work orders for client");
+        } catch (error) {
+          throw fromDatabaseError(error, "Fetching work orders for client");
+        }
       }),
     ),
 
@@ -306,117 +385,119 @@ export const workOrderQueryRouter = router({
     handleQuery(async ({ input, ctx }) => {
       const { id } = input;
 
-      const workOrders = await ctx.db
-        .select({
-          id: workOrderTable.id,
-          code: workOrderTable.code,
-          title: workOrderTable.title,
-          description: workOrderTable.description,
-          client_id: workOrderTable.client_id,
-          client_name: clientTable.name,
-          office_id: workOrderTable.office_id,
-          office_name: officeTable.name,
-          start_date: workOrderTable.start_date,
-          end_date: workOrderTable.end_date,
-          handing_over_date: workOrderTable.handing_over_date,
-          agreement_number: workOrderTable.agreement_number,
-          rate_contract_number: workOrderTable.rate_contract_number,
-          document_key: workOrderTable.document_key,
-          process_type: workOrderTable.process_type,
-          proposal_id: workOrderTable.proposal_id,
-          status: workOrderTable.status,
-          cancellation_reason: workOrderTable.cancellation_reason,
-          created_at: workOrderTable.created_at,
-          updated_at: workOrderTable.updated_at,
-        })
-        .from(workOrderTable)
-        .leftJoin(clientTable, eq(workOrderTable.client_id, clientTable.id))
-        .leftJoin(officeTable, eq(workOrderTable.office_id, officeTable.id))
-        .where(eq(workOrderTable.id, id))
-        .orderBy(desc(workOrderTable.created_at));
+      try {
+        const workOrders = await ctx.db
+          .select({
+            id: workOrderTable.id,
+            code: workOrderTable.code,
+            title: workOrderTable.title,
+            description: workOrderTable.description,
+            client_id: workOrderTable.client_id,
+            client_name: clientTable.name,
+            office_id: workOrderTable.office_id,
+            office_name: officeTable.name,
+            start_date: workOrderTable.start_date,
+            end_date: workOrderTable.end_date,
+            handing_over_date: workOrderTable.handing_over_date,
+            agreement_number: workOrderTable.agreement_number,
+            rate_contract_number: workOrderTable.rate_contract_number,
+            document_key: workOrderTable.document_key,
+            process_type: workOrderTable.process_type,
+            proposal_id: workOrderTable.proposal_id,
+            status: workOrderTable.status,
+            cancellation_reason: workOrderTable.cancellation_reason,
+            created_at: workOrderTable.created_at,
+            updated_at: workOrderTable.updated_at,
+          })
+          .from(workOrderTable)
+          .leftJoin(clientTable, eq(workOrderTable.client_id, clientTable.id))
+          .leftJoin(officeTable, eq(workOrderTable.office_id, officeTable.id))
+          .where(eq(workOrderTable.id, id))
+          .orderBy(desc(workOrderTable.created_at));
 
-      if (workOrders.length === 0) {
-        throwNotFoundError("Work order");
+        if (workOrders.length === 0) {
+          throw notFound("Work order", id, {
+            userMessage:
+              "The work order you're looking for doesn't exist or has been deleted.",
+          });
+        }
+
+        const workOrder = workOrders[0];
+
+        const woSites = await ctx.db
+          .select({
+            wo_site_id: workOrderSiteTable.id,
+            site_id: siteTable.id,
+            site_name: siteTable.name,
+            site_address: siteTable.address,
+            site_city: siteTable.city,
+            site_state: siteTable.state,
+            site_pincode: siteTable.pincode,
+            end_date: workOrderSiteTable.end_date,
+            status: workOrderSiteTable.status,
+          })
+          .from(workOrderSiteTable)
+          .leftJoin(siteTable, eq(workOrderSiteTable.site_id, siteTable.id))
+          .where(eq(workOrderSiteTable.work_order_id, id));
+
+        const sitesUsers = await Promise.all(
+          woSites.map((woSite: any) =>
+            ctx.db
+              .select({
+                site_id: siteUserTable.site_id,
+                user_id: siteUserTable.user_id,
+                user_name: userTable.name,
+                user_email: userTable.email,
+                user_contact_number: userTable.contact_number,
+                user_role: userTable.role,
+              })
+              .from(siteUserTable)
+              .leftJoin(userTable, eq(siteUserTable.user_id, userTable.id))
+              .where(eq(siteUserTable.site_id, woSite.site_id)),
+          ),
+        );
+
+        const sitesWithDetails = woSites.map((woSite: any, index: number) => ({
+          site: {
+            id: woSite.site_id,
+            name: woSite.site_name,
+            address: woSite.site_address,
+            city: woSite.site_city,
+            state: woSite.site_state,
+            pincode: woSite.site_pincode,
+          },
+          wo_site_id: woSite.wo_site_id,
+          start_date: woSite.start_date,
+          end_date: woSite.end_date,
+          status: woSite.status,
+          activity_type: woSite.activity_type,
+          metric_ton: woSite.metric_ton,
+          metric_ton_rate: woSite.metric_ton_rate,
+          budget_amount: woSite.budget_amount,
+          total_expense_amount: woSite.total_expense_amount,
+          users: sitesUsers[index],
+        }));
+
+        const scheduleOfRates = await ctx.db
+          .select()
+          .from(scheduleOfRatesTable)
+          .where(eq(scheduleOfRatesTable.work_order_id, id));
+
+        return {
+          workOrder,
+          sites: sitesWithDetails,
+          scheduleOfRates,
+          stats: {
+            total_sites: sitesWithDetails.length,
+          },
+        };
+      } catch (error) {
+        // Re-throw AppError instances
+        if (error && typeof error === "object" && "errorCode" in error) {
+          throw error;
+        }
+        throw fromDatabaseError(error, "Fetching work order full details");
       }
-
-      const workOrder = workOrders[0];
-
-      const woSites = await ctx.db
-        .select({
-          wo_site_id: workOrderSiteTable.id,
-          site_id: siteTable.id,
-          site_name: siteTable.name,
-          site_address: siteTable.address,
-          site_city: siteTable.city,
-          site_state: siteTable.state,
-          site_pincode: siteTable.pincode,
-          //   start_date: workOrderSiteTable.start_date,
-          end_date: workOrderSiteTable.end_date,
-          status: workOrderSiteTable.status,
-          // Additional work order site details
-          //   activity_type: workOrderSiteTable.activity_type,
-          //   metric_ton: workOrderSiteTable.metric_ton,
-          //   metric_ton_rate: workOrderSiteTable.metric_ton_rate,
-          //   budget_amount: workOrderSiteTable.budget_amount,
-          //   total_expense_amount: workOrderSiteTable.total_expense_amount,
-        })
-        .from(workOrderSiteTable)
-        .leftJoin(siteTable, eq(workOrderSiteTable.site_id, siteTable.id))
-        .where(eq(workOrderSiteTable.work_order_id, id));
-
-      // console.log(woSites);
-      const sitesUsers = await Promise.all(
-        woSites.map((woSite: any) =>
-          ctx.db
-            .select({
-              site_id: siteUserTable.site_id,
-              user_id: siteUserTable.user_id,
-              user_name: userTable.name,
-              user_email: userTable.email,
-              user_contact_number: userTable.contact_number,
-              user_role: userTable.role,
-            })
-            .from(siteUserTable)
-            .leftJoin(userTable, eq(siteUserTable.user_id, userTable.id))
-            .where(eq(siteUserTable.site_id, woSite.site_id)),
-        ),
-      );
-
-      const sitesWithDetails = woSites.map((woSite: any, index: number) => ({
-        site: {
-          id: woSite.site_id,
-          name: woSite.site_name,
-          address: woSite.site_address,
-          city: woSite.site_city,
-          state: woSite.site_state,
-          pincode: woSite.site_pincode,
-        },
-        wo_site_id: woSite.wo_site_id,
-        start_date: woSite.start_date,
-        end_date: woSite.end_date,
-        status: woSite.status,
-        // Additional details
-        activity_type: woSite.activity_type,
-        metric_ton: woSite.metric_ton,
-        metric_ton_rate: woSite.metric_ton_rate,
-        budget_amount: woSite.budget_amount,
-        total_expense_amount: woSite.total_expense_amount,
-        users: sitesUsers[index],
-      }));
-
-      const scheduleOfRates = await ctx.db
-        .select()
-        .from(scheduleOfRatesTable)
-        .where(eq(scheduleOfRatesTable.work_order_id, id));
-
-      return {
-        workOrder,
-        sites: sitesWithDetails,
-        scheduleOfRates,
-        stats: {
-          total_sites: sitesWithDetails.length,
-        },
-      };
     }),
   ),
 });

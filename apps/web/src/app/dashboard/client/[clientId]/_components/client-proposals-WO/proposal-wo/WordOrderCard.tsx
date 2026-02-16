@@ -97,7 +97,7 @@ const WordOrderCard = ({ workOrder, proposalId, proposalTitle }: Props) => {
 
   return (
     <>
-      <div className='rounded-lg bg-white shadow-md hover:shadow-lg transition-shadow p-4 flex flex-col min-h-[320px]'>
+      <div className='rounded-lg bg-white drop-shadow-sm hover:drop-shadow-md transition-shadow p-4 flex flex-col min-h-80'>
         {workOrder ? (
           <div
             className='group cursor-pointer flex flex-col h-full'

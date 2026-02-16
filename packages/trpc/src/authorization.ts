@@ -18,19 +18,18 @@ export type { UserRole };
 export const isAuthenticated = t.middleware(({ ctx, next }) => {
   if (!ctx.user) {
     throw appErrorToTRPCError(
-      createUnauthorizedError({
-        userMessage: "You must be logged in to access this resource",
+      createUnauthorizedError("You must be logged in to access this resource", {
         devMessage: "No user in context",
-      })
+      }),
     );
   }
 
   if (!ctx.user.sub) {
     throw appErrorToTRPCError(
-      createUnauthorizedError({
-        userMessage: "Invalid authentication token. Please log in again.",
-        devMessage: "User context missing sub claim",
-      })
+      createUnauthorizedError(
+        "Invalid authentication token. Please log in again.",
+        { devMessage: "User context missing sub claim" },
+      ),
     );
   }
 
@@ -52,10 +51,10 @@ export const hasRole = (minRole: UserRole) => {
   return t.middleware(({ ctx, next }) => {
     if (!ctx.user) {
       throw appErrorToTRPCError(
-        createUnauthorizedError({
-          userMessage: "You must be logged in to access this resource",
-          devMessage: "No user in context for role check",
-        })
+        createUnauthorizedError(
+          "You must be logged in to access this resource",
+          { devMessage: "No user in context for role check" },
+        ),
       );
     }
 
@@ -67,7 +66,7 @@ export const hasRole = (minRole: UserRole) => {
       throw appErrorToTRPCError(
         createInsufficientPermissionsError(minRole, {
           devMessage: `User role "${userRole}" (level ${userRoleLevel}) is below required role "${minRole}" (level ${requiredRoleLevel})`,
-        })
+        }),
       );
     }
 
@@ -89,10 +88,12 @@ export const hasAnyRole = (allowedRoles: UserRole[]) => {
   return t.middleware(({ ctx, next }) => {
     if (!ctx.user) {
       throw appErrorToTRPCError(
-        createUnauthorizedError({
-          userMessage: "You must be logged in to access this resource",
-          devMessage: "No user in context for role check",
-        })
+        createUnauthorizedError(
+          "You must be logged in to access this resource",
+          {
+            devMessage: "No user in context for role check",
+          },
+        ),
       );
     }
 
@@ -103,7 +104,7 @@ export const hasAnyRole = (allowedRoles: UserRole[]) => {
         createInsufficientPermissionsError(allowedRoles.join(", "), {
           userMessage: "You don't have permission to access this resource.",
           devMessage: `User role "${userRole}" not in allowed roles: [${allowedRoles.join(", ")}]`,
-        })
+        }),
       );
     }
 

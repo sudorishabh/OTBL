@@ -2,16 +2,17 @@
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserSearchNFilter from "./UserSearchNFilter";
-import AddUserDialog from "./CreateUserDialog";
 import { useHandleParams } from "@/hooks/useHandleParams";
 import ScrollToTop from "@/app/_components/ScrollToTop";
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
-import Loading from "@/components/loading/Loading";
+import UserPageSkeleton from "./skeleton/UserPageSkeleton";
 
 const UserTable = dynamic(() => import("./UserTable"));
-
 const CategorizedUsers = dynamic(() => import("./CategorizedUsers"));
+const CreateUpdateUserDialog = dynamic(
+  () => import("./CreateUpdateUserDialog"),
+);
 
 const UserPage = () => {
   const { getParam, setParam } = useHandleParams();
@@ -39,19 +40,17 @@ const UserPage = () => {
           </TabsList>
         </div>
 
-        <TabsContent value='all'>
-          <Suspense fallback={<Loading />}>
+        <Suspense fallback={<UserPageSkeleton />}>
+          <TabsContent value='all'>
             <UserTable />
-          </Suspense>
-        </TabsContent>
+          </TabsContent>
 
-        <TabsContent value='categorized'>
-          <Suspense fallback={<Loading />}>
+          <TabsContent value='categorized'>
             <CategorizedUsers />
-          </Suspense>
-        </TabsContent>
+          </TabsContent>
+        </Suspense>
       </Tabs>
-      <AddUserDialog />
+      <CreateUpdateUserDialog />
       <ScrollToTop />
     </>
   );

@@ -80,32 +80,50 @@ export {
   type ValidationFieldError,
 } from "./app-error";
 
-// Error factory functions
+// Error factory functions - New simple API
 export {
-  // Resource errors
+  // Main factory function
+  createError,
+  // Simple factory functions (new API)
+  notFound,
+  alreadyExists,
+  validationError,
+  unauthorized,
+  forbidden,
+  insufficientPermissions,
+  businessRule,
+  operationNotAllowed,
+  invalidStateTransition,
+  internal,
+  fromUnknown,
+  fromDatabaseError,
+  fileError,
+  serviceUnavailable,
+  timeout,
+  rateLimited,
+  // Utility
+  isDevelopment,
+  // Types
+  type ErrorOptions,
+  // Legacy exports (for backward compatibility)
   createNotFoundError,
   createAlreadyExistsError,
   createResourceError,
-  // Validation errors
   createValidationError,
   createRequiredFieldError,
   createInvalidDateRangeError,
   createDuplicateEntryError,
-  // Auth errors
   createUnauthorizedError,
   createForbiddenError,
   createInsufficientPermissionsError,
   createInvalidCredentialsError,
   createSessionExpiredError,
-  // Business logic errors
   createBusinessRuleError,
   createOperationNotAllowedError,
   createInvalidStateTransitionError,
-  // External service errors
   createServiceUnavailableError,
   createSharePointError,
   createDatabaseError,
-  // System errors
   createInternalError,
   createUnexpectedError,
   // Throwing helpers

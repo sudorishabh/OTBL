@@ -1,9 +1,6 @@
 import Wrapper from "@/components/wrapper/Wrapper";
-import dynamic from "next/dynamic";
-import { Suspense } from "react";
-const UserPage = dynamic(() => import("./_components/UserPage"));
+import UserPage from "./_components/UserPage";
 import CreateUserButton from "./_components/CreateUserButton";
-import PageLoading from "@/components/loading/PageLoading";
 
 const page = () => {
   return (
@@ -11,9 +8,7 @@ const page = () => {
       title='User Management'
       description='Manage users, assign them to offices, and track their work locations'
       button={<CreateUserButton />}>
-      <Suspense fallback={<PageLoading />}>
-        <UserPage />
-      </Suspense>
+      <UserPage />
     </Wrapper>
   );
 };

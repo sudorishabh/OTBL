@@ -36,7 +36,7 @@ export type ScheduleOfRateType = {
   estimated_quantity: string;
   rc_unit_rate: string;
   gst_percentage: string;
-  unit_rate_inclusive_gst: string;
+  unit_rate_inc_gst: string;
   total_cost: string;
   transportation_km: string;
   created_at: string;

@@ -8,9 +8,14 @@ import React from "react";
 interface Props {
   type: "clients" | "contacts";
   clients?: Array<{ id: number; name: string }>;
+  isLoading?: boolean;
 }
 
-const ClientSearchNFilter = ({ type, clients = [] }: Props) => {
+const ClientSearchNFilter = ({
+  type,
+  clients = [],
+  isLoading = false,
+}: Props) => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -60,6 +65,7 @@ const ClientSearchNFilter = ({ type, clients = [] }: Props) => {
           onChange={setSearchQuery}
           inputIcon={Search}
           className='h-8'
+          disabled={isLoading}
         />
       </div>
       <div className='flex items-center gap-3 text-xs'>
@@ -81,7 +87,8 @@ const ClientSearchNFilter = ({ type, clients = [] }: Props) => {
                 status: value as "all" | "active" | "inactive",
               })
             }
-            className='!h-8 w-[140px] text-xs'
+            className='h-8! w-[140px] text-xs'
+            disabled={isLoading}
           />
         ) : (
           <Input
@@ -99,7 +106,8 @@ const ClientSearchNFilter = ({ type, clients = [] }: Props) => {
             onChange={(value) =>
               setContactFilters({ ...contactFilters, clientId: value })
             }
-            className='!h-8 w-[180px] text-xs'
+            className='h-8! w-[180px] text-xs'
+            disabled={isLoading}
           />
         )}
 

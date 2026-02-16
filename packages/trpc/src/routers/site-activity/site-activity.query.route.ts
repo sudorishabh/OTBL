@@ -127,7 +127,7 @@
 //           oil_zappers: oilZapperTable,
 //           clean_up_oil_spill: cleanUpOilSpillTable,
 //           lifting_oil_slush: liftingOilSlushTable,
-//           excavation_cont_soil: excavationContSoilTable,
+//           excav_cont_soil: excavationContSoilTable,
 //           trnsprt_oil_slush: trnsprtOilSlushTable,
 //         };
 
@@ -219,7 +219,7 @@
 //             case "lifting_oil_slush":
 //               table = liftingOilSlushTable;
 //               break;
-//             case "excavation_cont_soil":
+//             case "excav_cont_soil":
 //               table = excavationContSoilTable;
 //               break;
 //             case "trnsprt_oil_slush":
@@ -293,7 +293,7 @@
 //           case "lifting_oil_slush":
 //             table = liftingOilSlushTable;
 //             break;
-//           case "excavation_cont_soil":
+//           case "excav_cont_soil":
 //             table = excavationContSoilTable;
 //             break;
 //           case "trnsprt_oil_slush":

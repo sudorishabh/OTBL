@@ -31,24 +31,21 @@ interface CreatedCredentials {
   role: string;
 }
 
-const CreateUserDialog = () => {
+const CreateUpdateUserDialog = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [createdCredentials, setCreatedCredentials] =
     useState<CreatedCredentials | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
-  const [visualMode, setVisualMode] = useState<string | null>(null);
 
   const { deleteParams, getParam } = useHandleParams();
   const { handleError } = useApiError();
   const dialog = getParam("dialog");
+  const dialogOver = getParam("dialog-over");
   const userId = getParam("id");
-  const isEditMode = dialog === "update-user";
+  const isEditMode = dialogOver === "update-user";
   const isAddMode = dialog === "create-user";
   const isOpenDialog = isEditMode || isAddMode;
   const trpcUtils = trpc.useUtils();
-
-  const displayMode = isOpenDialog ? dialog : visualMode;
-  const isDisplayEditMode = displayMode === "update-user";
 
   const form = useForm<userTypes.CreateUserType>({
     resolver: zodResolver(userSchemas.createUserSchema),
@@ -73,18 +70,31 @@ const CreateUserDialog = () => {
   );
 
   const registerMutation = trpc.userMutation.createUserByAdmin.useMutation({
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       toast.success("User registered successfully");
       trpcUtils.userQuery.getAllUser.invalidate();
+
+      setCreatedCredentials({
+        name: variables.name,
+        email: variables.email,
+        password: variables.password,
+        role: variables.role,
+      });
+
+      form.reset();
     },
     onError: (error) => {
-      handleError(error, { showToast: true });
+      console.log(error.data);
+      handleError(error, {
+        showToast: true,
+      });
     },
   });
 
   const editUserMutation = trpc.userMutation.updateUserByAdmin.useMutation({
     onSuccess: () => {
       toast.success("User updated successfully");
+      handleCloseDialog();
     },
     onError: (error) => {
       handleError(error, { showToast: true });
@@ -92,11 +102,13 @@ const CreateUserDialog = () => {
   });
 
   const handleCloseDialog = useCallback(() => {
-    deleteParams(["dialog", "id"]);
-    setCreatedCredentials(null);
+    if (isAddMode) {
+      deleteParams(["id", "dialog"]);
+    } else {
+      deleteParams(["id", "dialog-over"]);
+    }
 
     setTimeout(() => {
-      setVisualMode(null);
       form.reset({
         contact_number: "",
         email: "",
@@ -110,7 +122,6 @@ const CreateUserDialog = () => {
   useEffect(() => {
     if (!isUserLoading) {
       if (isEditMode && isUserSuccess && userQuery) {
-        setVisualMode("edit");
         form.reset({
           name: userQuery.name ?? "",
           email: userQuery.email ?? "",
@@ -119,7 +130,6 @@ const CreateUserDialog = () => {
           password: "",
         });
       } else if (isAddMode) {
-        setVisualMode("add");
         form.reset({
           contact_number: "",
           email: "",
@@ -132,33 +142,11 @@ const CreateUserDialog = () => {
     }
   }, [isUserSuccess, userQuery, isUserLoading, isEditMode, isAddMode, form]);
 
-  async function onSubmit(values: userTypes.CreateUserType) {
-    try {
-      if (isEditMode) {
-        await editUserMutation.mutateAsync({ id: Number(userId), ...values });
-        handleCloseDialog();
-      } else {
-        // Ensure password is provided in create mode
-        if (!values.password) {
-          toast.error("Password is required when creating a new user");
-          return;
-        }
-        const result = await registerMutation.mutateAsync(
-          values as Required<typeof values>,
-        );
-        if (result.success) {
-          setCreatedCredentials({
-            name: values.name,
-            email: values.email,
-            password: values.password,
-            role: values.role,
-          });
-          form.reset();
-        }
-      }
-    } catch (error) {
-      // Error handling is already done in mutation onError callbacks
-      console.error("Form submission error:", error);
+  function onSubmit(values: userTypes.CreateUserType) {
+    if (isEditMode) {
+      editUserMutation.mutate({ id: Number(userId), ...values });
+    } else {
+      registerMutation.mutate(values as Required<typeof values>);
     }
   }
 
@@ -181,19 +169,36 @@ const CreateUserDialog = () => {
   };
 
   const handleDone = () => {
-    setCreatedCredentials(null);
     handleCloseDialog();
+    setTimeout(() => {
+      setCreatedCredentials(null);
+    }, 3000);
   };
 
-  if (createdCredentials) {
-    return (
-      <DialogWindow
-        title='User Created Successfully'
-        description='Save or share these credentials with the new user. The password cannot be retrieved later.'
-        open={isOpenDialog}
-        setOpen={handleCloseDialog}
-        size='sm'
-        heightMode='auto'>
+  const isSuccessView = !!createdCredentials;
+
+  return (
+    <DialogWindow
+      title={
+        isSuccessView
+          ? "User Created Successfully"
+          : isEditMode
+            ? "Edit User"
+            : "Add User"
+      }
+      description={
+        isSuccessView
+          ? "Save or share these credentials with the new user. The password cannot be retrieved later."
+          : isEditMode
+            ? "Update user information"
+            : "Create a new user account"
+      }
+      isLoading={!isSuccessView && isUserLoading}
+      open={isOpenDialog}
+      setOpen={handleCloseDialog}
+      size='sm'
+      heightMode='auto'>
+      {isSuccessView && createdCredentials ? (
         <div className='px-4 py-6 space-y-4'>
           {/* Warning Banner */}
           <div className='bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3'>
@@ -294,101 +299,86 @@ const CreateUserDialog = () => {
             />
           </div>
         </div>
-      </DialogWindow>
-    );
-  }
-
-  return (
-    <DialogWindow
-      title={isDisplayEditMode ? "Edit User" : "Add User"}
-      description={
-        isDisplayEditMode
-          ? "Update user information"
-          : "Create a new user account"
-      }
-      isLoading={isUserLoading}
-      open={isOpenDialog}
-      setOpen={handleCloseDialog}
-      size='sm'
-      heightMode='auto'>
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className='space-y-4 px-3.5 py-4'>
-          <Input
-            control={form.control}
-            fieldName='name'
-            Label='Name'
-            LabelIcon={User}
-            placeholder='Enter user name'
-          />
-
-          <Input
-            control={form.control}
-            fieldName='email'
-            Label='Email'
-            LabelIcon={Mail}
-            type='email'
-            placeholder='Enter email address'
-          />
-
-          {!isDisplayEditMode && (
+      ) : (
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className='space-y-4 px-3.5 py-4'>
             <Input
               control={form.control}
-              fieldName='password'
-              Label='Password'
-              LabelIcon={KeyRound}
-              type={showPassword ? "text" : "password"}
-              placeholder='Enter password'
-              inputIconButton={{
-                icon: showPassword ? Eye : EyeOff,
-                onClick: () => setShowPassword((s) => !s),
-              }}
+              fieldName='name'
+              Label='Name'
+              LabelIcon={User}
+              placeholder='Enter user name'
             />
-          )}
 
-          <Input
-            control={form.control}
-            fieldName='contact_number'
-            Label='Contact Number'
-            LabelIcon={Phone}
-            type='tel'
-            placeholder='Enter contact number'
-            optional
-          />
-
-          <Input
-            control={form.control}
-            fieldName='role'
-            Label='Role'
-            LabelIcon={Shield}
-            isSelect
-            selectOptions={[
-              { label: "Manager", value: "manager" },
-              { label: "Staff", value: "staff" },
-              { label: "Viewer", value: "viewer" },
-              { label: "Operator", value: "operator" },
-            ]}
-            placeholder='Select role'
-          />
-
-          <div className='flex gap-2 justify-end pt-4'>
-            <CustomButton
-              text='Cancel'
-              onClick={() => handleCloseDialog()}
-              variant='outline'
-              type='button'
+            <Input
+              control={form.control}
+              fieldName='email'
+              Label='Email'
+              LabelIcon={Mail}
+              type='email'
+              placeholder='Enter email address'
             />
-            <CustomButton
-              text={isDisplayEditMode ? "Update" : "Create"}
-              variant='primary'
-              type='submit'
+
+            {!isEditMode && (
+              <Input
+                control={form.control}
+                fieldName='password'
+                Label='Password'
+                LabelIcon={KeyRound}
+                type={showPassword ? "text" : "password"}
+                placeholder='Enter password'
+                inputIconButton={{
+                  icon: showPassword ? Eye : EyeOff,
+                  onClick: () => setShowPassword((s) => !s),
+                }}
+              />
+            )}
+
+            <Input
+              control={form.control}
+              fieldName='contact_number'
+              Label='Contact Number'
+              LabelIcon={Phone}
+              type='tel'
+              placeholder='Enter contact number'
+              optional
             />
-          </div>
-        </form>
-      </Form>
+
+            <Input
+              control={form.control}
+              fieldName='role'
+              Label='Role'
+              LabelIcon={Shield}
+              isSelect
+              selectOptions={[
+                { label: "Manager", value: "manager" },
+                { label: "Staff", value: "staff" },
+                { label: "Viewer", value: "viewer" },
+                { label: "Operator", value: "operator" },
+              ]}
+              placeholder='Select role'
+            />
+
+            <div className='flex gap-2 justify-end pt-4'>
+              <CustomButton
+                text='Cancel'
+                onClick={() => handleCloseDialog()}
+                variant='outline'
+                type='button'
+              />
+              <CustomButton
+                text={isEditMode ? "Update" : "Create"}
+                variant='primary'
+                type='submit'
+              />
+            </div>
+          </form>
+        </Form>
+      )}
     </DialogWindow>
   );
 };
 
-export default CreateUserDialog;
+export default CreateUpdateUserDialog;

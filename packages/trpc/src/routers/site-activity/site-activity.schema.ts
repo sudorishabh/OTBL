@@ -27,7 +27,7 @@ export const activityItemTableEnum = z.enum([
   "oil_zappers",
   "clean_up_oil_spill",
   "lifting_oil_slush",
-  "excavation_cont_soil",
+  "excav_cont_soil",
   "trnsprt_oil_slush",
 ]);
 

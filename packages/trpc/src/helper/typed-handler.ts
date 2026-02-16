@@ -35,13 +35,13 @@ type HandlerOptions = {
  */
 function buildWrapper<Input = unknown, Output = unknown>(
   handler: Handler<Input, Output>,
-  options?: HandlerOptions
+  options?: HandlerOptions,
 ) {
   return async (opts: { input: Input; ctx: TrpcContext }) => {
     const { input, ctx } = opts || ({} as any);
 
     if (!ctx) {
-      throw createInternalError({
+      throw createInternalError(undefined, {
         devMessage: "Missing tRPC context in handler",
       });
     }
@@ -60,7 +60,7 @@ function buildWrapper<Input = unknown, Output = unknown>(
 
       // Wrap unknown errors
       const message = options?.onErrorMessage ?? "Internal server error";
-      throw createInternalError({
+      throw createInternalError(undefined, {
         devMessage: error instanceof Error ? error.message : message,
         userMessage: message,
         cause: error,
@@ -74,19 +74,19 @@ function buildWrapper<Input = unknown, Output = unknown>(
  */
 function buildProtectedWrapper<Input = unknown, Output = unknown>(
   handler: ProtectedHandler<Input, Output>,
-  options?: HandlerOptions
+  options?: HandlerOptions,
 ) {
   return async (opts: { input: Input; ctx: TrpcAuthenticatedContext }) => {
     const { input, ctx } = opts || ({} as any);
 
     if (!ctx) {
-      throw createInternalError({
+      throw createInternalError(undefined, {
         devMessage: "Missing tRPC context in protected handler",
       });
     }
 
     if (!ctx.user) {
-      throw createUnauthorizedError({
+      throw createUnauthorizedError(undefined, {
         userMessage: "Authentication required",
         devMessage: "No user in context for protected handler",
       });
@@ -106,7 +106,7 @@ function buildProtectedWrapper<Input = unknown, Output = unknown>(
 
       // Wrap unknown errors
       const message = options?.onErrorMessage ?? "Internal server error";
-      throw createInternalError({
+      throw createInternalError(undefined, {
         devMessage: error instanceof Error ? error.message : message,
         userMessage: message,
         cause: error,
@@ -120,7 +120,7 @@ function buildProtectedWrapper<Input = unknown, Output = unknown>(
  */
 export function handleQuery<Input = unknown, Output = unknown>(
   handler: Handler<Input, Output>,
-  options?: HandlerOptions
+  options?: HandlerOptions,
 ) {
   return buildWrapper(handler, options);
 }
@@ -130,7 +130,7 @@ export function handleQuery<Input = unknown, Output = unknown>(
  */
 export function handleMutation<Input = unknown, Output = unknown>(
   handler: Handler<Input, Output>,
-  options?: HandlerOptions
+  options?: HandlerOptions,
 ) {
   return buildWrapper(handler, options);
 }
@@ -141,7 +141,7 @@ export function handleMutation<Input = unknown, Output = unknown>(
  */
 export function handleProtectedQuery<Input = unknown, Output = unknown>(
   handler: ProtectedHandler<Input, Output>,
-  options?: HandlerOptions
+  options?: HandlerOptions,
 ) {
   return buildProtectedWrapper(handler, options);
 }
@@ -152,7 +152,7 @@ export function handleProtectedQuery<Input = unknown, Output = unknown>(
  */
 export function handleProtectedMutation<Input = unknown, Output = unknown>(
   handler: ProtectedHandler<Input, Output>,
-  options?: HandlerOptions
+  options?: HandlerOptions,
 ) {
   return buildProtectedWrapper(handler, options);
 }

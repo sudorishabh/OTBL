@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useCallback, useState, useMemo } from "react";
+import React, { useEffect, useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import DialogWindow from "@/components/DialogWindow";
@@ -26,6 +26,9 @@ import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { siteSchemas, type siteTypes } from "@pkg/schema";
 import useHandleParams from "@/hooks/useHandleParams";
+import { constants } from "@pkg/utils";
+
+const { ROLES } = constants;
 
 const CreateSiteDialog = () => {
   const router = useRouter();
@@ -50,35 +53,32 @@ const CreateSiteDialog = () => {
     },
   });
 
-  const [selectedOperators, setSelectedOperators] = useState<number[]>([]);
+  type SelectedUser = { id: number; name: string; email: string };
+  const [selectedOperators, setSelectedOperators] = useState<SelectedUser[]>(
+    [],
+  );
   const [operatorSearch, setOperatorSearch] = useState("");
   const [operatorPage, setOperatorPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 50;
 
   const utils = trpc.useUtils();
   const { handleError } = useApiError();
 
-  const { data: staffData, isLoading: isLoadingStaffData } =
-    trpc.userQuery.getManagersAndOperators.useQuery(undefined, {
-      enabled: isAddMode,
-    });
-
-  const operators = staffData?.operators;
-
-  const filteredOperators = useMemo(() => {
-    if (!operators) return [];
-    return operators.filter(
-      (user: any) =>
-        user.name.toLowerCase().includes(operatorSearch.toLowerCase()) ||
-        user.email.toLowerCase().includes(operatorSearch.toLowerCase()),
+  const { data: operatorsData, isLoading: isLoadingOperators } =
+    trpc.userQuery.getUsersByRole.useQuery(
+      {
+        role: ROLES.OPERATOR,
+        page: operatorPage,
+        limit: itemsPerPage,
+        search: operatorSearch,
+      },
+      {
+        enabled: isAddMode,
+      },
     );
-  }, [operators, operatorSearch]);
 
-  const paginatedOperators = useMemo(() => {
-    return filteredOperators.slice(0, operatorPage * itemsPerPage);
-  }, [filteredOperators, operatorPage]);
-
-  const hasMoreOperators = filteredOperators.length > paginatedOperators.length;
+  const operators = operatorsData?.users || [];
+  const hasMoreOperators = operatorsData?.pagination?.hasMore || false;
 
   const { data: siteData, isLoading: isSiteLoading } =
     trpc.siteQuery.getSite.useQuery(
@@ -89,6 +89,7 @@ const CreateSiteDialog = () => {
   const addSite = trpc.siteMutation.createSite.useMutation({
     onSuccess: () => {
       toast.success("Site added successfully");
+      utils.officeQuery.getOffices.invalidate();
       utils.siteQuery.getSitesByOfficeId.invalidate();
       handleClose();
     },
@@ -100,6 +101,7 @@ const CreateSiteDialog = () => {
   const editSite = trpc.siteMutation.updateSite.useMutation({
     onSuccess: () => {
       toast.success("Site updated successfully");
+      utils.officeQuery.getOffices.invalidate();
       utils.siteQuery.getSitesByOfficeId.invalidate();
       handleClose();
     },
@@ -122,11 +124,11 @@ const CreateSiteDialog = () => {
     setOperatorPage(1);
   }, [searchParams, router, form]);
 
-  const toggleOperator = (userId: number) => {
-    if (selectedOperators.includes(userId)) {
-      setSelectedOperators(selectedOperators.filter((id) => id !== userId));
+  const toggleOperator = (user: SelectedUser) => {
+    if (selectedOperators.some((u) => u.id === user.id)) {
+      setSelectedOperators(selectedOperators.filter((u) => u.id !== user.id));
     } else {
-      setSelectedOperators([...selectedOperators, userId]);
+      setSelectedOperators([...selectedOperators, user]);
     }
   };
 
@@ -159,7 +161,9 @@ const CreateSiteDialog = () => {
           ...values,
           office_id: Number(officeId),
           operator_ids:
-            selectedOperators.length > 0 ? selectedOperators : undefined,
+            selectedOperators.length > 0
+              ? selectedOperators.map((u) => u.id)
+              : undefined,
         });
       }
     } catch (error) {
@@ -181,7 +185,7 @@ const CreateSiteDialog = () => {
       }
       open={isOpenDialog}
       size={isAddMode ? "lg" : "sm"}
-      isLoading={isSiteLoading || (isAddMode && isLoadingStaffData)}
+      isLoading={isSiteLoading || (isAddMode && isLoadingOperators)}
       setOpen={handleClose}>
       <Form {...form}>
         <CustomForm onSubmit={form.handleSubmit(onSubmit)}>
@@ -243,11 +247,11 @@ const CreateSiteDialog = () => {
               <div className='space-y-4'>
                 <div className='border-b pb-2'>
                   <h3 className='text-base font-semibold text-gray-800'>
-                    Assign Operators (Optional)
+                    Assign Operators
                   </h3>
                 </div>
 
-                <div className='rounded-xl border bg-white shadow-xs overflow-hidden'>
+                <div className='rounded-xl border bg-gray-100 shadow-xs overflow-hidden'>
                   <div className='px-4 pt-4 border-b bg-gray-50'>
                     <div className='flex justify-between items-center flex-1 mb-4'>
                       <Input
@@ -267,14 +271,20 @@ const CreateSiteDialog = () => {
                   <div className='p-4'>
                     <ScrollArea className='h-56 pr-3 -mr-3'>
                       <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
-                        {paginatedOperators.map((user: any) => {
-                          const isSelected = selectedOperators.includes(
-                            user.id,
+                        {operators.map((user: any) => {
+                          const isSelected = selectedOperators.some(
+                            (u) => u.id === user.id,
                           );
                           return (
                             <div
                               key={user.id}
-                              onClick={() => toggleOperator(user.id)}
+                              onClick={() =>
+                                toggleOperator({
+                                  id: user.id,
+                                  name: user.name,
+                                  email: user.email,
+                                })
+                              }
                               className={cn(
                                 "group flex items-center justify-between p-3 rounded-lg border transition-all cursor-pointer",
                                 isSelected
@@ -317,20 +327,19 @@ const CreateSiteDialog = () => {
                             </div>
                           );
                         })}
-                        {!isLoadingStaffData &&
-                          paginatedOperators.length === 0 && (
-                            <div className='col-span-2 flex flex-col items-center justify-center py-10 text-gray-500'>
-                              <div className='h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center mb-3'>
-                                <Users className='h-6 w-6 text-gray-400' />
-                              </div>
-                              <p className='text-sm font-medium'>
-                                No operators found
-                              </p>
-                              <p className='text-xs text-gray-400 mt-1'>
-                                Try adjusting your search
-                              </p>
+                        {!isLoadingOperators && operators.length === 0 && (
+                          <div className='col-span-2 flex flex-col items-center justify-center py-10 text-gray-500'>
+                            <div className='h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center mb-3'>
+                              <Users className='h-6 w-6 text-gray-400' />
                             </div>
-                          )}
+                            <p className='text-sm font-medium'>
+                              No operators found
+                            </p>
+                            <p className='text-xs text-gray-400 mt-1'>
+                              Try adjusting your search
+                            </p>
+                          </div>
+                        )}
                       </div>
                       {hasMoreOperators && (
                         <button
@@ -351,12 +360,10 @@ const CreateSiteDialog = () => {
                       Selected Operators ({selectedOperators.length})
                     </p>
                     <div className='flex flex-wrap gap-2'>
-                      {selectedOperators.map((opId) => {
-                        const op = operators?.find((o: any) => o.id === opId);
-                        if (!op) return null;
+                      {selectedOperators.map((op) => {
                         return (
                           <div
-                            key={opId}
+                            key={op.id}
                             className='inline-flex items-center gap-2 bg-white border border-[#035864]/20 shadow-xs rounded-full pl-1.5 pr-3 py-1 text-sm text-gray-700 animate-in fade-in zoom-in-95 duration-200'>
                             <div className='h-6 w-6 rounded-full bg-[#035864] text-white flex items-center justify-center text-[10px] font-bold'>
                               {op.name.substring(0, 2).toUpperCase()}
@@ -366,7 +373,7 @@ const CreateSiteDialog = () => {
                             </span>
                             <button
                               type='button'
-                              onClick={() => toggleOperator(opId)}
+                              onClick={() => toggleOperator(op)}
                               className='ml-1 text-gray-400 hover:text-red-500 transition-colors'>
                               <X className='h-3.5 w-3.5' />
                             </button>

@@ -4,11 +4,7 @@ import { constants } from "@pkg/utils";
 import { router } from "../../trpc";
 import { adminProcedure, managerProcedure } from "../../middleware";
 import { officeSchemas } from "@pkg/schema";
-import {
-  throwNotFoundError,
-  throwValidationError,
-  handleDatabaseOperation,
-} from "../../errors";
+import { notFound, alreadyExists, fromDatabaseError } from "../../errors";
 import { handleMutation } from "../../helper/typed-handler";
 
 const { officeTable, officeUserTable, userTable } = schema;
@@ -20,54 +16,66 @@ export const officeMutationRouter = router({
       const { manager_id, operator_ids, ...officeData } = input;
       const userId = parseInt(ctx.user!.sub);
 
-      const { officeId } = await ctx.db.transaction(async (tx) => {
-        const result = await tx.insert(officeTable).values(officeData);
-        const officeId = result[0].insertId;
+      try {
+        const { officeId } = await ctx.db.transaction(async (tx) => {
+          const result = await tx.insert(officeTable).values(officeData);
+          const officeId = result[0].insertId;
 
-        if (manager_id) {
-          const [user] = await tx
-            .select()
-            .from(userTable)
-            .where(eq(userTable.id, manager_id));
+          if (manager_id) {
+            const [user] = await tx
+              .select()
+              .from(userTable)
+              .where(eq(userTable.id, manager_id));
 
-          if (!user) {
-            throwNotFoundError("Manager", manager_id);
-          }
-          await tx.insert(officeUserTable).values({
-            user_id: manager_id,
-            office_id: officeId,
-            role: ROLES.MANAGER as "manager",
-            assigned_by: userId,
-          });
-        }
-
-        if (operator_ids && operator_ids.length > 0) {
-          const users = await tx
-            .select()
-            .from(userTable)
-            .where(inArray(userTable.id, operator_ids));
-
-          if (users.length !== operator_ids.length) {
-            throwNotFoundError("Operator");
+            if (!user) {
+              throw notFound("Manager", manager_id, {
+                userMessage: "The selected manager doesn't exist.",
+              });
+            }
+            await tx.insert(officeUserTable).values({
+              user_id: manager_id,
+              office_id: officeId,
+              role: ROLES.MANAGER as "manager",
+              assigned_by: userId,
+            });
           }
 
-          const operatorValues = operator_ids.map((operatorId: number) => ({
-            user_id: operatorId,
-            office_id: officeId,
-            role: "operator" as const,
-            assigned_by: userId,
-          }));
+          if (operator_ids && operator_ids.length > 0) {
+            const users = await tx
+              .select()
+              .from(userTable)
+              .where(inArray(userTable.id, operator_ids));
 
-          await tx.insert(officeUserTable).values(operatorValues);
+            if (users.length !== operator_ids.length) {
+              throw notFound("Operator", undefined, {
+                userMessage: "One or more selected operators don't exist.",
+              });
+            }
+
+            const operatorValues = operator_ids.map((operatorId: number) => ({
+              user_id: operatorId,
+              office_id: officeId,
+              role: "operator" as const,
+              assigned_by: userId,
+            }));
+
+            await tx.insert(officeUserTable).values(operatorValues);
+          }
+
+          return { officeId };
+        });
+
+        return {
+          success: true,
+          officeId,
+        };
+      } catch (error) {
+        // Re-throw AppError instances
+        if (error && typeof error === "object" && "errorCode" in error) {
+          throw error;
         }
-
-        return { officeId };
-      });
-
-      return {
-        success: true,
-        officeId,
-      };
+        throw fromDatabaseError(error, "Creating office");
+      }
     }),
   ),
 
@@ -77,22 +85,25 @@ export const officeMutationRouter = router({
       handleMutation(async ({ input, ctx }) => {
         const { id, ...rest } = input;
 
+        // Check if office exists
         const existingOffice = await ctx.db
           .select()
           .from(officeTable)
           .where(eq(officeTable.id, id));
 
         if (existingOffice.length === 0) {
-          throwNotFoundError("Office", id);
+          throw notFound("Office", id);
         }
 
-        await handleDatabaseOperation(
-          () =>
-            ctx.db.update(officeTable).set(rest).where(eq(officeTable.id, id)),
-          "Failed to update office",
-        );
-
-        return { success: true };
+        try {
+          await ctx.db
+            .update(officeTable)
+            .set(rest)
+            .where(eq(officeTable.id, id));
+          return { success: true };
+        } catch (error) {
+          throw fromDatabaseError(error, "Updating office");
+        }
       }),
     ),
 
@@ -110,7 +121,7 @@ export const officeMutationRouter = router({
           .where(eq(officeTable.id, office_id));
 
         if (!office) {
-          throwNotFoundError("Office", office_id);
+          throw notFound("Office", office_id);
         }
 
         // Verify user exists
@@ -120,7 +131,9 @@ export const officeMutationRouter = router({
           .where(eq(userTable.id, user_id));
 
         if (!user) {
-          throwNotFoundError("User", user_id);
+          throw notFound("User", user_id, {
+            userMessage: "The selected user doesn't exist.",
+          });
         }
 
         // If assigning as manager, check if office already has a manager
@@ -136,41 +149,46 @@ export const officeMutationRouter = router({
             );
 
           if (existingManagers.length > 0) {
-            throwValidationError(
-              "Office already has a manager. Please remove the existing manager first.",
-            );
+            throw alreadyExists("Manager", undefined, {
+              userMessage:
+                "This office already has a manager. Please remove the existing manager first.",
+            });
           }
         }
 
-        // Check if user is already assigned to this office
-        const [existingAssignments] = await ctx.db
-          .select()
-          .from(officeUserTable)
-          .where(
-            and(
-              eq(officeUserTable.office_id, office_id),
-              eq(officeUserTable.user_id, user_id),
-            ),
-          )
-          .limit(1);
+        try {
+          // Check if user is already assigned to this office
+          const [existingAssignments] = await ctx.db
+            .select()
+            .from(officeUserTable)
+            .where(
+              and(
+                eq(officeUserTable.office_id, office_id),
+                eq(officeUserTable.user_id, user_id),
+              ),
+            )
+            .limit(1);
 
-        if (existingAssignments) {
-          // Update the role if already assigned
-          await ctx.db
-            .update(officeUserTable)
-            .set({ role })
-            .where(eq(officeUserTable.id, existingAssignments.id));
-        } else {
-          // Create new assignment
-          await ctx.db.insert(officeUserTable).values({
-            user_id,
-            office_id,
-            role,
-            assigned_by: userId,
-          });
+          if (existingAssignments) {
+            // Update the role if already assigned
+            await ctx.db
+              .update(officeUserTable)
+              .set({ role })
+              .where(eq(officeUserTable.id, existingAssignments.id));
+          } else {
+            // Create new assignment
+            await ctx.db.insert(officeUserTable).values({
+              user_id,
+              office_id,
+              role,
+              assigned_by: userId,
+            });
+          }
+
+          return { success: true };
+        } catch (error) {
+          throw fromDatabaseError(error, "Assigning user to office");
         }
-
-        return { success: true };
       }),
     ),
 
@@ -180,6 +198,7 @@ export const officeMutationRouter = router({
       handleMutation(async ({ input, ctx }) => {
         const { office_id, user_id } = input;
 
+        // Check if assignment exists
         const assignments = await ctx.db
           .select()
           .from(officeUserTable)
@@ -191,14 +210,20 @@ export const officeMutationRouter = router({
           );
 
         if (!assignments[0]) {
-          throwNotFoundError("User assignment");
+          throw notFound("User assignment", undefined, {
+            userMessage: "This user is not assigned to this office.",
+          });
         }
 
-        await ctx.db
-          .delete(officeUserTable)
-          .where(eq(officeUserTable.id, assignments[0].id));
+        try {
+          await ctx.db
+            .delete(officeUserTable)
+            .where(eq(officeUserTable.id, assignments[0].id));
 
-        return { success: true };
+          return { success: true };
+        } catch (error) {
+          throw fromDatabaseError(error, "Removing user from office");
+        }
       }),
     ),
 });

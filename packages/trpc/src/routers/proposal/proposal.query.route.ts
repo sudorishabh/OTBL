@@ -2,7 +2,7 @@ import { desc, eq } from "drizzle-orm";
 import { schema } from "@pkg/db";
 import { router } from "../../trpc";
 import { publicProcedure } from "../../core";
-import { handleDatabaseOperation } from "../../errors";
+import { fromDatabaseError } from "../../errors";
 import { handleQuery } from "../../helper/typed-handler";
 import { proposalSchemas } from "@pkg/schema";
 
@@ -16,8 +16,8 @@ export const proposalQueryRouter = router({
       handleQuery(async ({ input, ctx }) => {
         const { client_id } = input;
 
-        const proposals = await handleDatabaseOperation(async () => {
-          return ctx.db
+        try {
+          const proposals = await ctx.db
             .select({ proposal: proposalTable, workOrder: workOrderTable })
             .from(proposalTable)
             .where(eq(proposalTable.client_id, client_id))
@@ -26,9 +26,40 @@ export const proposalQueryRouter = router({
               eq(workOrderTable.proposal_id, proposalTable.id),
             )
             .orderBy(desc(proposalTable.created_at));
-        }, "Failed to fetch proposals");
 
-        return { proposals };
+          return { proposals };
+        } catch (error) {
+          throw fromDatabaseError(error, "Fetching proposals");
+        }
+      }),
+    ),
+
+  // Get single proposal by ID with optional work order
+  getProposalById: publicProcedure
+    .input(proposalSchemas.getProposalByIdSchema)
+    .query(
+      handleQuery(async ({ input, ctx }) => {
+        const { proposal_id } = input;
+
+        try {
+          const result = await ctx.db
+            .select({ proposal: proposalTable, workOrder: workOrderTable })
+            .from(proposalTable)
+            .where(eq(proposalTable.id, proposal_id))
+            .leftJoin(
+              workOrderTable,
+              eq(workOrderTable.proposal_id, proposalTable.id),
+            )
+            .limit(1);
+
+          if (!result.length) {
+            return null;
+          }
+
+          return result[0];
+        } catch (error) {
+          throw fromDatabaseError(error, "Fetching proposal details");
+        }
       }),
     ),
 });

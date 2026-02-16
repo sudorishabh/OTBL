@@ -21,7 +21,7 @@ interface ScheduleOfRate {
   estimated_quantity: string;
   rc_unit_rate: string;
   gst_percentage: string;
-  unit_rate_inclusive_gst: string;
+  unit_rate_inc_gst: string;
   total_cost: string;
   transportation_km?: string | null;
 }
@@ -121,7 +121,7 @@ const ScheduleOfRatesTable = ({ scheduleOfRates }: Props) => {
                 {Number(item.gst_percentage)}%
               </TableCell>
               <TableCell className='text-right font-mono text-gray-600'>
-                {formatCurrency(item.unit_rate_inclusive_gst)}
+                {formatCurrency(item.unit_rate_inc_gst)}
               </TableCell>
               <TableCell className='text-right font-mono text-gray-600'>
                 {item.transportation_km ? (

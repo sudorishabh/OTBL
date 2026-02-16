@@ -9,9 +9,9 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
-import { Loader } from "lucide-react";
 import { capitalFirstLetter } from "@pkg/utils";
-// import {} from "@pkg/db/types";
+import ClientSitesSkeleton from "./skeleton/ClientSitesSkeleton";
+import Error from "@/components/Error";
 
 interface SiteUser {
   id: number;
@@ -38,17 +38,26 @@ interface Props {
   officeId: number;
 }
 
-const SitesTable: React.FC<Props> = ({ officeId }) => {
-  const { data: sitesData, isLoading: sitesLoading } =
-    trpc.siteQuery.getSitesByOfficeId.useQuery({
-      office_id: officeId,
-    });
+const OfficeSiteTable: React.FC<Props> = ({ officeId }) => {
+  const {
+    data: sitesData,
+    isLoading: sitesLoading,
+    isError,
+    error,
+  } = trpc.siteQuery.get6SitesByOfficeId.useQuery({
+    office_id: officeId,
+  });
 
   if (sitesLoading) {
+    return <ClientSitesSkeleton />;
+  }
+
+  if (isError && error) {
     return (
-      <div className='border rounded-lg bg-gray-100/60 '>
-        <Loader className='animate-spin' />
-      </div>
+      <Error
+        variant='inline'
+        message={error.message}
+      />
     );
   }
 
@@ -61,9 +70,7 @@ const SitesTable: React.FC<Props> = ({ officeId }) => {
             <TableHead className='pl-4 text-xs'>Name</TableHead>
             <TableHead className='text-xs'>Address</TableHead>
             <TableHead className='text-xs'>Operators</TableHead>
-
             <TableHead className='text-xs'>Pincode</TableHead>
-            {/* <TableHead className='text-xs'>Status</TableHead> */}
             <TableHead className='text-xs'>Created</TableHead>
           </TableRow>
         </TableHeader>
@@ -137,4 +144,4 @@ const SitesTable: React.FC<Props> = ({ officeId }) => {
   );
 };
 
-export default SitesTable;
+export default OfficeSiteTable;

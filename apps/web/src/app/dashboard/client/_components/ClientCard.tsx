@@ -41,13 +41,13 @@ interface Client {
 
 interface ClientCardProps {
   client: Client;
-  contacts?: ClientContact[];
+  contactsCount: number;
   //   onEdit?: (client: Client, contacts: ClientContact[]) => void;
 }
 
 const ClientCard: React.FC<ClientCardProps> = ({
   client,
-  contacts = [],
+  contactsCount,
   //   onEdit,
 }) => {
   const router = useRouter();
@@ -58,148 +58,152 @@ const ClientCard: React.FC<ClientCardProps> = ({
 
   return (
     <div
-      className='bg-white rounded-xl cursor-pointer border-2 border-gray-50 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group'
+      className='bg-white rounded-xl cursor-pointer border border-gray-200 shadow-sm hover:shadow-md hover:border-emerald-20 transition-all duration-300 overflow-hidden group relative'
       onClick={handleCardClick}>
-      <div className='flex flex-col gap-4'>
-        <div className='flex items-start justify-between px-4 pt-4'>
-          <div>
-            <h3 className='text font-semibold text-gray-700 group-hover:text-[#035864] transition-colors line-clamp-1'>
-              {capitalFirstLetter(client.name)}
-            </h3>
-            <div className='flex items-center space-x-1 text-xs text-gray-400 mt-1'>
-              <Calendar className='h-3 w-3' />
-              <span>
-                Created:{" "}
-                {client.created_at
-                  ? format(new Date(client.created_at), "MMM dd, yyyy")
-                  : "-"}
-              </span>
+      <div className='flex items-center gap-6 p-5'>
+        <div className='shrink-0 w-64'>
+          <div className='flex items-start justify-between gap-3'>
+            <div className='flex-1 min-w-0'>
+              <h3 className='text-lg font-bold text-gray-800 group-hover:text-emerald-600 transition-colors line-clamp-1 mb-1'>
+                {capitalFirstLetter(client.name)}
+              </h3>
+              <div className='flex items-center gap-1.5 text-xs text-gray-500'>
+                <Calendar className='h-3.5 w-3.5' />
+                <span>
+                  {client.created_at
+                    ? format(new Date(client.created_at), "MMM dd, yyyy")
+                    : "-"}
+                </span>
+              </div>
+              <div className='mt-2 flex items-center gap-2'>
+                {client.status && (
+                  <Badge
+                    variant={
+                      client.status === "active" ? "secondary" : "outline"
+                    }
+                    className='text-xs'>
+                    {capitalFirstLetter(client.status || "N/A")}
+                  </Badge>
+                )}
+                <div className='text-xs text-gray-500 flex items-center gap-1'>
+                  <span className='w-1.5 h-1.5 rounded-full bg-gray-400' />
+                  {contactsCount} {contactsCount === 1 ? "Contact" : "Contacts"}
+                </div>
+              </div>
             </div>
-          </div>
-
-          <div className='flex items-center gap-2'>
-            {client.status && (
-              <Badge
-                variant={client.status === "active" ? "secondary" : "outline"}
-                className='text-xs'>
-                {capitalFirstLetter(client.status || "N/A")}
-              </Badge>
-            )}
-            <CustomButton
-              variant='arrow'
-              arrowType='right'
-              className='group-hover:bg-emerald-600 border-0'
-            />
           </div>
         </div>
 
-        <div className='grid grid-cols-1 gap-4 bg-gray-100/60 m-2.5 rounded-lg p-4'>
+        {/* Divider */}
+        <div className='h-20 w-px bg-gray-200 shrink-0' />
+
+        {/* Middle Section: Location & Contact */}
+        <div className='flex-1 grid grid-cols-2 gap-6'>
+          {/* Location */}
           <div className='space-y-2'>
-            <div className='flex items-center space-x-2 mb-3'>
-              <div className='p-[5px] bg-[#00d57f]/10 rounded-md'>
-                <MapPin className='size-3.5 text-[#035864]' />
+            <div className='flex items-center gap-2 mb-2'>
+              <div className='p-1.5 bg-emerald-50 rounded-lg group-hover:bg-emerald-100 transition-colors'>
+                <MapPin className='h-4 w-4 text-emerald-600' />
               </div>
-              <span className='text-xs font-semibold text-gray-700 uppercase tracking-wide'>
+              <span className='text-xs font-semibold text-gray-600 uppercase tracking-wider'>
                 Location
               </span>
             </div>
-
-            <div className='ml-1 space-y-2'>
-              <p className='text-xs text-gray-700 leading-relaxed'>
+            <div className='space-y-1 pl-0.5'>
+              <p
+                className='text-sm text-gray-700 line-clamp-1'
+                title={client.address}>
                 {client.address || "-"}
               </p>
-              <p className='text-xs text-gray-700'>
+              <p className='text-xs text-gray-600'>
                 {client.city}, {client.state} - {client.pincode}
               </p>
             </div>
           </div>
 
+          {/* Contact */}
           <div className='space-y-2'>
-            <div className='flex items-center space-x-2 mb-3'>
-              <div className='p-[5px] bg-[#00d57f]/10 rounded-md'>
-                <PhoneIcon className='size-3.5 text-[#035864]' />
+            <div className='flex items-center gap-2 mb-2'>
+              <div className='p-1.5 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors'>
+                <PhoneIcon className='h-4 w-4 text-blue-600' />
               </div>
-              <span className='text-xs font-semibold text-gray-700 uppercase tracking-wide'>
+              <span className='text-xs font-semibold text-gray-600 uppercase tracking-wider'>
                 Contact
               </span>
             </div>
-
-            <div className='ml-1 space-y-2'>
-              <div>
-                <a
-                  href={`tel:${client.contact_number}`}
-                  className='flex items-center gap-1 text-xs text-emerald-600 hover:text-emerald-700 transition-colors'>
-                  <PhoneIcon className='size-3.5' />{" "}
-                  {client.contact_number || "-"}
-                </a>
-              </div>
-              <div>
-                <a
-                  href={`mailto:${client.email}`}
-                  className='flex items-center gap-1 text-xs text-emerald-600 hover:text-emerald-700 transition-colors font-medium truncate'
-                  title={client.email}>
-                  <MailIcon className='size-3.5' /> {client.email || "-"}
-                </a>
-              </div>
-              {/* <div className='flex items-center gap-2 text-xs text-gray-600'>
-                <FileText className='h-3 w-3' />
-                <span>GST: {client.gst_number || "-"}</span>
-              </div> */}
+            <div className='space-y-1.5 pl-0.5'>
+              <a
+                href={`tel:${client.contact_number}`}
+                onClick={(e) => e.stopPropagation()}
+                className='flex items-center gap-1.5 text-sm text-emerald-600 hover:text-emerald-700 transition-colors font-medium'>
+                <PhoneIcon className='h-3.5 w-3.5' />
+                {client.contact_number || "-"}
+              </a>
+              <a
+                href={`mailto:${client.email}`}
+                onClick={(e) => e.stopPropagation()}
+                className='flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 transition-colors truncate'
+                title={client.email}>
+                <MailIcon className='h-3.5 w-3.5' />
+                {client.email || "-"}
+              </a>
             </div>
           </div>
+        </div>
 
-          <div className='space-y-2'>
-            <div className='flex items-center space-x-2 mb-3'>
-              <div className='p-[5px] bg-[#00d57f]/10 rounded-md'>
-                <FileText className='size-3.5 text-[#035864]' />
+        {/* Divider */}
+        <div className='h-20 w-px bg-gray-200 shrink-0' />
+
+        {/* Right Section: Work Info */}
+        <div className='shrink-0 w-80'>
+          <div className='flex items-center gap-2 mb-3'>
+            <div className='p-1.5 bg-purple-50 rounded-lg group-hover:bg-purple-100 transition-colors'>
+              <FileText className='h-4 w-4 text-purple-600' />
+            </div>
+            <span className='text-xs font-semibold text-gray-600 uppercase tracking-wider'>
+              Work Info
+            </span>
+          </div>
+          <div className='grid grid-cols-3 gap-2'>
+            <div className='bg-linear-to-br from-gray-50 to-gray-100 px-3 py-2.5 rounded-lg border border-gray-200 group-hover:border-emerald-200 transition-colors'>
+              <div className='text-[10px] text-gray-500 uppercase tracking-wide mb-0.5'>
+                Work Order
               </div>
-              <span className='text-xs font-semibold text-gray-700 uppercase tracking-wide'>
-                Work Info
-              </span>
+              <div
+                className='font-semibold text-sm text-gray-800 truncate'
+                title={String(client.work_order_number ?? "-")}>
+                {client.work_order_number ?? "-"}
+              </div>
             </div>
 
-            <div className='ml-1'>
-              <div className='flex gap-2 flex-wrap'>
-                <div className='bg-white px-3 py-2 rounded-md shadow-sm text-xs text-gray-700 flex-1'>
-                  <div className='text-[11px] text-gray-500'>Work Order</div>
-                  <div className='font-medium text-sm text-gray-800 truncate'>
-                    {client.work_order_number ?? "-"}
-                  </div>
-                </div>
+            <div className='bg-linear-to-br from-gray-50 to-gray-100 px-3 py-2.5 rounded-lg border border-gray-200 group-hover:border-emerald-200 transition-colors'>
+              <div className='text-[10px] text-gray-500 uppercase tracking-wide mb-0.5'>
+                Proposal
+              </div>
+              <div
+                className='font-semibold text-sm text-gray-800 truncate'
+                title={String(client.proposal_number ?? "-")}>
+                {client.proposal_number ?? "-"}
+              </div>
+            </div>
 
-                <div className='bg-white px-3 py-2 rounded-md shadow-sm text-xs text-gray-700 flex-1'>
-                  <div className='text-[11px] text-gray-500'>Proposal</div>
-                  <div className='font-medium text-sm text-gray-800 truncate'>
-                    {client.proposal_number ?? "-"}
-                  </div>
-                </div>
-
-                <div className='bg-white px-3 py-2 rounded-md shadow-sm text-xs text-gray-700 flex-1'>
-                  <div className='text-[11px] text-gray-500'>Sites Done</div>
-                  <div className='font-medium text-sm text-gray-800'>
-                    {client.sites_work_done ?? 0}
-                  </div>
-                </div>
+            <div className='bg-linear-to-br from-emerald-50 to-teal-50 px-3 py-2.5 rounded-lg border border-emerald-200 group-hover:border-emerald-300 transition-colors'>
+              <div className='text-[10px] text-emerald-700 uppercase tracking-wide mb-0.5'>
+                Sites Done
+              </div>
+              <div className='font-bold text-sm text-emerald-700'>
+                {client.sites_work_done ?? 0}
               </div>
             </div>
           </div>
         </div>
 
-        <div className='px-4 pb-4 flex items-center justify-between'>
-          <div className='text-xs text-gray-500'>
-            Contacts: {contacts.length}
-          </div>
-          {/* {onEdit && (
-            <button
-              type='button'
-              className='text-xs bg-emerald-600 text-white px-3 py-1 rounded-md hover:opacity-90'
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit(client, contacts);
-              }}>
-              Edit
-            </button>
-          )} */}
+        <div className='shrink-0'>
+          <CustomButton
+            variant='arrow'
+            arrowType='right'
+            className='group-hover:bg-emerald-600 border-0 transition-all duration-300 group-hover:scale-110'
+          />
         </div>
       </div>
     </div>

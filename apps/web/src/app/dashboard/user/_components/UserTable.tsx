@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Table,
   TableBody,
@@ -28,12 +28,14 @@ import { MoreHorizontal } from "lucide-react";
 import LoadMoreBtn from "@/components/loading/LoadMoreBtn";
 import { useUserManagementContext } from "@/contexts/UserManagementContext";
 import { trpc } from "@/lib/trpc";
-import Loading from "@/components/loading/Loading";
 import { capitalFirstLetter, capitalizeEachWord } from "@pkg/utils";
 import useHandleParams from "@/hooks/useHandleParams";
 import NoFetchData from "@/components/NoFetchData";
 import StatusIndicator from "../../../../components/StatusIndicator";
 import { userTypes } from "@pkg/schema";
+import UserPageSkeleton from "./skeleton/UserPageSkeleton";
+import { toast } from "react-hot-toast";
+import Error from "@/components/Error";
 
 interface Pagination {
   page: number;
@@ -54,7 +56,13 @@ const UserTable = () => {
 
   const allUsersQueryLimit = 100;
 
-  const getAllUsersQuery = trpc.userQuery.getAllUser.useQuery({
+  const {
+    data: allUsersData,
+    isLoading: isAllUserQueryLoading,
+    isError,
+    error,
+    dataUpdatedAt,
+  } = trpc.userQuery.getAllUser.useQuery({
     page: currentPage,
     limit: allUsersQueryLimit,
     searchQuery: searchQuery || undefined,
@@ -63,9 +71,8 @@ const UserTable = () => {
     userNamesOrder,
   });
 
-  const isAllUserQueryLoading = getAllUsersQuery.isLoading;
   const { users, pagination: fetchedPagination } =
-    getAllUsersQuery?.data ||
+    allUsersData ||
     ({
       users: [],
       pagination: {
@@ -85,24 +92,45 @@ const UserTable = () => {
     filters.status === "all" &&
     userNamesOrder === "latest";
 
-  const isFetchingMore = getAllUsersQuery.isFetching && currentPage > 1;
+  const isFetchingMore = isAllUserQueryLoading && currentPage > 1;
+
+  const prevFiltersRef = useRef({
+    searchQuery,
+    role: filters.role,
+    status: filters.status,
+  });
 
   useEffect(() => {
-    setCurrentPage(1);
-    setAllUsersList([]);
+    const filtersChanged =
+      prevFiltersRef.current.searchQuery !== searchQuery ||
+      prevFiltersRef.current.role !== filters.role ||
+      prevFiltersRef.current.status !== filters.status;
+
+    if (filtersChanged) {
+      setCurrentPage(1);
+      setAllUsersList([]);
+      prevFiltersRef.current = {
+        searchQuery,
+        role: filters.role,
+        status: filters.status,
+      };
+    }
   }, [searchQuery, filters.role, filters.status]);
 
   useEffect(() => {
-    if (!users || isAllUserQueryLoading) return;
-    if (fetchedPagination?.page !== currentPage) return;
-
-    if (currentPage === 1) {
-      setAllUsersList(users);
-    } else {
-      setAllUsersList((prev) => [...prev, ...users]);
+    if (
+      !isAllUserQueryLoading &&
+      users &&
+      fetchedPagination?.page === currentPage
+    ) {
+      if (currentPage === 1) {
+        setAllUsersList(users);
+      } else {
+        setAllUsersList((prev) => [...prev, ...users]);
+      }
+      setPagination(fetchedPagination);
     }
-    setPagination(fetchedPagination);
-  }, [users, currentPage, isAllUserQueryLoading, fetchedPagination]);
+  }, [dataUpdatedAt, currentPage]);
 
   const handleLoadMore = () => {
     setCurrentPage((prev) => prev + 1);
@@ -155,9 +183,20 @@ const UserTable = () => {
     }
   };
 
-  if (isInitialLoading) return <Loading />;
+  if (isInitialLoading) return <UserPageSkeleton />;
 
-  if (allUsersList.length === 0)
+  if (isError && error) {
+    return (
+      <Error
+        variant='default'
+        message={error.message}
+      />
+    );
+  }
+
+  const hasUsers = allUsersList.length > 0;
+
+  if (!hasUsers)
     return (
       <NoFetchData
         Icon={UserIcon}
@@ -175,6 +214,7 @@ const UserTable = () => {
             <TableHead className='text-xs'>
               <button
                 onClick={handleNameSort}
+                aria-label={`Sort by name: ${getSortLabel()}`}
                 className='flex items-center gap-2 hover:text-foreground transition-colors font-medium'>
                 Name
                 {getSortIcon()}
@@ -199,8 +239,8 @@ const UserTable = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {allUsersList?.map((user) => (
-            <TableRow key={user.id + user.email}>
+          {allUsersList.map((user) => (
+            <TableRow key={`user-${user.id}`}>
               <TableCell className='pl-6'>
                 <StatusIndicator
                   status={user.status as "active" | "inactive"}
@@ -221,24 +261,28 @@ const UserTable = () => {
                 </Badge>
               </TableCell>
               <TableCell className='text-xs overflow-hidden max-w-[450px] flex flex-wrap gap-1.5'>
-                {[...user.offices, ...user.sites].sort((a, b) =>
-                  a.name.localeCompare(b.name),
-                ).length > 0 ? (
-                  <>
-                    {[...user.offices, ...user.sites].map((uo) => (
-                      <Badge
-                        key={uo.id + uo.name}
-                        variant='outline'
-                        className={`text-xs px-1.5 ${uo.type === "office" ? "bg-cyan-800/15" : "bg-orange-800/15"}`}>
-                        {capitalFirstLetter(uo.name) || "Unknown Office"}
-                      </Badge>
-                    ))}
-                  </>
-                ) : (
-                  <span className='text-xs text-muted-foreground'>
-                    No offices & sites
-                  </span>
-                )}
+                {(() => {
+                  const sortedLocations = [...user.offices, ...user.sites].sort(
+                    (a, b) => a.name.localeCompare(b.name),
+                  );
+
+                  return sortedLocations.length > 0 ? (
+                    <>
+                      {sortedLocations.map((uo) => (
+                        <Badge
+                          key={`${uo.type}-${uo.id}`}
+                          variant='outline'
+                          className={`text-xs px-1.5 ${uo.type === "office" ? "bg-cyan-800/15" : "bg-orange-800/15"}`}>
+                          {capitalFirstLetter(uo.name) || "Unknown Office"}
+                        </Badge>
+                      ))}
+                    </>
+                  ) : (
+                    <span className='text-xs text-muted-foreground'>
+                      No offices & sites
+                    </span>
+                  );
+                })()}
               </TableCell>
               <TableCell className='text-right'>
                 <DropdownMenu>
@@ -254,7 +298,7 @@ const UserTable = () => {
                     <DropdownMenuItem
                       onClick={() => {
                         setParams({
-                          dialog: "update-user",
+                          "dialog-over": "update-user",
                           id: user.id.toString(),
                         });
                       }}>

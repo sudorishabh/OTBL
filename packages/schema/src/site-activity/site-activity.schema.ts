@@ -12,7 +12,7 @@ export const activityPhaseEnum = z.enum(["sub_wo", "estimate", "expense"]);
 
 // Activity types from schedule of rates
 export const activityTypeEnum = z.enum([
-  "cleaning_up_soil_area",
+  "clean_soil_area",
   "lifting_oily_slush_or_recovery_of_oil",
   "excavation_oil_contaminated_soil",
   "transportation_contaminated_soil",
@@ -74,11 +74,11 @@ export const activityDataBaseSchema = z.object({
  */
 export const createActivityDataSchema = z.object({
   activity_table: z.enum([
-    "cleaning_up_soil_area",
-    "lifting_recovery_oil_slush",
-    "excavation_cont_soil",
-    "transportation_cont_soil",
-    "refilling_excavated_cont_soil",
+    "clean_soil_area",
+    "lifting_oil_slush",
+    "excav_cont_soil",
+    "trans_cont_soil",
+    "refill_excav_soil",
     "biorem_cont_soil",
   ]),
   data: activityDataBaseSchema,
@@ -90,11 +90,11 @@ export const createActivityDataSchema = z.object({
 export const updateActivityDataSchema = z.object({
   id: positiveIntValidator,
   activity_table: z.enum([
-    "cleaning_up_soil_area",
-    "lifting_recovery_oil_slush",
-    "excavation_cont_soil",
-    "transportation_cont_soil",
-    "refilling_excavated_cont_soil",
+    "clean_soil_area",
+    "lifting_oil_slush",
+    "excav_cont_soil",
+    "trans_cont_soil",
+    "refill_excav_soil",
     "biorem_cont_soil",
   ]),
   data: activityDataBaseSchema.partial(),
@@ -106,11 +106,11 @@ export const updateActivityDataSchema = z.object({
 export const deleteActivityDataSchema = z.object({
   id: positiveIntValidator,
   activity_table: z.enum([
-    "cleaning_up_soil_area",
-    "lifting_recovery_oil_slush",
-    "excavation_cont_soil",
-    "transportation_cont_soil",
-    "refilling_excavated_cont_soil",
+    "clean_soil_area",
+    "lifting_oil_slush",
+    "excav_cont_soil",
+    "trans_cont_soil",
+    "refill_excav_soil",
     "biorem_cont_soil",
   ]),
 });
@@ -122,11 +122,11 @@ export const getActivityDataSchema = z.object({
   work_order_site_id: positiveIntValidator,
   site_activity_id: positiveIntValidator.optional(),
   activity_table: z.enum([
-    "cleaning_up_soil_area",
-    "lifting_recovery_oil_slush",
-    "excavation_cont_soil",
-    "transportation_cont_soil",
-    "refilling_excavated_cont_soil",
+    "clean_soil_area",
+    "lifting_oil_slush",
+    "excav_cont_soil",
+    "trans_cont_soil",
+    "refill_excav_soil",
     "biorem_cont_soil",
   ]),
   phase: activityPhaseEnum.optional(),

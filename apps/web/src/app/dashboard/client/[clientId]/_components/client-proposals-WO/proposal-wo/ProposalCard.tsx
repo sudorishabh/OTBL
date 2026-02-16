@@ -12,6 +12,7 @@ import { format } from "date-fns";
 import { capitalFirstLetter } from "@pkg/utils";
 import CustomButton from "@/components/CustomButton";
 import { type proposalTypes } from "@pkg/schema";
+import useHandleParams from "@/hooks/useHandleParams";
 
 interface Props {
   proposal: proposalTypes.proposalType;
@@ -27,10 +28,18 @@ const formatCurrency = (amount: string | number) => {
 };
 
 const ProposalCard = ({ proposal }: Props) => {
+  const { setParams } = useHandleParams();
   const isApproved = proposal?.status === "approved";
 
   return (
-    <div className='rounded-lg bg-white shadow-md hover:shadow-lg transition-shadow p-4 flex flex-col group cursor-pointer min-h-[280px]'>
+    <div
+      onClick={() =>
+        setParams({
+          dialog: "proposal-detail",
+          "proposal-id": proposal?.id.toString(),
+        })
+      }
+      className='rounded-lg bg-white drop-shadow-sm hover:drop-shadow-md transition-shadow p-4 flex flex-col group cursor-pointer min-h-72'>
       {/* Header Section */}
       <div className='flex items-start justify-between mb-2'>
         <div className='flex items-center gap-2'>
@@ -114,7 +123,9 @@ const ProposalCard = ({ proposal }: Props) => {
 
       {/* View Document Button */}
       {proposal?.document_key && (
-        <div className='mt-auto pt-2 border-t border-gray-100'>
+        <div
+          className='mt-auto pt-2 border-t border-gray-100'
+          onClick={(e) => e.stopPropagation()}>
           <CustomButton
             Icon={FileText}
             text='View Document'

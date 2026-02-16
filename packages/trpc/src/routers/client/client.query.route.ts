@@ -1,9 +1,9 @@
-import { and, count, desc, eq, like, or } from "drizzle-orm";
+import { and, count, desc, eq, inArray, like, or } from "drizzle-orm";
 import { schema } from "@pkg/db";
 import { router } from "../../trpc";
 import { protectedProcedure, publicProcedure } from "../../core";
 import { clientSchemas } from "@pkg/schema";
-import { throwNotFoundError, handleDatabaseOperation } from "../../errors";
+import { notFound, fromDatabaseError } from "../../errors";
 import { handleQuery } from "../../helper/typed-handler";
 
 const { clientTable, clientContactTable, workOrderTable, workOrderSiteTable } =
@@ -12,22 +12,22 @@ const { clientTable, clientContactTable, workOrderTable, workOrderSiteTable } =
 export const clientQueryRouter = router({
   totalClientAndContact: protectedProcedure.query(
     handleQuery(async ({ ctx }) => {
-      const clientsResult = await ctx.db
-        .select({ count: count() })
-        .from(clientTable);
+      try {
+        const clientsResult = await ctx.db
+          .select({ count: count() })
+          .from(clientTable);
 
-      const contactsResult = await ctx.db
-        .select({ count: count() })
-        .from(clientContactTable);
+        const contactsResult = await ctx.db
+          .select({ count: count() })
+          .from(clientContactTable);
 
-      if (!clientsResult[0] || !contactsResult[0]) {
-        throw throwNotFoundError("Clients and contacts");
+        return {
+          totalClients: clientsResult[0]?.count ?? 0,
+          totalContacts: contactsResult[0]?.count ?? 0,
+        };
+      } catch (error) {
+        throw fromDatabaseError(error, "Fetching client and contact counts");
       }
-
-      return {
-        totalClients: clientsResult[0].count,
-        totalContacts: contactsResult[0].count,
-      };
     }),
   ),
 
@@ -55,96 +55,74 @@ export const clientQueryRouter = router({
           : searchCondition;
       }
 
-      return handleDatabaseOperation(async () => {
-        return ctx.db
+      try {
+        return await ctx.db
           .select()
           .from(clientTable)
           .where(clientQuery)
           .orderBy(desc(clientTable.created_at));
-      }, "Failed to fetch clients");
+      } catch (error) {
+        throw fromDatabaseError(error, "Fetching clients");
+      }
     }),
   ),
 
-  // Get a single client by ID
   getClient: publicProcedure.input(clientSchemas.getClientSchema).query(
     handleQuery(async ({ input, ctx }) => {
-      const client = await handleDatabaseOperation(async () => {
-        return ctx.db
+      try {
+        const client = await ctx.db
           .select()
           .from(clientTable)
           .where(eq(clientTable.id, input.clientId));
-      }, "Failed to fetch client");
 
-      if (client.length === 0) {
-        throwNotFoundError("Client");
-      }
+        if (client.length === 0) {
+          throw notFound("Client", input.clientId);
+        }
 
-      const clientUsers = await handleDatabaseOperation(async () => {
-        return ctx.db
+        const clientUsers = await ctx.db
           .select()
           .from(clientContactTable)
           .where(eq(clientContactTable.client_id, input.clientId));
-      }, "Failed to fetch client contacts");
 
-      return { client: client[0], clientUsers };
-    }),
-  ),
-
-  // Get client stats
-  getClientStats: publicProcedure.input(clientSchemas.getClientSchema).query(
-    handleQuery(async ({ input, ctx }) => {
-      const workOrders = await ctx.db
-        .select({ id: workOrderTable.id })
-        .from(workOrderTable)
-        .where(eq(workOrderTable.client_id, input.clientId));
-
-      const workOrderIds = workOrders.map((w: any) => w.id);
-
-      let siteCount = 0;
-      let totalBudgetAmount = 0;
-      let totalExpenseAmount = 0;
-      let completedWorkOrders = 0;
-
-      if (workOrderIds.length > 0) {
-        const woSites = await ctx.db
-          .select({ id: workOrderSiteTable.id })
-          .from(workOrderSiteTable)
-          .where(eq(workOrderSiteTable.work_order_id, workOrderIds[0]));
-
-        if (workOrderIds.length > 1) {
-          for (let i = 1; i < workOrderIds.length; i++) {
-            const more = await ctx.db
-              .select({ id: workOrderSiteTable.id })
-              .from(workOrderSiteTable)
-              .where(eq(workOrderSiteTable.work_order_id, workOrderIds[i]));
-            woSites.push(...more);
-          }
-        }
-
-        siteCount = woSites.length;
-
-        const woRows = await ctx.db
-          .select({
-            status: workOrderTable.status,
-            // budget_amount: workOrderTable.grand_total_amount,
-            // expense_amount: workOrderTable.expense_amount,
-          })
+        const workOrders = await ctx.db
+          .select({ id: workOrderTable.id, status: workOrderTable.status })
           .from(workOrderTable)
           .where(eq(workOrderTable.client_id, input.clientId));
 
-        for (const row of woRows) {
-          if (row.status === "completed") completedWorkOrders += 1;
-          // totalBudgetAmount += Number(row.budget_amount);
-          // totalExpenseAmount += Number(row.expense_amount);
-        }
-      }
+        const workOrderIds = workOrders.map((w) => w.id);
 
-      return {
-        siteCount,
-        completedWorkOrders,
-        totalBudgetAmount,
-        totalExpenseAmount,
-      };
+        let siteCount = 0;
+        let completedWorkOrders = 0;
+
+        if (workOrderIds.length > 0) {
+          const woSites = await ctx.db
+            .select({ id: workOrderSiteTable.id })
+            .from(workOrderSiteTable)
+            .where(inArray(workOrderSiteTable.work_order_id, workOrderIds));
+
+          siteCount = woSites.length;
+
+          // Count completed work orders
+          completedWorkOrders = workOrders.filter(
+            (wo) => wo.status === "completed",
+          ).length;
+        }
+
+        return {
+          client: client[0],
+          clientUsers,
+          siteCount,
+          completedWorkOrders,
+          totalBudgetAmount: 0,
+          totalExpenseAmount: 0,
+        };
+      } catch (error) {
+        // Re-throw AppError instances (like notFound)
+        if (error && typeof error === "object" && "errorCode" in error) {
+          throw error;
+        }
+        throw fromDatabaseError(error, "Fetching client details");
+      }
     }),
   ),
 
@@ -173,13 +151,15 @@ export const clientQueryRouter = router({
             : searchCondition;
         }
 
-        return handleDatabaseOperation(async () => {
-          return ctx.db
+        try {
+          return await ctx.db
             .select()
             .from(clientContactTable)
             .where(contactQuery)
             .orderBy(desc(clientContactTable.id));
-        }, "Failed to fetch client contacts");
+        } catch (error) {
+          throw fromDatabaseError(error, "Fetching client contacts");
+        }
       }),
     ),
 
@@ -188,12 +168,14 @@ export const clientQueryRouter = router({
     .input(clientSchemas.getClientContactsSchema)
     .query(
       handleQuery(async ({ input, ctx }) => {
-        return handleDatabaseOperation(async () => {
-          return ctx.db
+        try {
+          return await ctx.db
             .select()
             .from(clientContactTable)
             .where(eq(clientContactTable.client_id, input.clientId));
-        }, "Failed to fetch client contacts");
+        } catch (error) {
+          throw fromDatabaseError(error, "Fetching client contacts");
+        }
       }),
     ),
 
@@ -202,18 +184,24 @@ export const clientQueryRouter = router({
     .input(clientSchemas.getClientContactSchema)
     .query(
       handleQuery(async ({ input, ctx }) => {
-        const contact = await handleDatabaseOperation(async () => {
-          return ctx.db
+        try {
+          const contact = await ctx.db
             .select()
             .from(clientContactTable)
             .where(eq(clientContactTable.id, input.clientContactId));
-        }, "Failed to fetch client contact");
 
-        if (contact.length === 0) {
-          throwNotFoundError("Client contact");
+          if (contact.length === 0) {
+            throw notFound("Client contact", input.clientContactId);
+          }
+
+          return contact[0];
+        } catch (error) {
+          // Re-throw AppError instances
+          if (error && typeof error === "object" && "errorCode" in error) {
+            throw error;
+          }
+          throw fromDatabaseError(error, "Fetching client contact");
         }
-
-        return contact[0];
       }),
     ),
 
@@ -222,48 +210,52 @@ export const clientQueryRouter = router({
     .input(clientSchemas.getClientSchema)
     .query(
       handleQuery(async ({ input, ctx }) => {
-        const client = await handleDatabaseOperation(async () => {
-          return ctx.db
+        try {
+          const client = await ctx.db
             .select()
             .from(clientTable)
             .where(eq(clientTable.id, input.clientId));
-        }, "Failed to fetch client");
 
-        if (client.length === 0) {
-          throwNotFoundError("Client");
-        }
+          if (client.length === 0) {
+            throw notFound("Client", input.clientId);
+          }
 
-        const contacts = await handleDatabaseOperation(async () => {
-          return ctx.db
+          const contacts = await ctx.db
             .select()
             .from(clientContactTable)
             .where(eq(clientContactTable.client_id, input.clientId));
-        }, "Failed to fetch client contacts");
 
-        return {
-          client: client[0],
-          contacts,
-        };
+          return {
+            client: client[0],
+            contacts,
+          };
+        } catch (error) {
+          // Re-throw AppError instances
+          if (error && typeof error === "object" && "errorCode" in error) {
+            throw error;
+          }
+          throw fromDatabaseError(error, "Fetching client with contacts");
+        }
       }),
     ),
 
   // Get all clients with their contacts
   getClientsWithContacts: publicProcedure.query(
     handleQuery(async ({ ctx }) => {
-      const clients = await handleDatabaseOperation(async () => {
-        return ctx.db.select().from(clientTable);
-      }, "Failed to fetch clients");
+      try {
+        const clients = await ctx.db.select().from(clientTable);
 
-      const allContacts = await handleDatabaseOperation(async () => {
-        return ctx.db.select().from(clientContactTable);
-      }, "Failed to fetch contacts");
+        const allContacts = await ctx.db.select().from(clientContactTable);
 
-      return clients.map((client: any) => ({
-        ...client,
-        contacts: allContacts.filter(
-          (contact: any) => contact.client_id === client.id,
-        ),
-      }));
+        return clients.map((client: any) => ({
+          ...client,
+          contacts: allContacts.filter(
+            (contact: any) => contact.client_id === client.id,
+          ),
+        }));
+      } catch (error) {
+        throw fromDatabaseError(error, "Fetching clients with contacts");
+      }
     }),
   ),
 });

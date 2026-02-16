@@ -28,7 +28,7 @@ export const processTypeEnum = z.enum([
 
 // Activity types for schedule of rates
 export const woActivityEnum = z.enum([
-  "cleaning_up_soil_area",
+  "clean_soil_area",
   "lifting_oily_slush_or_recovery_of_oil",
   "excavation_oil_contaminated_soil",
   "transportation_contaminated_soil",
@@ -46,7 +46,7 @@ export const scheduleOfRateSchema = z.object({
   estimated_quantity: z.number().min(0, "Quantity cannot be negative"),
   rc_unit_rate: z.number().min(0, "Rate cannot be negative"),
   gst_percentage: z.number().min(0, "Min 1"),
-  unit_rate_inclusive_gst: z.number().min(0, "Rate cannot be negative"),
+  unit_rate_inc_gst: z.number().min(0, "Rate cannot be negative"),
   total_cost: z.number().min(0, "Total cost cannot be negative"),
   transportation_km: z
     .number()
@@ -117,6 +117,11 @@ export const getWorkOrdersByOfficeSchema = z.object({
 // Schema for getting work order by id
 export const getWorkOrderSchema = z.object({
   id: positiveIntValidator,
+  limit: z.number().min(1).max(100).default(10),
+  page: z.number().min(1).default(1),
+  search: z.string().optional(),
+  sort_by: z.string().optional(),
+  sort_order: z.string().optional(),
 });
 
 export const getAllWorkOrdersPaginatedSchema = z.object({
