@@ -316,17 +316,61 @@ export const workOrderSiteQueryRouter = router({
             },
           ];
 
+          // Also fetch oil zapping entries for all sites (source of truth for bioremediation qty)
+          const allOilZappingEntries = await ctx.db
+            .select()
+            .from(bioOilZappingTable)
+            .where(inArray(bioOilZappingTable.work_order_site_id, siteIds));
+
+          // Build map: work_order_site_id -> total oil zapping qty for that site
+          const oilZappingBySite = new Map<number, number>();
+          for (const entry of allOilZappingEntries) {
+            const current = oilZappingBySite.get(entry.work_order_site_id) || 0;
+            oilZappingBySite.set(
+              entry.work_order_site_id,
+              current + parseFloat(entry.estimated_quantity || "0"),
+            );
+          }
+
           // For each SOR, sum up best quantity from each of its site_activity_items
           const utilizationMap = new Map<number, number>();
+          const completionUtilizationMap = new Map<number, number>();
 
           for (const sorId of sorIds) {
             let totalUsed = 0;
+            let totalCompletion = 0;
             const relatedSaEntries = await ctx.db
               .select()
               .from(siteActivityTable)
               .where(eq(siteActivityTable.schedule_of_rates_id, sorId));
 
             for (const sa of relatedSaEntries) {
+              const isBioremActivity =
+                sa.activity === "bioremediation_oil_contaminated_soil";
+
+              if (isBioremActivity) {
+                // For bioremediation totalUsed, use oil zapping totals as the best estimate
+                const siteOilZappingQty =
+                  oilZappingBySite.get(sa.work_order_site_id) || 0;
+                totalUsed += siteOilZappingQty;
+
+                // For totalCompletion, use actual completion phase entries from bioremediationContSoilTable
+                const bioremEntries = entriesByTable
+                  .find((t) => t.name === "bioremediation_oil_contaminated_soil")
+                  ?.entries.filter(
+                    (e: any) =>
+                      e.work_order_site_id === sa.work_order_site_id &&
+                      e.type === "completion",
+                  ) || [];
+                const bioremCompletionQty = bioremEntries.reduce(
+                  (sum: number, e: any) =>
+                    sum + parseFloat(e.estimated_quantity || "0"),
+                  0,
+                );
+                totalCompletion += bioremCompletionQty;
+                continue;
+              }
+
               // Find entries for this specific site activity record by sa.id OR (site + name)
               const saEntries: any[] = [];
               for (const table of entriesByTable) {
@@ -350,8 +394,14 @@ export const workOrderSiteQueryRouter = router({
                 (completion || estimate)?.estimated_quantity || "0",
               );
               totalUsed += bestQty;
+
+              const completionQty = parseFloat(
+                completion?.estimated_quantity || "0",
+              );
+              totalCompletion += completionQty;
             }
             utilizationMap.set(sorId, totalUsed);
+            completionUtilizationMap.set(sorId, totalCompletion);
           }
 
           return activities.map((a) => ({
@@ -359,10 +409,17 @@ export const workOrderSiteQueryRouter = router({
             total_used_quantity: (
               utilizationMap.get(a.schedule_of_rates_id!) || 0
             ).toFixed(2),
+            total_completion_quantity: (
+              completionUtilizationMap.get(a.schedule_of_rates_id!) || 0
+            ).toFixed(2),
           }));
         }
 
-        return activities.map((a) => ({ ...a, total_used_quantity: "0.00" }));
+        return activities.map((a) => ({
+          ...a,
+          total_used_quantity: "0.00",
+          total_completion_quantity: "0.00",
+        }));
       } catch (error) {
         throw fromDatabaseError(error, "Fetching site activities");
       }

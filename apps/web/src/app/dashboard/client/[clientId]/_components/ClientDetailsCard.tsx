@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from "react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
@@ -24,6 +24,7 @@ import TotalSitesDialog from "./client-stats/client-stats-dialogs/TotalSitesDial
 import CompletedWODialog from "./client-stats/client-stats-dialogs/CompletedWODialog";
 import TotalExpenseDialog from "./client-stats/client-stats-dialogs/TotalExpenseDialog";
 import TotalBudgetDialog from "./client-stats/client-stats-dialogs/TotalBudgetDialog";
+import useHandleParams from "@/hooks/useHandleParams";
 
 interface Props {
   clientId: string;
@@ -92,6 +93,8 @@ const ClientDetailsCard = ({ clientId }: Props) => {
 
   const [showFullGst, setShowFullGst] = useState(false);
 
+  const { setParam } = useHandleParams();
+
   // Fetch client data with proper typing
   const {
     data: clientData,
@@ -102,6 +105,12 @@ const ClientDetailsCard = ({ clientId }: Props) => {
     { clientId: Number(clientId) },
     { enabled: !!clientId },
   );
+
+  useEffect(() => {
+    if (clientData?.client) {
+      setParam("name", clientData.client.name);
+    }
+  }, [clientData?.client, setParam]);
 
   // Memoized helper functions
   const formatDate = useCallback((d?: string): string => {

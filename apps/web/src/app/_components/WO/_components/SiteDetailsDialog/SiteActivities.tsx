@@ -62,6 +62,7 @@ const PhaseForm = ({
     rate?: string | null;
     sor_estimated_quantity?: string | null;
     total_used_quantity?: string | null;
+    total_completion_quantity?: string | null;
   }[];
   getActivityData: (
     activityKey: string,
@@ -127,10 +128,16 @@ const PhaseForm = ({
     activities.forEach((activity) => {
       const isBioremActivity =
         activity.activity === "biorem_cont_soil" ||
-        activity.activity === constants.WO_ACTIVITIES.BIOREMEDIATION_OIL_CONTAMINATED_SOIL;
+        activity.activity ===
+          constants.WO_ACTIVITIES.BIOREMEDIATION_OIL_CONTAMINATED_SOIL;
 
       // For bioremediation completion phase, auto-fill from oil zapping total
-      if (isBioremediation && phase === "completion" && isBioremActivity && totalOilZappingQty > 0) {
+      if (
+        isBioremediation &&
+        phase === "completion" &&
+        isBioremActivity &&
+        totalOilZappingQty > 0
+      ) {
         const rate = parseFloat(activity.rate || "0");
         const autoAmount = (totalOilZappingQty * rate).toFixed(2);
         newFormData[activity.activity] = {
@@ -139,7 +146,11 @@ const PhaseForm = ({
           transportation_km: "",
         };
       } else {
-        const data = getActivityData(activity.activity, phase, isBioremediation);
+        const data = getActivityData(
+          activity.activity,
+          phase,
+          isBioremediation,
+        );
         if (data) {
           newFormData[activity.activity] = {
             estimated_quantity: data.estimated_quantity?.toString() || "",
@@ -156,7 +167,13 @@ const PhaseForm = ({
       }
     });
     setFormData(newFormData);
-  }, [activities, phase, getActivityData, isBioremediation, totalOilZappingQty]);
+  }, [
+    activities,
+    phase,
+    getActivityData,
+    isBioremediation,
+    totalOilZappingQty,
+  ]);
 
   const handleChange = (
     activityKey: string,
@@ -243,26 +260,23 @@ const PhaseForm = ({
       return;
     }
 
-    // --- Validation: Check quantity against SOR ---
+    // --- Validation: Check quantity against SOR (based on completion quantities) ---
     const exceedingQuantityActivities: string[] = [];
     activities.forEach((activity) => {
       const data = formData[activity.activity];
       if (data && activity.sor_estimated_quantity) {
         const enteringQty = parseFloat(data.estimated_quantity) || 0;
         const sorQty = parseFloat(activity.sor_estimated_quantity) || 0;
-        const totalUsed = parseFloat(activity.total_used_quantity || "0");
-        const currentSiteSavedQty = parseFloat(
-          getActivityData(
-            activity.activity,
-            phase,
-            isBioremediation,
-          )?.estimated_quantity?.toString() || "0",
+        const totalCompletionUsed = parseFloat(
+          activity.total_completion_quantity || "0",
         );
+        const availableForThisSite = sorQty - totalCompletionUsed;
 
-        const availableForThisSite = sorQty - (totalUsed - currentSiteSavedQty);
-
-        // Add a small buffer for precision errors if needed, but 0.01 is usually enough
-        if (enteringQty > availableForThisSite + 0.001) {
+        // Only enforce SOR limit on completion phase
+        if (
+          phase === "completion" &&
+          enteringQty > availableForThisSite + 0.001
+        ) {
           exceedingQuantityActivities.push(
             `${formatName(activity.activity)} (Available: ${availableForThisSite.toFixed(2)})`,
           );
@@ -566,181 +580,245 @@ const PhaseForm = ({
           renderDocumentSection(phase, file, setFile)
         )}
       </div>
+      {/* SOR Availability Summary */}
+      {activities.some((a) => a.sor_estimated_quantity) && (
+        <div className='rounded-lg border border-slate-200 bg-white/60 overflow-hidden'>
+          <div className='px-3 py-2 bg-slate-100/80 border-b border-slate-200 flex items-center gap-1.5'>
+            <span className='text-[10px] font-semibold uppercase tracking-wider text-slate-500'>
+              SOR Availability (Based on Completion)
+            </span>
+          </div>
+          <div className='divide-y divide-slate-100'>
+            {activities
+              .filter((a) => a.sor_estimated_quantity)
+              .map((activity) => {
+                const sorQty = parseFloat(
+                  activity.sor_estimated_quantity || "0",
+                );
+                const completionUsed = parseFloat(
+                  activity.total_completion_quantity || "0",
+                );
+                const available = sorQty - completionUsed;
+                const usedPct =
+                  sorQty > 0
+                    ? Math.min(100, (completionUsed / sorQty) * 100)
+                    : 0;
+                return (
+                  <div
+                    key={activity.id}
+                    className='px-3 py-2'>
+                    <div className='flex items-center justify-between mb-1'>
+                      <span className='text-[11px] font-medium text-slate-700'>
+                        {formatName(activity.activity)}
+                      </span>
+                      <div className='flex items-center gap-3 text-[10px]'>
+                        <span className='text-slate-400'>
+                          SOR:{" "}
+                          <span className='font-medium text-slate-600'>
+                            {sorQty.toFixed(2)} {activity.unit || "Nos"}
+                          </span>
+                        </span>
+                        <span className='text-amber-600'>
+                          Completed:{" "}
+                          <span className='font-semibold'>
+                            {completionUsed.toFixed(2)}
+                          </span>
+                        </span>
+                        <span
+                          className={
+                            available < 0 ? "text-red-600" : "text-emerald-600"
+                          }>
+                          Available:{" "}
+                          <span className='font-bold'>
+                            {available.toFixed(2)}
+                          </span>
+                        </span>
+                      </div>
+                    </div>
+                    <div className='h-1.5 bg-slate-100 rounded-full overflow-hidden'>
+                      <div
+                        className={`h-full rounded-full transition-all ${usedPct >= 100 ? "bg-red-400" : usedPct >= 80 ? "bg-amber-400" : "bg-emerald-400"}`}
+                        style={{ width: `${Math.min(100, usedPct)}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      )}
       {(() => {
         const hasTransportActivity = activities.some(
           (a) => a.activity === "trans_cont_soil",
         );
         return (
-      <div className='border rounded-lg overflow-hidden bg-white/50 border-slate-200 shadow-xs'>
-        <Table className='w-full text-xs'>
-          <TableHeader className='bg-gray-200/50'>
-            <TableRow className='border-b border-slate-200 hover:bg-transparent'>
-              <TableHead className='px-4 py-3 text-left border-r border-slate-200 w-[30%] text-slate-600 font-semibold h-auto'>
-                Activity Name
-              </TableHead>
-              <TableHead className='px-2 py-3 text-center border-r border-slate-200 w-[10%] text-slate-600 font-semibold h-auto'>
-                Unit
-              </TableHead>
-              <TableHead className='px-2 py-3 text-center border-r border-slate-200 w-[15%] text-slate-600 font-semibold h-auto'>
-                Rate
-              </TableHead>
-              <TableHead className='px-2 py-3 text-center border-r border-slate-200 w-[15%] text-slate-600 font-semibold h-auto'>
-                Est. Qty
-              </TableHead>
-              <TableHead className={`px-2 py-3 text-center ${hasTransportActivity ? 'border-r border-slate-200' : ''} w-[15%] text-slate-600 font-semibold h-auto`}>
-                Amount
-              </TableHead>
-              {hasTransportActivity && (
-              <TableHead className='px-2 py-3 text-center w-[15%] text-slate-600 font-semibold h-auto'>
-                Transport (KM)
-              </TableHead>
-              )}
-            </TableRow>
-          </TableHeader>
-          <TableBody className='divide-y divide-slate-200 bg-white/40'>
-            {activities.map((activity) => {
-              const currentData = formData[activity.activity] || {
-                estimated_quantity: "",
-                amount: "",
-                transportation_km: "",
-              };
-
-              const isTransportActivity =
-                activity.activity === "trans_cont_soil";
-
-              const isBioremActivity =
-                isBioremediation &&
-                (activity.activity === "biorem_cont_soil" ||
-                  activity.activity === constants.WO_ACTIVITIES.BIOREMEDIATION_OIL_CONTAMINATED_SOIL);
-
-              // Auto-fill from oil zapping on completion phase
-              const isAutoFilledFromZapping =
-                isBioremActivity && phase === "completion" && totalOilZappingQty > 0;
-
-              // Check if exceeded: compare oil zapping total vs estimate phase quantity
-              const estimatePhaseData = isBioremActivity
-                ? getActivityData(activity.activity, "estimate_sub-wo" as DocType, true)
-                : undefined;
-              const estimateQty = parseFloat(estimatePhaseData?.estimated_quantity?.toString() || "0");
-              const exceededQty = isAutoFilledFromZapping && estimateQty > 0
-                ? totalOilZappingQty - estimateQty
-                : 0;
-
-              return (
-                <TableRow
-                  key={activity.id}
-                  className='group hover:bg-slate-50/50 transition-colors border-slate-200'>
-                  <TableCell className='px-4 py-2 border-r border-slate-200 font-medium text-slate-700 bg-slate-50/30'>
-                    {formatName(activity.activity)}
-                  </TableCell>
-                  <TableCell className='px-2 py-2 border-r border-slate-200 text-center text-slate-500 bg-slate-50/20'>
-                    {activity.unit || "Nos"}
-                  </TableCell>
-                  <TableCell className='px-2 py-2 border-r border-slate-200 text-center text-emerald-600 font-medium bg-emerald-50/20'>
-                    {activity.rate || "0.00"}
-                  </TableCell>
-                  <TableCell className='p-0 border-r border-slate-200'>
-                    <Input
-                      value={currentData.estimated_quantity}
-                      onChange={(e) =>
-                        handleChange(
-                          activity.activity,
-                          "estimated_quantity",
-                          e.target.value,
-                        )
-                      }
-                      readOnly={isAutoFilledFromZapping}
-                      className={`h-10 w-full border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 px-3 text-center text-xs placeholder:text-slate-300 ${isAutoFilledFromZapping ? 'bg-blue-50/60 text-blue-700 font-semibold cursor-default' : 'bg-transparent'}`}
-                      placeholder={
-                        activity.sor_estimated_quantity
-                          ? `Max: ${activity.sor_estimated_quantity}`
-                          : "0.00"
-                      }
-                    />
-                    {isAutoFilledFromZapping && (
-                      <div className='px-2 py-1.5 flex flex-col gap-1 text-xs border-t border-blue-100 bg-blue-50/40'>
-                        <div className='flex justify-between text-blue-600'>
-                          <span className='opacity-70'>Oil Zapping Total:</span>
-                          <span className='font-medium'>{totalOilZappingQty.toFixed(2)}</span>
-                        </div>
-                        {estimateQty > 0 && (
-                          <div className='flex justify-between text-slate-500'>
-                            <span className='opacity-70'>Estimate Qty:</span>
-                            <span className='font-medium'>{estimateQty.toFixed(2)}</span>
-                          </div>
-                        )}
-                        {exceededQty > 0 && (
-                          <div className='flex justify-between border-t border-red-200/60 pt-1 mt-0.5'>
-                            <span className='font-semibold text-red-600'>Exceeded:</span>
-                            <span className='text-red-600 font-bold'>+{exceededQty.toFixed(2)}</span>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                    {activity.sor_estimated_quantity && (
-                      <div className='px-2 py-1.5 flex flex-col gap-1 text-xs border-t border-slate-100 bg-slate-50/40'>
-                        <div className='flex justify-between text-slate-500'>
-                          <span className='opacity-70'>SOR Total:</span>
-                          <span className='font-medium'>
-                            {activity.sor_estimated_quantity}
-                          </span>
-                        </div>
-                        <div className='flex justify-between'>
-                          <span className='opacity-70'>All Sites:</span>
-                          <span className='text-amber-600 font-medium'>
-                            {activity.total_used_quantity || "0.00"}
-                          </span>
-                        </div>
-                        <div className='flex justify-between border-t border-slate-200/60 pt-1 mt-0.5'>
-                          <span className='font-semibold text-slate-600'>
-                            Available:
-                          </span>
-                          <span className='text-emerald-600 font-bold'>
-                            {(
-                              parseFloat(activity.sor_estimated_quantity) -
-                              parseFloat(activity.total_used_quantity || "0")
-                            ).toFixed(2)}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell className='p-0 border-r border-slate-200'>
-                    <Input
-                      value={currentData.amount}
-                      readOnly
-                      className='h-10 w-full border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-slate-50/50 px-3 text-center text-xs font-semibold text-slate-700 placeholder:text-slate-300'
-                      placeholder='0.00'
-                    />
-                  </TableCell>
+          <div className='border rounded-lg overflow-hidden bg-white/50 border-slate-200 shadow-xs'>
+            <Table className='w-full text-xs'>
+              <TableHeader className='bg-gray-200/50'>
+                <TableRow className='border-b border-slate-200 hover:bg-transparent'>
+                  <TableHead className='px-4 py-3 text-left border-r border-slate-200 w-[30%] text-slate-600 font-semibold h-auto'>
+                    Activity Name
+                  </TableHead>
+                  <TableHead className='px-2 py-3 text-center border-r border-slate-200 w-[10%] text-slate-600 font-semibold h-auto'>
+                    Unit
+                  </TableHead>
+                  <TableHead className='px-2 py-3 text-center border-r border-slate-200 w-[15%] text-slate-600 font-semibold h-auto'>
+                    Rate
+                  </TableHead>
+                  <TableHead className='px-2 py-3 text-center border-r border-slate-200 w-[15%] text-slate-600 font-semibold h-auto'>
+                    Est. Qty
+                  </TableHead>
+                  <TableHead
+                    className={`px-2 py-3 text-center ${hasTransportActivity ? "border-r border-slate-200" : ""} w-[15%] text-slate-600 font-semibold h-auto`}>
+                    Amount
+                  </TableHead>
                   {hasTransportActivity && (
-                  <TableCell className='p-0'>
-                    {isTransportActivity ? (
-                      <Input
-                        value={currentData.transportation_km}
-                        onChange={(e) =>
-                          handleChange(
-                            activity.activity,
-                            "transportation_km",
-                            e.target.value,
-                          )
-                        }
-                        className='h-10 w-full border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent px-3 text-center text-xs placeholder:text-slate-300'
-                        placeholder='0.00'
-                      />
-                    ) : (
-                      <div className='flex items-center justify-center h-10 text-slate-400'>
-                        -
-                      </div>
-                    )}
-                  </TableCell>
+                    <TableHead className='px-2 py-3 text-center w-[15%] text-slate-600 font-semibold h-auto'>
+                      Transport (KM)
+                    </TableHead>
                   )}
                 </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </div>
+              </TableHeader>
+              <TableBody className='divide-y divide-slate-200 bg-white/40'>
+                {activities.map((activity) => {
+                  const currentData = formData[activity.activity] || {
+                    estimated_quantity: "",
+                    amount: "",
+                    transportation_km: "",
+                  };
+
+                  const isTransportActivity =
+                    activity.activity === "trans_cont_soil";
+
+                  const isBioremActivity =
+                    isBioremediation &&
+                    (activity.activity === "biorem_cont_soil" ||
+                      activity.activity ===
+                        constants.WO_ACTIVITIES
+                          .BIOREMEDIATION_OIL_CONTAMINATED_SOIL);
+
+                  // Auto-fill from oil zapping on completion phase
+                  const isAutoFilledFromZapping =
+                    isBioremActivity &&
+                    phase === "completion" &&
+                    totalOilZappingQty > 0;
+
+                  // Check if exceeded: compare oil zapping total vs estimate phase quantity
+                  const estimatePhaseData = isBioremActivity
+                    ? getActivityData(
+                        activity.activity,
+                        "estimate_sub-wo" as DocType,
+                        true,
+                      )
+                    : undefined;
+                  const estimateQty = parseFloat(
+                    estimatePhaseData?.estimated_quantity?.toString() || "0",
+                  );
+                  const exceededQty =
+                    isAutoFilledFromZapping && estimateQty > 0
+                      ? totalOilZappingQty - estimateQty
+                      : 0;
+
+                  return (
+                    <TableRow
+                      key={activity.id}
+                      className='group hover:bg-slate-50/50 transition-colors border-slate-200'>
+                      <TableCell className='px-4 py-2 border-r border-slate-200 font-medium text-slate-700 bg-slate-50/30'>
+                        {formatName(activity.activity)}
+                      </TableCell>
+                      <TableCell className='px-2 py-2 border-r border-slate-200 text-center text-slate-500 bg-slate-50/20'>
+                        {activity.unit || "Nos"}
+                      </TableCell>
+                      <TableCell className='px-2 py-2 border-r border-slate-200 text-center text-emerald-600 font-medium bg-emerald-50/20'>
+                        {activity.rate || "0.00"}
+                      </TableCell>
+                      <TableCell className='p-0 border-r border-slate-200'>
+                        <Input
+                          value={currentData.estimated_quantity}
+                          onChange={(e) =>
+                            handleChange(
+                              activity.activity,
+                              "estimated_quantity",
+                              e.target.value,
+                            )
+                          }
+                          readOnly={isAutoFilledFromZapping}
+                          className={`h-10 w-full border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 px-3 text-center text-xs placeholder:text-slate-300 ${isAutoFilledFromZapping ? "bg-blue-50/60 text-blue-700 font-semibold cursor-default" : "bg-transparent"}`}
+                          placeholder={
+                            activity.sor_estimated_quantity
+                              ? `Max: ${activity.sor_estimated_quantity}`
+                              : "0.00"
+                          }
+                        />
+                        {isAutoFilledFromZapping && (
+                          <div className='px-2 py-1.5 flex flex-col gap-1 text-xs border-t border-blue-100 bg-blue-50/40'>
+                            <div className='flex justify-between text-blue-600'>
+                              <span className='opacity-70'>
+                                Oil Zapping Total:
+                              </span>
+                              <span className='font-medium'>
+                                {totalOilZappingQty.toFixed(2)}
+                              </span>
+                            </div>
+                            {estimateQty > 0 && (
+                              <div className='flex justify-between text-slate-500'>
+                                <span className='opacity-70'>
+                                  Estimate Qty:
+                                </span>
+                                <span className='font-medium'>
+                                  {estimateQty.toFixed(2)}
+                                </span>
+                              </div>
+                            )}
+                            {exceededQty > 0 && (
+                              <div className='flex justify-between border-t border-red-200/60 pt-1 mt-0.5'>
+                                <span className='font-semibold text-red-600'>
+                                  Exceeded:
+                                </span>
+                                <span className='text-red-600 font-bold'>
+                                  +{exceededQty.toFixed(2)}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell className='p-0 border-r border-slate-200'>
+                        <Input
+                          value={currentData.amount}
+                          readOnly
+                          className='h-10 w-full border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-slate-50/50 px-3 text-center text-xs font-semibold text-slate-700 placeholder:text-slate-300'
+                          placeholder='0.00'
+                        />
+                      </TableCell>
+                      {hasTransportActivity && (
+                        <TableCell className='p-0'>
+                          {isTransportActivity ? (
+                            <Input
+                              value={currentData.transportation_km}
+                              onChange={(e) =>
+                                handleChange(
+                                  activity.activity,
+                                  "transportation_km",
+                                  e.target.value,
+                                )
+                              }
+                              className='h-10 w-full border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent px-3 text-center text-xs placeholder:text-slate-300'
+                              placeholder='0.00'
+                            />
+                          ) : (
+                            <div className='flex items-center justify-center h-10 text-slate-400'>
+                              -
+                            </div>
+                          )}
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
         );
       })()}
 

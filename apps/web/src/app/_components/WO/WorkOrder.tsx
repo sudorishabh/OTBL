@@ -5,19 +5,7 @@ import { trpc } from "@/lib/trpc";
 import { capitalFirstLetter } from "@pkg/utils";
 import { useRouter } from "next/navigation";
 import WorkOrderDetailsCard from "./_components/WorkOrderDetailsCard";
-import {
-  Calendar,
-  File,
-  MapPin,
-  Clock,
-  Users,
-  ArrowRight,
-  Plus,
-  Rows4,
-  Rows3,
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { format } from "date-fns";
+import { File, Plus, Rows3 } from "lucide-react";
 import ScheduleOfRatesTable from "./_components/ScheduleOfRatesTable";
 import CreateWorkOrderSiteDialog from "./_components/CreateWOSite/CreateWorkOrderSiteDialog";
 import SiteDetailDialog from "./_components/SiteDetailsDialog/SiteDetailsDialog";
