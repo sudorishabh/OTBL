@@ -29,8 +29,8 @@ const bioSampleSchema = z.object({
 });
 
 const oilZappingSchema = z.object({
+  document_url: z.string().min(1, "URL Required"),
   estimated_quantity: z.string().min(1, "Required"),
-  intended_quantity: z.string().min(1, "Required"),
 });
 
 // Bioremediation Form Schema
@@ -274,8 +274,8 @@ export const SitePhaseForm = ({
                 text='Add Zapping'
                 onClick={() =>
                   appendZapping({
+                    document_url: "",
                     estimated_quantity: "",
-                    intended_quantity: "",
                   })
                 }
               />
@@ -285,20 +285,19 @@ export const SitePhaseForm = ({
                 <div
                   key={field.id}
                   className='grid grid-cols-12 gap-2 items-start'>
-                  <div className='col-span-5'>
+                  <div className='col-span-10'>
+                    <CustomInput
+                      control={control as any}
+                      fieldName={`oil_zapping.${index}.document_url`}
+                      Label='Document URL'
+                      placeholder='https://...'
+                    />
+                  </div>
+                  <div className='col-span-10'>
                     <CustomInput
                       control={control as any}
                       fieldName={`oil_zapping.${index}.estimated_quantity`}
                       Label='Estimated Qty'
-                      type='number'
-                      placeholder='0.00'
-                    />
-                  </div>
-                  <div className='col-span-5'>
-                    <CustomInput
-                      control={control as any}
-                      fieldName={`oil_zapping.${index}.intended_quantity`}
-                      Label='Intended Qty'
                       type='number'
                       placeholder='0.00'
                     />

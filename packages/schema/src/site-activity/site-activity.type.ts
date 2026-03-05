@@ -17,7 +17,7 @@ export interface ActivityDataEntry {
   estimated_quantity: string;
   amount: string | null;
   transportation_km: string | null;
-  type: "sub_wo" | "estimate" | "expense";
+  type: "sub_wo" | "estimate" | "completion";
 }
 
 export interface WorkOrderSiteDetails {
@@ -58,5 +58,5 @@ export interface WorkOrderSiteDetails {
 export interface ActivityDataByPhase {
   sub_wo: ActivityDataEntry[];
   estimate: ActivityDataEntry[];
-  expense: ActivityDataEntry[];
+  completion: ActivityDataEntry[];
 }

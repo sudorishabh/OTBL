@@ -29,7 +29,7 @@ const formatCurrency = (amount: string | number) => {
 
 const ProposalCard = ({ proposal }: Props) => {
   const { setParams } = useHandleParams();
-  const isApproved = proposal?.status === "approved";
+  // const isApproved = proposal?.status === "approved";
 
   return (
     <div
@@ -49,12 +49,20 @@ const ProposalCard = ({ proposal }: Props) => {
           {/* Status Badge */}
           <div
             className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
-              isApproved
+              proposal.status === "approved"
                 ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
-                : "bg-amber-50 text-amber-700 ring-1 ring-amber-200"
+                : proposal.status === "pending"
+                  ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200"
+                  : proposal.status === "rejected"
+                    ? "bg-red-50 text-red-700 ring-1 ring-red-200"
+                    : "bg-gray-50 text-gray-700 ring-1 ring-gray-200"
             }`}>
-            {isApproved ? (
+            {proposal.status === "approved" ? (
               <CheckCircle2 className='w-3 h-3' />
+            ) : proposal.status === "pending" ? (
+              <Clock className='w-3 h-3' />
+            ) : proposal.status === "rejected" ? (
+              <XCircle className='w-3 h-3' />
             ) : (
               <XCircle className='w-3 h-3' />
             )}
@@ -67,15 +75,15 @@ const ProposalCard = ({ proposal }: Props) => {
       </div>
 
       {/* Title */}
-      <h3 className='text-sm font-semibold leading-snug text-slate-900 line-clamp-2 mb-2'>
+      <h3 className='text-sm font-semibold leading-snug text-gray-800 line-clamp-2 mb-2'>
         {capitalFirstLetter(proposal?.title)}
       </h3>
 
       {/* Info Grid */}
       <div className='grid grid-cols-2 gap-2 mb-3'>
         {/* Proposal Amount */}
-        <div className='flex items-center gap-2 rounded-md border border-gray-100 bg-gradient-to-r from-emerald-50/50 to-transparent px-2.5 py-2'>
-          <IndianRupee className='w-4 h-4 text-emerald-600 flex-shrink-0' />
+        <div className='flex items-center gap-2 rounded-md border border-gray-100 bg-linear-to-r from-emerald-50/50 to-transparent px-2.5 py-2'>
+          <IndianRupee className='w-4 h-4 text-emerald-600 shrink-0' />
           <div className='min-w-0'>
             <div className='text-[10px] uppercase tracking-wider text-gray-500'>
               Amount
@@ -89,8 +97,8 @@ const ProposalCard = ({ proposal }: Props) => {
         </div>
 
         {/* Submission Date */}
-        <div className='flex items-center gap-2 rounded-md border border-gray-100 bg-gradient-to-r from-blue-50/50 to-transparent px-2.5 py-2'>
-          <CalendarDays className='w-4 h-4 text-blue-600 flex-shrink-0' />
+        <div className='flex items-center gap-2 rounded-md border border-gray-100 bg-linear-to-r from-blue-50/50 to-transparent px-2.5 py-2'>
+          <CalendarDays className='w-4 h-4 text-emerald-600 shrink-0' />
           <div className='min-w-0'>
             <div className='text-[10px] uppercase tracking-wider text-gray-500'>
               Submitted

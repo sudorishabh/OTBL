@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, desc, and, inArray } from "drizzle-orm";
 import { schema } from "@pkg/db";
 import { router } from "../../trpc";
 import { publicProcedure } from "../../core";
@@ -25,6 +25,7 @@ const {
   workOrderTable,
   siteActivityTable,
   workOrderSiteDocsTable,
+  scheduleOfRatesTable,
   bioremediationContSoilTable,
   bioSampleTable,
   bioOilZappingTable,
@@ -36,6 +37,38 @@ const {
 } = schema;
 
 export const workOrderSiteQueryRouter = router({
+  // Get measurement sheets for a work order site
+  getMeasurementSheets: publicProcedure
+    .input(
+      z.object({
+        work_order_site_id: z.number().positive(),
+      }),
+    )
+    .query(
+      handleQuery(async ({ input, ctx }) => {
+        const { work_order_site_id } = input;
+
+        try {
+          const sheets = await ctx.db
+            .select()
+            .from(workOrderSiteDocsTable)
+            .where(
+              and(
+                eq(
+                  workOrderSiteDocsTable.work_order_site_id,
+                  work_order_site_id,
+                ),
+                eq(workOrderSiteDocsTable.type, "measurement_sheet"),
+              ),
+            );
+
+          return sheets;
+        } catch (error) {
+          throw fromDatabaseError(error, "Fetching measurement sheets");
+        }
+      }),
+    ),
+
   // Get work order site details with all information
   getWorkOrderSiteDetails: publicProcedure
     .input(getWorkOrderSiteDetailsSchema)
@@ -142,11 +175,194 @@ export const workOrderSiteQueryRouter = router({
 
       try {
         const activities = await ctx.db
-          .select()
+          .select({
+            id: siteActivityTable.id,
+            work_order_site_id: siteActivityTable.work_order_site_id,
+            schedule_of_rates_id: siteActivityTable.schedule_of_rates_id,
+            activity: siteActivityTable.activity,
+            unit: siteActivityTable.unit,
+            created_at: siteActivityTable.created_at,
+            updated_at: siteActivityTable.updated_at,
+            rate: scheduleOfRatesTable.unit_rate_inc_gst,
+            sor_estimated_quantity: scheduleOfRatesTable.estimated_quantity,
+          })
           .from(siteActivityTable)
+          .leftJoin(
+            scheduleOfRatesTable,
+            eq(siteActivityTable.schedule_of_rates_id, scheduleOfRatesTable.id),
+          )
           .where(eq(siteActivityTable.work_order_site_id, work_order_site_id));
 
-        return activities;
+        if (activities.length === 0) return [];
+
+        const sorIds = activities
+          .map((a) => a.schedule_of_rates_id)
+          .filter(Boolean) as number[];
+
+        // Get all site activity IDs for these SOR IDs
+        const allSiteActivities = await ctx.db
+          .select({
+            id: siteActivityTable.id,
+            schedule_of_rates_id: siteActivityTable.schedule_of_rates_id,
+          })
+          .from(siteActivityTable)
+          .where(inArray(siteActivityTable.schedule_of_rates_id, sorIds));
+
+        const saIds = allSiteActivities.map((sa) => sa.id);
+
+        if (saIds.length > 0) {
+          // Fetch all possible work order sites related to the same work order
+          const relatedSites = await ctx.db
+            .select({
+              id: workOrderSiteTable.id,
+            })
+            .from(workOrderSiteTable)
+            .where(
+              inArray(
+                workOrderSiteTable.work_order_id,
+                ctx.db
+                  .select({ id: workOrderTable.id })
+                  .from(workOrderTable)
+                  .where(
+                    inArray(
+                      workOrderTable.id,
+                      ctx.db
+                        .select({ id: scheduleOfRatesTable.work_order_id })
+                        .from(scheduleOfRatesTable)
+                        .where(inArray(scheduleOfRatesTable.id, sorIds)),
+                    ),
+                  ),
+              ),
+            );
+
+          const siteIds = relatedSites.map((s) => s.id);
+
+          // Fetch quantities from all child tables using site IDs
+          const [q1, q2, q3, q4, q5, q6] = await Promise.all([
+            ctx.db
+              .select()
+              .from(cleaningUpSoilAreaTable)
+              .where(
+                inArray(cleaningUpSoilAreaTable.work_order_site_id, siteIds),
+              ),
+            ctx.db
+              .select()
+              .from(liftingRecoveryOilSlushTable)
+              .where(
+                inArray(
+                  liftingRecoveryOilSlushTable.work_order_site_id,
+                  siteIds,
+                ),
+              ),
+            ctx.db
+              .select()
+              .from(excavationContSoilTable)
+              .where(
+                inArray(excavationContSoilTable.work_order_site_id, siteIds),
+              ),
+            ctx.db
+              .select()
+              .from(transportationContSoilTable)
+              .where(
+                inArray(
+                  transportationContSoilTable.work_order_site_id,
+                  siteIds,
+                ),
+              ),
+            ctx.db
+              .select()
+              .from(refillingExcavatedContSoilTable)
+              .where(
+                inArray(
+                  refillingExcavatedContSoilTable.work_order_site_id,
+                  siteIds,
+                ),
+              ),
+            ctx.db
+              .select()
+              .from(bioremediationContSoilTable)
+              .where(
+                inArray(
+                  bioremediationContSoilTable.work_order_site_id,
+                  siteIds,
+                ),
+              ),
+          ]);
+
+          const entriesByTable = [
+            {
+              entries: q1,
+              name: "clean_soil_area",
+            },
+            {
+              entries: q2,
+              name: "lifting_oily_slush_or_recovery_of_oil",
+            },
+            {
+              entries: q3,
+              name: "excavation_oil_contaminated_soil",
+            },
+            {
+              entries: q4,
+              name: "transportation_contaminated_soil",
+            },
+            {
+              entries: q5,
+              name: "refilling_excavated_oil_contaminated_soil_land",
+            },
+            {
+              entries: q6,
+              name: "bioremediation_oil_contaminated_soil",
+            },
+          ];
+
+          // For each SOR, sum up best quantity from each of its site_activity_items
+          const utilizationMap = new Map<number, number>();
+
+          for (const sorId of sorIds) {
+            let totalUsed = 0;
+            const relatedSaEntries = await ctx.db
+              .select()
+              .from(siteActivityTable)
+              .where(eq(siteActivityTable.schedule_of_rates_id, sorId));
+
+            for (const sa of relatedSaEntries) {
+              // Find entries for this specific site activity record by sa.id OR (site + name)
+              const saEntries: any[] = [];
+              for (const table of entriesByTable) {
+                const matched = table.entries.filter(
+                  (e) =>
+                    e.site_activity_id === sa.id ||
+                    (e.work_order_site_id === sa.work_order_site_id &&
+                      table.name === sa.activity),
+                );
+                saEntries.push(...matched);
+              }
+
+              if (saEntries.length === 0) continue;
+
+              const completion = saEntries.find((e) => e.type === "completion");
+              const estimate = saEntries.find(
+                (e) => e.type === "estimate_sub-wo",
+              );
+
+              const bestQty = parseFloat(
+                (completion || estimate)?.estimated_quantity || "0",
+              );
+              totalUsed += bestQty;
+            }
+            utilizationMap.set(sorId, totalUsed);
+          }
+
+          return activities.map((a) => ({
+            ...a,
+            total_used_quantity: (
+              utilizationMap.get(a.schedule_of_rates_id!) || 0
+            ).toFixed(2),
+          }));
+        }
+
+        return activities.map((a) => ({ ...a, total_used_quantity: "0.00" }));
       } catch (error) {
         throw fromDatabaseError(error, "Fetching site activities");
       }
@@ -200,7 +416,8 @@ export const workOrderSiteQueryRouter = router({
           const bioSamples = await ctx.db
             .select()
             .from(bioSampleTable)
-            .where(eq(bioSampleTable.work_order_site_id, work_order_site_id));
+            .where(eq(bioSampleTable.work_order_site_id, work_order_site_id))
+            .orderBy(desc(bioSampleTable.id));
 
           // Get oil zapping entries
           const oilZapping = await ctx.db
@@ -208,7 +425,8 @@ export const workOrderSiteQueryRouter = router({
             .from(bioOilZappingTable)
             .where(
               eq(bioOilZappingTable.work_order_site_id, work_order_site_id),
-            );
+            )
+            .orderBy(desc(bioOilZappingTable.id));
 
           return {
             contaminatedSoil,

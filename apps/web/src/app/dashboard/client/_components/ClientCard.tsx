@@ -64,7 +64,7 @@ const ClientCard: React.FC<ClientCardProps> = ({
         <div className='shrink-0 w-64'>
           <div className='flex items-start justify-between gap-3'>
             <div className='flex-1 min-w-0'>
-              <h3 className='text-lg font-bold text-gray-800 group-hover:text-emerald-600 transition-colors line-clamp-1 mb-1'>
+              <h3 className='text-lg font-bold text-gray-700 group-hover:text-emerald-700 transition-colors line-clamp-1 mb-1'>
                 {capitalFirstLetter(client.name)}
               </h3>
               <div className='flex items-center gap-1.5 text-xs text-gray-500'>
@@ -81,7 +81,7 @@ const ClientCard: React.FC<ClientCardProps> = ({
                     variant={
                       client.status === "active" ? "secondary" : "outline"
                     }
-                    className='text-xs'>
+                    className='text-xs bg-gray-100 text-gray-600 '>
                     {capitalFirstLetter(client.status || "N/A")}
                   </Badge>
                 )}
@@ -116,7 +116,8 @@ const ClientCard: React.FC<ClientCardProps> = ({
                 {client.address || "-"}
               </p>
               <p className='text-xs text-gray-600'>
-                {client.city}, {client.state} - {client.pincode}
+                {capitalFirstLetter(client.city || "-")},{" "}
+                {capitalFirstLetter(client.state || "-")} - {client.pincode}
               </p>
             </div>
           </div>
@@ -124,8 +125,8 @@ const ClientCard: React.FC<ClientCardProps> = ({
           {/* Contact */}
           <div className='space-y-2'>
             <div className='flex items-center gap-2 mb-2'>
-              <div className='p-1.5 bg-blue-50 rounded-lg group-hover:bg-blue-100 transition-colors'>
-                <PhoneIcon className='h-4 w-4 text-blue-600' />
+              <div className='p-1.5 bg-emerald-50 rounded-lg group-hover:bg-emerald-100 transition-colors'>
+                <PhoneIcon className='h-4 w-4 text-emerald-600' />
               </div>
               <span className='text-xs font-semibold text-gray-600 uppercase tracking-wider'>
                 Contact
@@ -135,14 +136,14 @@ const ClientCard: React.FC<ClientCardProps> = ({
               <a
                 href={`tel:${client.contact_number}`}
                 onClick={(e) => e.stopPropagation()}
-                className='flex items-center gap-1.5 text-sm text-emerald-600 hover:text-emerald-700 transition-colors font-medium'>
+                className='flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-700 transition-colors font-medium'>
                 <PhoneIcon className='h-3.5 w-3.5' />
                 {client.contact_number || "-"}
               </a>
               <a
                 href={`mailto:${client.email}`}
                 onClick={(e) => e.stopPropagation()}
-                className='flex items-center gap-1.5 text-xs text-blue-600 hover:text-blue-700 transition-colors truncate'
+                className='flex items-center gap-1.5 text-xs text-gray-600 hover:text-gray-700 transition-colors truncate'
                 title={client.email}>
                 <MailIcon className='h-3.5 w-3.5' />
                 {client.email || "-"}
@@ -158,7 +159,7 @@ const ClientCard: React.FC<ClientCardProps> = ({
         <div className='shrink-0 w-80'>
           <div className='flex items-center gap-2 mb-3'>
             <div className='p-1.5 bg-purple-50 rounded-lg group-hover:bg-purple-100 transition-colors'>
-              <FileText className='h-4 w-4 text-purple-600' />
+              <FileText className='h-4 w-4 text-emerald-600' />
             </div>
             <span className='text-xs font-semibold text-gray-600 uppercase tracking-wider'>
               Work Info

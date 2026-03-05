@@ -8,7 +8,7 @@ import {
 } from "../validators";
 
 // Activity Phase enum - the three phases for activity data
-export const activityPhaseEnum = z.enum(["sub_wo", "estimate", "expense"]);
+export const activityPhaseEnum = z.enum(["sub_wo", "estimate", "completion"]);
 
 // Activity types from schedule of rates
 export const activityTypeEnum = z.enum([

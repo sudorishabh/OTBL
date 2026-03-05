@@ -75,6 +75,7 @@ interface CommonProps {
   isTextArea?: boolean;
   isDate?: boolean;
   className?: string;
+  isWhiteBg?: boolean;
 }
 
 type Props<TFieldValues extends FieldValues = FieldValues> = CommonProps &
@@ -101,7 +102,9 @@ const Input = <TFieldValues extends FieldValues = FieldValues>(
     formatDisplay,
     parseValue,
     className,
+    isWhiteBg,
   } = props;
+  const commonInputStyles = isWhiteBg ? "bg-white" : "bg-gray-100/50";
 
   const mode = props.mode ?? (props.control ? "form" : "standalone");
 
@@ -113,14 +116,15 @@ const Input = <TFieldValues extends FieldValues = FieldValues>(
       return (
         <Select
           key={`select-${value || "empty"}`}
-          value={value || ""}
+          value={formatDisplay ? formatDisplay(value) : value?.toString() || ""}
           onValueChange={(val) => {
-            onChangeHandler(val);
+            const valueToStore = parseValue ? parseValue(val) : val;
+            onChangeHandler(valueToStore);
             onChange?.(val);
           }}
           disabled={disabled}>
           <SelectTrigger
-            className={`w-full bg-white focus:ring-[3px] focus:ring-ring/50 ${className || ""} ${
+            className={`w-full ${commonInputStyles} focus:ring-[3px] focus:ring-ring/50 ${className || ""} ${
               disabled ? "opacity-50 cursor-not-allowed" : ""
             }`}>
             <SelectValue
@@ -144,15 +148,17 @@ const Input = <TFieldValues extends FieldValues = FieldValues>(
       return (
         <Textarea
           autoComplete='off'
-          className={`bg-white ${className || ""} ${
+          className={`${commonInputStyles} ${className || ""} ${
             disabled ? "opacity-50 cursor-not-allowed" : ""
           }`}
           placeholder={placeholder ?? `Enter ${Label?.toLowerCase()}`}
           disabled={disabled}
-          value={value || ""}
+          value={formatDisplay ? formatDisplay(value) : value || ""}
           onChange={(e) => {
-            onChangeHandler(e.target.value);
-            onChange?.(e.target.value);
+            const display = e.target.value;
+            const valueToStore = parseValue ? parseValue(display) : display;
+            onChangeHandler(valueToStore);
+            onChange?.(display);
           }}
         />
       );
@@ -165,7 +171,7 @@ const Input = <TFieldValues extends FieldValues = FieldValues>(
             <Button
               variant='outline'
               disabled={disabled}
-              className={`w-full justify-start text-left font-normal bg-white ${
+              className={`w-full justify-start text-left font-normal ${commonInputStyles} ${
                 !value && "text-muted-foreground"
               } ${className || ""}`}>
               <CalendarIcon className='mr-2 h-4 w-4' />
@@ -211,7 +217,7 @@ const Input = <TFieldValues extends FieldValues = FieldValues>(
           })()}
         <InputComponent
           type={type ?? "text"}
-          className={`${inputIcon ? "pl-10" : ""} bg-white ${
+          className={`${inputIcon ? "pl-10" : ""} ${commonInputStyles} ${
             inputIconButton ? "pr-10" : ""
           } ${className || ""} ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
           placeholder={placeholder ?? `Enter ${Label?.toLowerCase()}`}

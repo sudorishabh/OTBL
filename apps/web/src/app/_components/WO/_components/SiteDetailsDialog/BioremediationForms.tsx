@@ -24,8 +24,8 @@ const bioSampleSchema = z.object({
 });
 
 const oilZappingSchema = z.object({
+  document_url: z.string().min(1, "URL Required"),
   estimated_quantity: z.string().min(1, "Required"),
-  intended_quantity: z.string().min(1, "Required"),
 });
 
 // Form Schemas
@@ -43,7 +43,7 @@ const oilZappingFormSchema = z.object({
 
 interface BaseFormProps {
   workOrderSiteId: number;
-  phase: "sub_wo" | "estimate" | "expense";
+  phase: "estimate_sub-wo" | "completion";
   initialData: any;
   onSuccess: () => void;
 }
@@ -90,7 +90,7 @@ export const ContaminatedSoilForm = ({
   const onSubmit = (values: any) => {
     mutation.mutate({
       work_order_site_id: workOrderSiteId,
-      phase,
+      phase: phase as "estimate_sub-wo" | "completion",
       data: values.data,
     });
   };
@@ -318,8 +318,8 @@ export const OilZappingForm = ({
               text='Add Entry'
               onClick={() =>
                 append({
+                  document_url: "",
                   estimated_quantity: "",
-                  intended_quantity: "",
                 })
               }
             />
@@ -329,20 +329,19 @@ export const OilZappingForm = ({
               <div
                 key={field.id}
                 className='grid grid-cols-12 gap-2 items-start'>
-                <div className='col-span-5'>
+                <div className='col-span-10'>
+                  <CustomInput
+                    control={form.control as any}
+                    fieldName={`data.${index}.document_url`}
+                    Label='Document URL'
+                    placeholder='https://...'
+                  />
+                </div>
+                <div className='col-span-10'>
                   <CustomInput
                     control={form.control as any}
                     fieldName={`data.${index}.estimated_quantity`}
                     Label='Estimated Qty'
-                    type='number'
-                    placeholder='0.00'
-                  />
-                </div>
-                <div className='col-span-5'>
-                  <CustomInput
-                    control={form.control as any}
-                    fieldName={`data.${index}.intended_quantity`}
-                    Label='Intended Qty'
                     type='number'
                     placeholder='0.00'
                   />

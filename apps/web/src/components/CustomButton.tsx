@@ -37,33 +37,33 @@ const CustomButton = ({
   disabled = false,
   loading = false,
 }: Props) => {
-  let varientStyle = "";
-  let varientIconStyle = "";
+  let variantStyle = "";
+  let variantIconStyle = "";
 
   switch (variant) {
     case "primary":
-      varientStyle =
+      variantStyle =
         "bg-emerald-600 text-gray-100 rounded-md cursor-pointer hover:bg-emerald-700/90 shadow-sm transition-all duration-200 hover:shadow-md gap-1.5 h-8.5 text-[0.813rem]";
       break;
     case "secondary":
-      varientStyle =
+      variantStyle =
         "bg-gray-50 text-gray-700 rounded-md cursor-pointer borde hover:bg-gray-200/60 shadow-sm transition-all duration-200 hover:shadow-sm gap-1.5 h-8.5 text-[0.813rem]";
       break;
     case "outline":
-      varientStyle =
-        "bg-white text-gray-800 shadow-none hover:bg-gray-50 cursor-pointer border transition-all duration-200  h-8.5 text-[0.813rem]";
+      variantStyle =
+        "bg-white text-gray-800 shadow-none hover:bg-gray-50 cursor-pointer border border-gray-200 shadow-sm transition-all duration-200  h-8.5 text-[0.813rem]";
       break;
   }
 
   switch (variant) {
     case "primary":
-      varientIconStyle = "size-3.5 text-gray-100";
+      variantIconStyle = "size-3.5 text-gray-100";
       break;
     case "secondary":
-      varientIconStyle = "size-3.5 text-gray-700";
+      variantIconStyle = "size-3.5 text-gray-700";
       break;
     case "outline":
-      varientIconStyle = "size-3.5 text-gray-700";
+      variantIconStyle = "size-3.5 text-gray-700";
       break;
   }
 
@@ -73,7 +73,7 @@ const CustomButton = ({
         <div
           className={cn(
             "h-8 w-8 rounded-full bg-white border group-hover:border-0 flex items-center justify-center group hover:bg-emerald-600 relative cursor-pointer transition-all duration-200 hover:shadow-sm",
-            className
+            className,
           )}
           onClick={onClick}>
           {arrowType === "right" ? (
@@ -90,16 +90,16 @@ const CustomButton = ({
         <Button
           type={type}
           className={cn(
-            varientStyle,
+            variantStyle,
             disabled || loading ? "cursor-not-allowed" : "",
-            className
+            className,
           )}
           onClick={onClick}
           disabled={disabled || loading}>
           {loading && <Loader className='animate-spin' />}
           {Icon && !loading && (
             <Icon
-              className={varientIconStyle}
+              className={variantIconStyle}
               size={16}
             />
           )}

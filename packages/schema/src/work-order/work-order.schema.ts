@@ -27,7 +27,8 @@ export const processTypeEnum = z.enum([
 ]);
 
 // Activity types for schedule of rates
-export const woActivityEnum = z.enum([
+
+export const woActivityNameEnum = z.enum([
   "clean_soil_area",
   "lifting_oily_slush_or_recovery_of_oil",
   "excavation_oil_contaminated_soil",
@@ -36,16 +37,25 @@ export const woActivityEnum = z.enum([
   "bioremediation_oil_contaminated_soil",
 ]);
 
+export const woActivitySchema = z.object({
+  name: woActivityNameEnum,
+  unit: z.string(),
+});
+
+export const woActivitySchemaWithId = woActivitySchema.extend({
+  schedule_of_rate_id: positiveIntValidator,
+});
+
 // Schedule of Rates schema
 export const scheduleOfRateSchema = z.object({
-  activity: woActivityEnum,
+  activity: woActivitySchema,
   unit: z
     .string()
     .min(1, "Unit is required")
     .max(10, "Unit cannot exceed 10 characters"),
-  estimated_quantity: z.number().min(0, "Quantity cannot be negative"),
-  rc_unit_rate: z.number().min(0, "Rate cannot be negative"),
-  gst_percentage: z.number().min(0, "Min 1"),
+  estimated_quantity: z.number().gt(0, "Quantity must be greater than zero"),
+  rc_unit_rate: z.number().gt(0, "Rate must be greater than zero"),
+  gst_percentage: z.number().min(1, "Min 1%"),
   unit_rate_inc_gst: z.number().min(0, "Rate cannot be negative"),
   total_cost: z.number().min(0, "Total cost cannot be negative"),
   transportation_km: z
@@ -133,7 +143,7 @@ export const getAllWorkOrdersPaginatedSchema = z.object({
   workOrderOrder: z.enum(["asc", "desc", "latest", "oldest"]).optional(),
 });
 
-export const addWorkOrderSiteSchema = z.object({
+export const createWorkOrderSiteSchema = z.object({
   work_order_id: positiveIntValidator,
   client_id: positiveIntValidator,
   site_id: positiveIntValidator.optional(), // Optional if creating new site
@@ -146,7 +156,7 @@ export const addWorkOrderSiteSchema = z.object({
   joint_estimate_number: z.string().min(1, "Joint estimate number is required"),
   land_owner_name: z.string().min(1, "Land owner name is required"),
   remarks: z.string().optional(),
-  selected_activities: z.array(z.string()).optional(),
+  selected_activities: z.array(woActivitySchemaWithId).optional(),
   // New Site Fields - conditional validation would be better but simple optional here for payload
   new_site: createSiteSchema.optional(),
 });

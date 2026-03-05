@@ -18,7 +18,13 @@ export const officeMutationRouter = router({
 
       try {
         const { officeId } = await ctx.db.transaction(async (tx) => {
-          const result = await tx.insert(officeTable).values(officeData);
+          const result = await tx.insert(officeTable).values({
+            ...officeData,
+            name: officeData.name.trim().toLowerCase(),
+            city: officeData.city.trim().toLowerCase(),
+            state: officeData.state.trim().toLowerCase(),
+            email: officeData.email.trim().toLowerCase(),
+          });
           const officeId = result[0].insertId;
 
           if (manager_id) {

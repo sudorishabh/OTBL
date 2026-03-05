@@ -56,6 +56,7 @@ const ClientSearchNFilter = ({
         <Input
           mode='standalone'
           type='text'
+          isWhiteBg={true}
           placeholder={
             isClientsTab
               ? "Search clients by name, email, GST, city..."
@@ -74,6 +75,7 @@ const ClientSearchNFilter = ({
           <Input
             mode='standalone'
             isSelect
+            isWhiteBg={true}
             selectOptions={[
               { label: "All Status", value: "all" },
               { label: "Active", value: "active" },

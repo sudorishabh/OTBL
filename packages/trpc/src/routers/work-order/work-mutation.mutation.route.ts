@@ -1,9 +1,14 @@
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { schema } from "@pkg/db";
 import { router } from "../../trpc";
 import { protectedProcedure } from "../../middleware";
 import { workOrderSchemas } from "@pkg/schema";
-import { notFound, validationError, fromDatabaseError } from "../../errors";
+import {
+  notFound,
+  validationError,
+  fromDatabaseError,
+  alreadyExists,
+} from "../../errors";
 import { handleMutation } from "../../helper/typed-handler";
 
 const {
@@ -13,6 +18,7 @@ const {
   scheduleOfRatesTable,
   workOrderSiteTable,
   siteActivityTable,
+  siteTable,
 } = schema;
 
 export const workOrderMutationRouter = router({
@@ -78,7 +84,7 @@ export const workOrderMutationRouter = router({
           if (input.schedule_of_rates && input.schedule_of_rates.length > 0) {
             const scheduleOfRatesData = input.schedule_of_rates.map((sor) => ({
               work_order_id: workOrderId,
-              activity: sor.activity,
+              activity: sor.activity.name,
               unit: sor.unit,
               estimated_quantity: sor.estimated_quantity.toString(),
               rc_unit_rate: sor.rc_unit_rate.toString(),
@@ -129,56 +135,106 @@ export const workOrderMutationRouter = router({
       }),
     ),
 
-  addWorkOrderSite: protectedProcedure
-    .input(workOrderSchemas.addWorkOrderSiteSchema)
+  createWorkOrderSite: protectedProcedure
+    .input(workOrderSchemas.createWorkOrderSiteSchema)
     .mutation(
       handleMutation(async ({ input, ctx }) => {
-        // Validate that site_id is provided
-        if (!input.site_id) {
-          throw validationError("Site ID is required", [
-            { field: "site_id", message: "Site ID is required" },
-          ]);
-        }
+        return await ctx.db.transaction(async (tx) => {
+          let siteId = input.site_id;
 
-        try {
-          // Create the work order site
-          const [result] = await ctx.db.insert(workOrderSiteTable).values({
-            work_order_id: input.work_order_id,
-            client_id: input.client_id,
-            site_id: input.site_id,
-            date: input.date,
-            end_date: input.end_date,
-            process_type: input.process_type,
-            job_number: input.job_number,
-            area: input.area,
-            installation_type: input.installation_type,
-            joint_estimate_number: input.joint_estimate_number,
-            land_owner_name: input.land_owner_name,
-            remarks: input.remarks || "",
-            status: "pending",
-          });
-
-          const workOrderSiteId = result.insertId;
-
-          // Create associated site activities if selected
-          if (
-            input.selected_activities &&
-            input.selected_activities.length > 0
-          ) {
-            const activityValues = input.selected_activities.map(
-              (activity) => ({
-                work_order_site_id: workOrderSiteId,
-                activity: activity,
-              }),
-            );
-
-            await ctx.db.insert(siteActivityTable).values(activityValues);
+          // 1. Handle new site creation if provided
+          if (!siteId && input.new_site) {
+            const [siteResult] = await tx.insert(siteTable).values({
+              ...input.new_site,
+              office_id: (
+                await tx
+                  .select({ office_id: proposalTable.office_id })
+                  .from(workOrderTable)
+                  .innerJoin(
+                    proposalTable,
+                    eq(workOrderTable.proposal_id, proposalTable.id),
+                  )
+                  .where(eq(workOrderTable.id, input.work_order_id))
+              )[0]?.office_id as number,
+            });
+            siteId = siteResult.insertId;
           }
 
-          return { success: true, workOrderSiteId };
-        } catch (error) {
-          throw fromDatabaseError(error, "Adding work order site");
-        }
+          if (!siteId) {
+            throw validationError("Site ID is required", [
+              { field: "site_id", message: "Site ID is required" },
+            ]);
+          }
+
+          // 2. Check if this site is already assigned to this work order
+          const existingAssignment = await tx
+            .select()
+            .from(workOrderSiteTable)
+            .where(
+              and(
+                eq(workOrderSiteTable.work_order_id, input.work_order_id),
+                eq(workOrderSiteTable.site_id, siteId),
+              ),
+            );
+
+          if (existingAssignment.length > 0) {
+            throw alreadyExists("Work order site assignment", undefined, {
+              userMessage: "This site is already assigned to this work order.",
+            });
+          }
+
+          // 3. Validate schedule of rates
+          const existingScheduleOfRate = await tx
+            .select()
+            .from(scheduleOfRatesTable)
+            .where(eq(scheduleOfRatesTable.work_order_id, input.work_order_id));
+
+          if (existingScheduleOfRate.length === 0) {
+            throw notFound("Schedule of rate", input.work_order_id);
+          }
+
+          try {
+            // 4. Create the work order site
+            const [result] = await tx.insert(workOrderSiteTable).values({
+              work_order_id: input.work_order_id,
+              client_id: input.client_id,
+              site_id: siteId,
+              date: input.date,
+              end_date: input.end_date,
+              process_type: input.process_type,
+              job_number: input.job_number,
+              area: input.area,
+              installation_type: input.installation_type,
+              joint_estimate_number: input.joint_estimate_number,
+              land_owner_name: input.land_owner_name,
+              remarks: input.remarks || "",
+              status: "pending",
+            });
+
+            const workOrderSiteId = result.insertId;
+
+            // 5. Create associated site activities if selected
+            if (
+              input.selected_activities &&
+              input.selected_activities.length > 0
+            ) {
+              const activityValues = input.selected_activities.map(
+                (activity) => ({
+                  work_order_site_id: workOrderSiteId,
+                  activity: activity.name,
+                  unit: activity.unit,
+                  schedule_of_rates_id: activity.schedule_of_rate_id,
+                }),
+              );
+
+              await tx.insert(siteActivityTable).values(activityValues);
+            }
+
+            return { success: true, workOrderSiteId };
+          } catch (error) {
+            throw fromDatabaseError(error, "Adding work order site");
+          }
+        });
       }),
     ),
 });

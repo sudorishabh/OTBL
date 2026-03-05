@@ -8,18 +8,9 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import CustomInput from "@/components/custom-form-input/Input";
 import CustomButton from "@/components/CustomButton";
 import { trpc } from "@/lib/trpc";
 import CustomForm from "@/components/custom-form-input/Form";
@@ -220,6 +211,10 @@ const CreateProposalDialog = ({ clientId }: Props) => {
   }
 
   const offices = officesData?.offices ?? [];
+  const officesOptions = offices.map((office) => ({
+    label: office.name,
+    value: office.id.toString(),
+  }));
   const isSubmitting =
     form.formState.isSubmitting || addProposal.isPending || isUploading;
 
@@ -233,152 +228,66 @@ const CreateProposalDialog = ({ clientId }: Props) => {
       <Form {...form}>
         <CustomForm onSubmit={form.handleSubmit(onSubmit)}>
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-            <FormField
+            <CustomInput
               control={form.control}
-              name='code'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Code</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder='Enter code'
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              fieldName='code'
+              Label='Code'
+              placeholder='Enter code'
             />
 
-            <FormField
+            <CustomInput
               control={form.control}
-              name='office_id'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Office</FormLabel>
-                  <Select
-                    onValueChange={(value) => field.onChange(Number(value))}
-                    value={field.value?.toString() ?? ""}
-                    disabled={isLoadingOffices}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue
-                          placeholder={
-                            isLoadingOffices
-                              ? "Loading offices..."
-                              : "Select an office"
-                          }
-                        />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {offices.map((office) => (
-                        <SelectItem
-                          key={office.id}
-                          value={office.id.toString()}>
-                          {office.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
+              fieldName='office_id'
+              Label='Office'
+              isSelect={true}
+              selectOptions={officesOptions}
+              disabled={isLoadingOffices}
+              placeholder={
+                isLoadingOffices ? "Loading offices..." : "Select an office"
+              }
+              parseValue={(val) => Number(val)}
             />
           </div>
 
-          <FormField
+          <CustomInput
             control={form.control}
-            name='title'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Title</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder='Enter title'
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            fieldName='title'
+            Label='Title'
+            placeholder='Enter title'
           />
 
-          <FormField
+          <CustomInput
             control={form.control}
-            name='description'
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Description</FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder='Enter description'
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+            fieldName='description'
+            Label='Description'
+            isTextArea={true}
+            placeholder='Enter description'
           />
 
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-            <FormField
+            <CustomInput
               control={form.control}
-              name='proposal_amount'
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Proposal Amount (₹)</FormLabel>
-                  <FormControl>
-                    <Input
-                      type='number'
-                      step='0.01'
-                      min='0'
-                      placeholder='Enter amount'
-                      {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                      value={field.value ?? ""}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              fieldName='proposal_amount'
+              Label='Proposal Amount (₹)'
+              type='number'
+              placeholder='Enter amount'
+              parseValue={(val) => (val === "" ? 0 : Number(val))}
+              formatDisplay={(val) => (val === 0 ? "" : val.toString())}
             />
 
-            <FormField
+            <CustomInput
               control={form.control}
-              name='proposal_submission_date'
-              render={({ field: { value, onChange, ...fieldProps } }) => (
-                <FormItem>
-                  <FormLabel>Submission Date</FormLabel>
-                  <FormControl>
-                    <Input
-                      type='date'
-                      {...fieldProps}
-                      value={
-                        value instanceof Date
-                          ? value.toISOString().split("T")[0]
-                          : typeof value === "string"
-                            ? value
-                            : ""
-                      }
-                      onChange={(e) => {
-                        const dateValue = e.target.value
-                          ? new Date(e.target.value)
-                          : undefined;
-                        onChange(dateValue);
-                      }}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              fieldName='proposal_submission_date'
+              Label='Submission Date'
+              isDate={true}
+              placeholder='Select date'
             />
           </div>
 
           <FormField
             control={form.control}
             name='document_key'
-            render={({ field: _field }) => (
+            render={() => (
               <FormItem>
                 <FormControl>
                   <DeferredFilePicker

@@ -20,7 +20,7 @@ const Wrapper = ({
   backClick,
 }: Props) => {
   return (
-    <div className='relative overflow-hidden py-4 px-6 bg-gray-100 min-h-screen'>
+    <div className='relative overflow-hidden py-4 px-6 bg-gray-200/80 min-h-screen'>
       <BuildingPatterns />
 
       <div className='relative z-10 flex items-center justify-between'>

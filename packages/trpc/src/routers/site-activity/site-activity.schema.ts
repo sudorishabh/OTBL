@@ -17,7 +17,11 @@ export const workOrderStatusEnum = z.enum([
 export const yesNoEnum = z.enum(["yes", "no"]);
 
 // Activity Phase enum
-export const activityPhaseEnum = z.enum(["work_estimate", "order", "expense"]);
+export const activityPhaseEnum = z.enum([
+  "work_estimate",
+  "order",
+  "completion",
+]);
 
 // Activity Item Table Names enum
 export const activityItemTableEnum = z.enum([

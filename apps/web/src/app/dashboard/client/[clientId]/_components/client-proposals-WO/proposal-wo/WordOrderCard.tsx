@@ -17,10 +17,11 @@ import {
   Beaker,
   Leaf,
   Sparkles,
+  AlignEndHorizontal,
+  Shovel,
 } from "lucide-react";
 import useHandleParams from "@/hooks/useHandleParams";
 import { type workOrderTypes } from "@pkg/schema";
-import CreateWODialog from "../create-wo/CreateWODialog";
 
 interface Props {
   workOrder: workOrderTypes.workOrderType | null;
@@ -60,15 +61,15 @@ const getProcessTypeConfig = (type: string) => {
       return {
         icon: Beaker,
         label: "Bioremediation",
-        color: "text-purple-600",
+        color: "text-emerald-600",
       };
     case "restoration":
-      return { icon: Leaf, label: "Restoration", color: "text-green-600" };
+      return { icon: Shovel, label: "Restoration", color: "text-green-600" };
     case "bioremediation_restoration":
       return {
-        icon: Sparkles,
+        icon: AlignEndHorizontal,
         label: "Bio + Restoration",
-        color: "text-blue-600",
+        color: "text-emerald-600",
       };
     default:
       return { icon: FileCode, label: type, color: "text-gray-600" };
@@ -173,7 +174,7 @@ const WordOrderCard = ({ workOrder, proposalId, proposalTitle }: Props) => {
             {/* Dates Grid */}
             <div className='grid grid-cols-3 gap-2 mb-2'>
               <div className='flex items-center gap-1.5 rounded-md border border-gray-100 bg-gradient-to-r from-blue-50/50 to-transparent px-2 py-1.5'>
-                <Clock className='w-3.5 h-3.5 text-blue-600 flex-shrink-0' />
+                <Clock className='w-3.5 h-3.5 text-emerald-600 shrink-0' />
                 <div className='min-w-0'>
                   <div className='text-[9px] uppercase tracking-wider text-gray-500'>
                     Start
@@ -183,8 +184,8 @@ const WordOrderCard = ({ workOrder, proposalId, proposalTitle }: Props) => {
                   </div>
                 </div>
               </div>
-              <div className='flex items-center gap-1.5 rounded-md border border-gray-100 bg-gradient-to-r from-orange-50/50 to-transparent px-2 py-1.5'>
-                <Calendar className='w-3.5 h-3.5 text-orange-600 flex-shrink-0' />
+              <div className='flex items-center gap-1.5 rounded-md border border-gray-100 bg-linear-to-r from-orange-50/50 to-transparent px-2 py-1.5'>
+                <Calendar className='w-3.5 h-3.5 text-emerald-600 shrink-0' />
                 <div className='min-w-0'>
                   <div className='text-[9px] uppercase tracking-wider text-gray-500'>
                     End
@@ -194,8 +195,8 @@ const WordOrderCard = ({ workOrder, proposalId, proposalTitle }: Props) => {
                   </div>
                 </div>
               </div>
-              <div className='flex items-center gap-1.5 rounded-md border border-gray-100 bg-gradient-to-r from-emerald-50/50 to-transparent px-2 py-1.5'>
-                <CalendarCheck className='w-3.5 h-3.5 text-emerald-600 flex-shrink-0' />
+              <div className='flex items-center gap-1.5 rounded-md border border-gray-100 bg-linear-to-r from-emerald-50/50 to-transparent px-2 py-1.5'>
+                <CalendarCheck className='w-3.5 h-3.5 text-emerald-600 shrink-0' />
                 <div className='min-w-0'>
                   <div className='text-[9px] uppercase tracking-wider text-gray-500'>
                     Handover
@@ -229,7 +230,7 @@ const WordOrderCard = ({ workOrder, proposalId, proposalTitle }: Props) => {
           </div>
         ) : (
           <div className='flex flex-col items-center justify-center text-center h-full'>
-            <div className='p-3 rounded-xl bg-gradient-to-br from-gray-100 to-gray-50 text-gray-500 mb-4 shadow-sm'>
+            <div className='p-3 rounded-xl bg-linear-to-br from-gray-100 to-gray-50 text-gray-500 mb-4 shadow-sm'>
               <Briefcase className='w-6 h-6' />
             </div>
             <p className='text-sm font-semibold text-gray-700 mb-1'>
@@ -254,7 +255,6 @@ const WordOrderCard = ({ workOrder, proposalId, proposalTitle }: Props) => {
           </div>
         )}
       </div>
-      <CreateWODialog proposalTitle={proposalTitle} />
     </>
   );
 };

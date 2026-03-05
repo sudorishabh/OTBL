@@ -71,7 +71,7 @@ const CreateWODialog = ({ proposalTitle }: Props) => {
 
   const createWorkOrder = trpc.workOrderMutation.createWorkOrder.useMutation({
     onSuccess: () => {
-      utils.clientQuery.getClientStats.invalidate({ clientId });
+      // utils.clientQuery.getClientStats.invalidate({ clientId });
       utils.proposalQuery.getProposalsByClient.invalidate({
         client_id: clientId,
       });
@@ -233,11 +233,14 @@ const CreateWODialog = ({ proposalTitle }: Props) => {
     <DialogWindow
       title='Create Work Order'
       description={`Create a new work order for proposal: ${proposalTitle}`}
+      heightMode='full'
       open={isOpenDialog}
-      size='xl'
+      size='2xl'
       setOpen={handleCloseDialog}>
       <Form {...form}>
-        <CustomForm onSubmit={onSubmit}>
+        <CustomForm
+          onSubmit={onSubmit}
+          className='h-full flex flex-col'>
           <StepperCreateWO steps={steps} />
           {step === 1 && (
             <Step1BasicDetails

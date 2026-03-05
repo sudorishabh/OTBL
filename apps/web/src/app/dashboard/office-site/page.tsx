@@ -1,3 +1,4 @@
+"use client";
 import Wrapper from "@/components/wrapper/Wrapper";
 import React from "react";
 import CreateOfficeButton from "./_components/CreateOfficeButton";

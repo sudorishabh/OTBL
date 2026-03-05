@@ -4,6 +4,7 @@ import {
   setAuthenticationCookies,
   clearAuthenticationCookies,
   verifyPassword,
+  verifyRefreshTokenSafe,
   type UserRole,
 } from "@pkg/auth";
 import { eq } from "drizzle-orm";
@@ -14,6 +15,7 @@ import { router } from "../../trpc";
 import { authSchemas } from "@pkg/schema";
 import { unauthorized, internal, fromDatabaseError } from "../../errors";
 import { handleMutation } from "../../helper/typed-handler";
+import { z } from "zod";
 
 const { STATUS } = constants;
 const { userTable } = schema;
@@ -87,7 +89,7 @@ export const authMutationRouter = router({
         ctx.appEnv.JWT.REFRESH_EXPIRES_IN,
       );
 
-      // Set cookies
+      // Set cookies (for web clients)
       setAuthenticationCookies({
         res: ctx.res,
         accessToken,
@@ -97,8 +99,11 @@ export const authMutationRouter = router({
         node_env: ctx.appEnv.NODE_ENV,
       });
 
+      // Return tokens in response body (for mobile clients that can't read httpOnly cookies)
       return {
         success: true,
+        accessToken,
+        refreshToken,
         user: {
           id: user.id,
           name: user.name,
@@ -128,4 +133,90 @@ export const authMutationRouter = router({
       }
     }),
   ),
+
+  /**
+   * Refresh tokens for mobile clients
+   * Accepts a refresh token in the request body and returns new access + refresh tokens
+   */
+  refreshToken: publicProcedure
+    .input(z.object({ refreshToken: z.string() }))
+    .mutation(
+      handleMutation(async ({ input, ctx }) => {
+        const { refreshToken: token } = input;
+
+        // Verify the refresh token
+        const result = verifyRefreshTokenSafe(
+          token,
+          ctx.appEnv.JWT.REFRESH_SECRET,
+        );
+
+        if (!result.success) {
+          throw unauthorized("Session expired. Please log in again.", {
+            devMessage: `Refresh token verification failed: ${result.error}`,
+          });
+        }
+
+        const payload = result.payload;
+
+        // Verify user still exists and is active
+        let users;
+        try {
+          users = await ctx.db
+            .select({
+              id: userTable.id,
+              name: userTable.name,
+              email: userTable.email,
+              role: userTable.role,
+              status: userTable.status,
+            })
+            .from(userTable)
+            .where(eq(userTable.id, parseInt(payload.sub)));
+        } catch (error) {
+          throw fromDatabaseError(error, "Fetching user for token refresh");
+        }
+
+        const user = users?.[0];
+
+        if (!user || user.status !== STATUS.ACTIVE) {
+          throw unauthorized(
+            "Your account is no longer active. Please contact support.",
+            {
+              devMessage: `User ${payload.sub} not found or inactive`,
+            },
+          );
+        }
+
+        // Generate new tokens
+        const tokenPayload = {
+          sub: user.id.toString(),
+          email: user.email,
+          role: user.role as UserRole,
+        };
+
+        const newAccessToken = signToken(
+          tokenPayload,
+          ctx.appEnv.JWT.SECRET,
+          ctx.appEnv.JWT.EXPIRES_IN,
+        );
+
+        const newRefreshToken = signRefreshToken(
+          tokenPayload,
+          ctx.appEnv.JWT.REFRESH_SECRET,
+          ctx.appEnv.JWT.REFRESH_EXPIRES_IN,
+        );
+
+        return {
+          success: true,
+          accessToken: newAccessToken,
+          refreshToken: newRefreshToken,
+          user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            status: user.status,
+          },
+        };
+      }),
+    ),
 });

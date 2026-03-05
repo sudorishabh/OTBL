@@ -7,6 +7,7 @@ import { Schema, z } from "zod";
 export const nameValidator = z
   .string({ message: "Name is required" })
   .trim()
+  .toLowerCase()
   .min(2, "Name must be at least 2 characters")
   .max(100, "Name cannot exceed 100 characters");
 
@@ -106,12 +107,14 @@ export const addressValidator = z
 export const cityValidator = z
   .string({ message: "City is required" })
   .trim()
+  .toLowerCase()
   .min(2, "City must be at least 2 characters")
   .max(100, "City cannot exceed 100 characters");
 
 export const stateValidator = z
   .string({ message: "State is required" })
   .trim()
+  .toLowerCase()
   .min(2, "State must be at least 2 characters")
   .max(100, "State cannot exceed 100 characters");
 

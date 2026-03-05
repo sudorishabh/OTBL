@@ -42,6 +42,7 @@ const UserSearchNFilter = () => {
           <div className='flex-1 w-80'>
             <Input
               mode='standalone'
+              isWhiteBg={true}
               value={localSearchQuery}
               onChange={setLocalSearchQuery}
               placeholder='Search users by name, email, or contact...'
@@ -65,6 +66,7 @@ const UserSearchNFilter = () => {
                       | "operator",
                   })
                 }
+                isWhiteBg={true}
                 isSelect
                 selectOptions={[
                   { label: "All Roles", value: "all" },
@@ -86,6 +88,7 @@ const UserSearchNFilter = () => {
                   status: value as "all" | "active" | "inactive",
                 })
               }
+              isWhiteBg={true}
               isSelect
               selectOptions={[
                 { label: "All Status", value: "all" },

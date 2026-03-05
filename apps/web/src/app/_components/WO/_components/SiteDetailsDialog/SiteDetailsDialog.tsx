@@ -57,7 +57,7 @@ const SiteDetailDialog = () => {
       setOpen={handleCloseDialog}
       title={dialogTitle}
       description={dialogDescription}
-      size='lg'
+      size='xl'
       isLoading={siteDetailsQuery.isLoading}>
       <div className='space-y-5 py-3'>
         <SiteDetailsCard siteDetails={siteDetails} />

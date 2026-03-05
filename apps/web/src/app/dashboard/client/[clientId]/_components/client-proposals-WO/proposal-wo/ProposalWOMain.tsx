@@ -25,7 +25,7 @@ interface Props {
   clientId: string;
 }
 const ProposalWOMain = ({ clientId }: Props) => {
-  const { setParam } = useHandleParams();
+  const { setParam, getParam } = useHandleParams();
 
   const { data, isLoading } = trpc.proposalQuery.getProposalsByClient.useQuery(
     { client_id: Number(clientId) },
@@ -37,6 +37,12 @@ const ProposalWOMain = ({ clientId }: Props) => {
   }
 
   const proposals = data?.proposals || [];
+
+  const proposalId = getParam("proposal-id");
+  const selectedProposal = proposals.find(
+    (p) => p.proposal.id === (proposalId ? Number(proposalId) : null),
+  );
+  const proposalTitle = selectedProposal?.proposal.title || "";
 
   return (
     <div className='flex gap-5'>
@@ -128,6 +134,7 @@ const ProposalWOMain = ({ clientId }: Props) => {
         <div className='px-4 pb-4 pt-2 grid grid-cols-1 gap-5'></div>
       </div>
       <CreateProposalDialog clientId={Number(clientId)} />
+      <CreateWODialog proposalTitle={proposalTitle} />
       <ProposalWODetailsDialog />
       <ProposalDetailDialog />
     </div>

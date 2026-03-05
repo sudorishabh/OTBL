@@ -1,15 +1,5 @@
 "use client";
 import React from "react";
-import { UseFormReturn, FieldArrayWithId } from "react-hook-form";
-import { FormControl, FormField, FormItem } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -23,6 +13,7 @@ import { workOrderTypes } from "@pkg/schema";
 import { constants } from "@pkg/utils";
 import { Plus, Trash2 } from "lucide-react";
 import { useFormContext, useFieldArray } from "react-hook-form";
+import Input from "@/components/custom-form-input/Input";
 
 const {
   WO_ACTIVITIES,
@@ -34,15 +25,11 @@ const {
 } = constants;
 
 interface Step2ScheduleOfRatesProps {
-  // calculateRates: (index: number) => void;
-  // filteredActivityOptions: Array<{ value: string; label: string }>;
   onBack: () => void;
   isLoading: boolean;
 }
 
 const Step2ScheduleOfRates: React.FC<Step2ScheduleOfRatesProps> = ({
-  // calculateRates,
-  // filteredActivityOptions,
   onBack,
   isLoading,
 }) => {
@@ -54,7 +41,10 @@ const Step2ScheduleOfRates: React.FC<Step2ScheduleOfRatesProps> = ({
 
   const addScheduleOfRate = () => {
     append({
-      activity: "clean_soil_area" as const,
+      activity: {
+        name: WO_ACTIVITIES.clean_soil_area,
+        unit: WO_UNITS.MT,
+      },
       unit: WO_UNITS.MT,
       estimated_quantity: 0,
       rc_unit_rate: 0,
@@ -101,248 +91,214 @@ const Step2ScheduleOfRates: React.FC<Step2ScheduleOfRatesProps> = ({
 
   const filteredActivityOptions = getFilteredActivityOptions();
 
-  return (
-    <div className='space-y-4'>
-      <div className='flex items-center justify-between'>
-        <div>
-          <h3 className='text-lg font-semibold'>Schedule of Rates</h3>
-          <p className='text-sm text-gray-500'>
-            GST is fixed at 18%. Rate + GST and Total Cost are calculated
-            automatically.
-          </p>
-        </div>
-        <CustomButton
-          type='button'
-          Icon={Plus}
-          text='Add Activity'
-          variant='outline'
-          onClick={addScheduleOfRate}
-        />
-      </div>
+  const scheduleOfRates = form.watch("schedule_of_rates");
+  const hasInvalidActivities = scheduleOfRates?.some(
+    (item) =>
+      !item.activity?.name ||
+      !item.unit ||
+      !item.estimated_quantity ||
+      Number(item.estimated_quantity) <= 0 ||
+      !item.rc_unit_rate ||
+      Number(item.rc_unit_rate) <= 0,
+  );
 
-      {fields.length === 0 ? (
-        <div className='text-center py-8 text-gray-500 border rounded-lg border-dashed'>
-          <p className='mb-2'>No activities added yet.</p>
+  return (
+    <div className='flex-1 flex flex-col justify-between h-full'>
+      <div className='space-y-4'>
+        <div className='flex items-center justify-between'>
+          <div>
+            <h3 className='text-lg font-semibold'>Schedule of Rates</h3>
+            <p className='text-sm text-gray-500'>
+              GST is fixed at 18%. Rate + GST and Total Cost are calculated
+              automatically.
+            </p>
+          </div>
           <CustomButton
             type='button'
             Icon={Plus}
-            text='Add Your First Activity'
+            text='Add Activity'
             variant='outline'
             onClick={addScheduleOfRate}
           />
         </div>
-      ) : (
-        <div className='border rounded-lg overflow-auto'>
-          <Table>
-            <TableHeader>
-              <TableRow className='bg-gray-50'>
-                <TableHead className='min-w-[200px]'>Activity *</TableHead>
-                <TableHead className='min-w-20'>Unit *</TableHead>
-                <TableHead className='min-w-[100px]'>Est. Qty *</TableHead>
-                <TableHead className='min-w-[100px]'>RC Rate *</TableHead>
-                <TableHead className='min-w-[120px]'>
-                  Rate + GST (18%)
-                </TableHead>
-                <TableHead className='min-w-[120px]'>Total Cost</TableHead>
-                {fields.some(
-                  (_, i) =>
-                    form.watch(`schedule_of_rates.${i}.activity`) ===
-                    WO_ACTIVITIES.TRANSPORTATION_CONTAMINATED_SOIL,
-                ) && (
-                  <TableHead className='min-w-[100px]'>Trans. KM *</TableHead>
-                )}
-                <TableHead className='w-[50px]'></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {fields.map((field, index) => (
-                <TableRow key={field.id}>
-                  <TableCell>
-                    <FormField
-                      control={form.control}
-                      name={`schedule_of_rates.${index}.activity`}
-                      render={({ field }) => (
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}>
-                          <SelectTrigger className='min-w-[180px]'>
-                            <SelectValue placeholder='Select activity' />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {filteredActivityOptions.map((option) => (
-                              <SelectItem
-                                key={option.value}
-                                value={option.value}>
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <FormField
-                      control={form.control}
-                      name={`schedule_of_rates.${index}.unit`}
-                      render={({ field }) => (
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}>
-                          <SelectTrigger className='w-28'>
-                            <SelectValue placeholder='Select unit' />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {unitOptions.map((option) => (
-                              <SelectItem
-                                key={option.value}
-                                value={option.value}>
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <FormField
-                      control={form.control}
-                      name={`schedule_of_rates.${index}.estimated_quantity`}
-                      render={({ field }) => (
-                        <Input
-                          type='number'
-                          step='0.01'
-                          min='0'
-                          {...field}
-                          onChange={(e) => {
-                            field.onChange(Number(e.target.value));
-                            setTimeout(() => calculateRates(index), 0);
-                          }}
-                          className='w-24'
-                        />
-                      )}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <FormField
-                      control={form.control}
-                      name={`schedule_of_rates.${index}.rc_unit_rate`}
-                      render={({ field }) => (
-                        <Input
-                          type='number'
-                          step='0.01'
-                          min='0'
-                          {...field}
-                          onChange={(e) => {
-                            field.onChange(Number(e.target.value));
-                            setTimeout(() => calculateRates(index), 0);
-                          }}
-                          className='w-24'
-                        />
-                      )}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <FormField
-                      control={form.control}
-                      name={`schedule_of_rates.${index}.unit_rate_inc_gst`}
-                      render={({ field }) => (
-                        <Input
-                          type='number'
-                          step='0.01'
-                          value={field.value || 0}
-                          readOnly
-                          className='w-28 bg-gray-100 text-gray-600'
-                        />
-                      )}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <FormField
-                      control={form.control}
-                      name={`schedule_of_rates.${index}.total_cost`}
-                      render={({ field }) => (
-                        <Input
-                          type='number'
-                          step='0.01'
-                          value={field.value || 0}
-                          readOnly
-                          className='w-28 bg-gray-100 text-gray-600 font-medium'
-                        />
-                      )}
-                    />
-                  </TableCell>
-                  {form.watch(`schedule_of_rates.${index}.activity`) ===
-                    WO_ACTIVITIES.TRANSPORTATION_CONTAMINATED_SOIL && (
-                    <TableCell>
-                      <FormField
-                        control={form.control}
-                        name={`schedule_of_rates.${index}.transportation_km`}
-                        render={({ field }) => (
-                          <Input
-                            type='number'
-                            step='0.01'
-                            min='0'
-                            {...field}
-                            onChange={(e) =>
-                              field.onChange(Number(e.target.value))
-                            }
-                            className='w-24'
-                          />
-                        )}
-                      />
-                    </TableCell>
-                  )}
+
+        {fields.length === 0 ? (
+          <div className='text-center py-20 text-gray-500 border rounded-lg border-dashed border-gray-400/80'>
+            <p className='mb-2 text-sm'>No activities added yet.</p>
+            <CustomButton
+              type='button'
+              Icon={Plus}
+              text='Add Your First Activity'
+              variant='outline'
+              onClick={addScheduleOfRate}
+            />
+          </div>
+        ) : (
+          <div className='border rounded-lg overflow-auto'>
+            <Table className='border-collapse'>
+              <TableHeader>
+                <TableRow className='bg-gray-100/50'>
+                  <TableHead className='h-10 px-4 border-r border-b border-gray-200 text-xs text-gray-700 min-w-[200px]'>
+                    Activity *
+                  </TableHead>
+                  <TableHead className='h-10 px-4 border-r border-b border-gray-200 text-xs text-gray-700 min-w-20'>
+                    Unit *
+                  </TableHead>
+                  <TableHead className='h-10 px-4 border-r border-b border-gray-200 text-xs text-gray-700 min-w-[100px]'>
+                    Est. Qty *
+                  </TableHead>
+                  <TableHead className='h-10 px-4 border-r border-b border-gray-200 text-xs text-gray-700 min-w-[100px]'>
+                    RC Rate *
+                  </TableHead>
+                  <TableHead className='h-10 px-4 border-r border-b border-gray-200 text-xs text-gray-700 min-w-[120px]'>
+                    Rate + GST (18%)
+                  </TableHead>
+                  <TableHead className='h-10 px-4 border-r border-b border-gray-200 text-xs text-gray-700 min-w-[120px]'>
+                    Total Cost
+                  </TableHead>
                   {fields.some(
                     (_, i) =>
-                      form.watch(`schedule_of_rates.${i}.activity`) ===
+                      form.watch(`schedule_of_rates.${i}.activity.name`) ===
                       WO_ACTIVITIES.TRANSPORTATION_CONTAMINATED_SOIL,
-                  ) &&
-                    form.watch(`schedule_of_rates.${index}.activity`) !==
-                      WO_ACTIVITIES.TRANSPORTATION_CONTAMINATED_SOIL && (
-                      <TableCell></TableCell>
-                    )}
-                  <TableCell>
-                    <CustomButton
-                      type='button'
-                      Icon={Trash2}
-                      variant='outline'
-                      className='text-red-500 hover:text-red-700 hover:bg-red-50 p-2'
-                      onClick={() => remove(index)}
-                    />
-                  </TableCell>
+                  ) && (
+                    <TableHead className='h-10 px-4 border-r border-b border-gray-200 text-xs text-gray-700 min-w-[100px]'>
+                      Trans. KM *
+                    </TableHead>
+                  )}
+                  <TableHead className='h-10 px-4 border-b border-gray-200 w-[50px]'></TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
+              </TableHeader>
+              <TableBody>
+                {fields.map((field, index) => (
+                  <TableRow
+                    key={field.id}
+                    className='hover:bg-transparent'>
+                    <TableCell className='p-0 border-r border-b border-gray-200'>
+                      <Input
+                        control={form.control}
+                        fieldName={`schedule_of_rates.${index}.activity.name`}
+                        isSelect
+                        selectOptions={filteredActivityOptions}
+                        placeholder='Select activity'
+                        className='border-none shadow-none focus-visible:ring-0 focus:ring-0 rounded-none w-full h-10 text-xs'
+                      />
+                    </TableCell>
+                    <TableCell className='p-0 border-r border-b border-gray-200'>
+                      <Input
+                        control={form.control}
+                        fieldName={`schedule_of_rates.${index}.unit`}
+                        isSelect
+                        selectOptions={unitOptions}
+                        placeholder='Select unit'
+                        onChange={(val) => {
+                          form.setValue(
+                            `schedule_of_rates.${index}.activity.unit`,
+                            val,
+                          );
+                        }}
+                        className='border-none shadow-none focus-visible:ring-0 focus:ring-0 rounded-none w-full h-10 text-xs'
+                      />
+                    </TableCell>
+                    <TableCell className='p-0 border-r border-b border-gray-200'>
+                      <Input
+                        control={form.control}
+                        fieldName={`schedule_of_rates.${index}.estimated_quantity`}
+                        type='number'
+                        parseValue={Number}
+                        onChange={() => calculateRates(index)}
+                        className='border-none shadow-none focus-visible:ring-0 focus:ring-0 rounded-none w-full h-10 text-xs'
+                      />
+                    </TableCell>
+                    <TableCell className='p-0 border-r border-b border-gray-200'>
+                      <Input
+                        control={form.control}
+                        fieldName={`schedule_of_rates.${index}.rc_unit_rate`}
+                        type='number'
+                        parseValue={Number}
+                        onChange={() => calculateRates(index)}
+                        className='border-none shadow-none focus-visible:ring-0 focus:ring-0 rounded-none w-full h-10 text-xs'
+                      />
+                    </TableCell>
+                    <TableCell className='p-0 border-r border-b border-gray-200'>
+                      <Input
+                        control={form.control}
+                        fieldName={`schedule_of_rates.${index}.unit_rate_inc_gst`}
+                        type='number'
+                        disabled
+                        className='border-none shadow-none focus-visible:ring-0 focus:ring-0 rounded-none w-full h-10 bg-gray-50/50 text-gray-600 pointer-events-none text-xs'
+                      />
+                    </TableCell>
+                    <TableCell className='p-0 border-r border-b border-gray-200'>
+                      <Input
+                        control={form.control}
+                        fieldName={`schedule_of_rates.${index}.total_cost`}
+                        type='number'
+                        disabled
+                        className='border-none shadow-none focus-visible:ring-0 focus:ring-0 rounded-none w-full h-10 bg-gray-50/50 text-gray-600 font-medium pointer-events-none text-xs'
+                      />
+                    </TableCell>
+                    {form.watch(`schedule_of_rates.${index}.activity.name`) ===
+                      WO_ACTIVITIES.TRANSPORTATION_CONTAMINATED_SOIL && (
+                      <TableCell className='p-0 border-r border-b border-gray-200'>
+                        <Input
+                          control={form.control}
+                          fieldName={`schedule_of_rates.${index}.transportation_km`}
+                          type='number'
+                          parseValue={Number}
+                          className='border-none shadow-none focus-visible:ring-0 focus:ring-0 rounded-none w-full h-10 text-xs'
+                        />
+                      </TableCell>
+                    )}
+                    {fields.some(
+                      (_, i) =>
+                        form.watch(`schedule_of_rates.${i}.activity.name`) ===
+                        WO_ACTIVITIES.TRANSPORTATION_CONTAMINATED_SOIL,
+                    ) &&
+                      form.watch(`schedule_of_rates.${index}.activity.name`) !==
+                        WO_ACTIVITIES.TRANSPORTATION_CONTAMINATED_SOIL && (
+                        <TableCell className='p-0 border-r border-b border-gray-200'></TableCell>
+                      )}
+                    <TableCell className='p-1 border-b border-gray-200 custotext-center'>
+                      <CustomButton
+                        type='button'
+                        Icon={Trash2}
+                        variant='outline'
+                        className='text-red-400 hover:text-red-600 hover:bg-red-50 p-2 h-8 w-8 border-none shadow-none bg-transparent'
+                        onClick={() => remove(index)}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
 
-      {form.formState.errors.schedule_of_rates && (
-        <p className='text-sm text-red-500'>
-          {form.formState.errors.schedule_of_rates.message ||
-            "At least one schedule of rate entry is required"}
-        </p>
-      )}
+        {form.formState.errors.schedule_of_rates && (
+          <p className='text-sm text-red-500'>
+            {form.formState.errors.schedule_of_rates.message ||
+              (Array.isArray(form.formState.errors.schedule_of_rates)
+                ? "Please fill in all required fields for each activity."
+                : "At least one schedule of rate entry is required")}
+          </p>
+        )}
 
-      {/* Action Buttons */}
-      <div className='flex gap-3 pt-4'>
+        {/* Action Buttons */}
+      </div>
+      <div className='flex justify-end gap-3 pt-4'>
         <CustomButton
           type='button'
           text='Back'
           variant='outline'
-          className='flex-1'
           onClick={onBack}
           disabled={isLoading}
         />
         <CustomButton
           type='submit'
           text='Create Work Order'
-          className='flex-1'
           variant='primary'
           loading={isLoading}
-          disabled={isLoading || fields.length === 0}
+          disabled={isLoading || fields.length === 0 || hasInvalidActivities}
         />
       </div>
     </div>

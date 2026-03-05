@@ -25,16 +25,18 @@ import { useApiError } from "@/hooks/useApiError";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { officeSchemas, officeTypes } from "@pkg/schema";
-import { constants } from "@pkg/utils";
+import { capitalizeEachWord, constants } from "@pkg/utils";
 import useHandleParams from "@/hooks/useHandleParams";
 
 const { ROLES } = constants;
 
-const AddOfficeDialog = () => {
+const CreateOfficeDialog = () => {
   const { getParam, deleteParam } = useHandleParams();
   const mode = getParam("dialog");
-  const isAddMode = mode === "create-office";
-  const isOpenDialog = isAddMode;
+  const isCreateMode = mode === "create-office";
+  const isOpenDialog = isCreateMode;
+
+  console.log(isOpenDialog);
 
   type SelectedUser = { id: number; name: string; email: string };
   const [selectedManager, setSelectedManager] = useState<SelectedUser | null>(
@@ -102,7 +104,7 @@ const AddOfficeDialog = () => {
     setActiveStaffTab("managers");
   }, [deleteParam, form]);
 
-  const addOffice = trpc.officeMutation.createOffice.useMutation({
+  const createOffice = trpc.officeMutation.createOffice.useMutation({
     onSuccess: () => {
       toast.success("Office created successfully");
       utils.officeQuery.getOffices.invalidate();
@@ -114,7 +116,7 @@ const AddOfficeDialog = () => {
   });
 
   function onSubmit(values: officeTypes.createOfficeType) {
-    addOffice.mutate({
+    createOffice.mutate({
       ...values,
       manager_id: selectedManager?.id || undefined,
       operator_ids:
@@ -139,7 +141,7 @@ const AddOfficeDialog = () => {
       open={isOpenDialog}
       setOpen={handleClose}
       isLoading={isLoadingStaffData}
-      title='Add Office'
+      title='Create New Office'
       description='Enter office details and assign staff members'
       heightMode='full'
       size='xl'>
@@ -314,7 +316,7 @@ const AddOfficeDialog = () => {
                                       ? "text-[#035864]"
                                       : "text-gray-900",
                                   )}>
-                                  {user.name}
+                                  {capitalizeEachWord(user.name)}
                                 </p>
                                 <p className='text-xs text-gray-500 flex items-center gap-1.5 mt-0.5'>
                                   <Mail className='h-3 w-3' />
@@ -394,7 +396,7 @@ const AddOfficeDialog = () => {
                                       ? "text-[#035864]"
                                       : "text-gray-900",
                                   )}>
-                                  {user.name}
+                                  {capitalizeEachWord(user.name)}
                                 </p>
                                 <p className='text-xs text-gray-500 flex items-center gap-1.5 mt-0.5'>
                                   <Mail className='h-3 w-3' />
@@ -452,7 +454,7 @@ const AddOfficeDialog = () => {
                         {selectedManager.name.substring(0, 2).toUpperCase()}
                       </div>
                       <span className='font-medium text-gray-900 text-xs'>
-                        {selectedManager.name}
+                        {capitalizeEachWord(selectedManager.name)}
                       </span>
                       <span className='ml-1 text-[10px] text-[#035864] bg-[#035864]/5 px-1.5 py-0.5 rounded-full font-medium'>
                         Manager
@@ -473,7 +475,7 @@ const AddOfficeDialog = () => {
                         {op.name.substring(0, 2).toUpperCase()}
                       </div>
                       <span className='font-medium text-gray-900 text-xs'>
-                        {op.name}
+                        {capitalizeEachWord(op.name)}
                       </span>
                       <button
                         type='button'
@@ -511,4 +513,4 @@ const AddOfficeDialog = () => {
   );
 };
 
-export default AddOfficeDialog;
+export default CreateOfficeDialog;

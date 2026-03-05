@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DialogWindow from "@/components/DialogWindow";
 import useHandleParams from "@/hooks/useHandleParams";
 import { trpc } from "@/lib/trpc";
@@ -21,8 +21,10 @@ import {
 } from "@/components/ui/table";
 import { capitalizeEachWord } from "@pkg/utils";
 import StatusIndicator from "@/components/StatusIndicator";
+import { Search } from "lucide-react";
+import { useDebounce } from "@/hooks/useDebounce";
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 50;
 
 const OfficeDetailsDialog = () => {
   const { getParam, deleteParams } = useHandleParams();
@@ -30,13 +32,15 @@ const OfficeDetailsDialog = () => {
   const officeId = getParam("officeId");
   const officeName = getParam("officeName");
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebounce(searchTerm, 400);
   const [page, setPage] = useState(1);
 
   const { data, isLoading, isFetching } =
     trpc.siteQuery.getSitesByOfficeId.useQuery(
       {
         office_id: Number(officeId),
-        searchQuery: "",
+        searchQuery: debouncedSearchTerm,
         status: "all",
         page,
         limit: ITEMS_PER_PAGE,
@@ -53,8 +57,8 @@ const OfficeDetailsDialog = () => {
   const responseData = data as any;
 
   // Update accumulated sites when new data arrives
-  React.useEffect(() => {
-    if (responseData?.sites) {
+  useEffect(() => {
+    if (responseData?.sites && !isFetching) {
       setAllSites((prev) => {
         // If it's page 1, replace all sites
         if (page === 1) {
@@ -68,10 +72,15 @@ const OfficeDetailsDialog = () => {
         return [...prev, ...newSites];
       });
     }
-  }, [responseData?.sites, page]);
+  }, [responseData?.sites, page, isFetching]);
+
+  useEffect(() => {
+    setPage(1);
+    setAllSites([]);
+  }, [debouncedSearchTerm]);
 
   // Reset page when dialog closes
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isOpenDialog) {
       setPage(1);
       setAllSites([]);
@@ -81,6 +90,7 @@ const OfficeDetailsDialog = () => {
   const handleDialogClose = () => {
     deleteParams(["dialog", "officeId", "officeName"]);
     setPage(1);
+    setSearchTerm("");
     setAllSites([]);
   };
 
@@ -101,13 +111,27 @@ const OfficeDetailsDialog = () => {
       size='xl'
       heightMode='full'>
       <div className='space-y-4'>
+        {/* Search Bar */}
+        <div className='relative'>
+          <Search className='absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400' />
+          <input
+            type='text'
+            placeholder='Search sites by name, city or address...'
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className='w-full pl-9 pr-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all bg-slate-50/50 focus:bg-white'
+          />
+        </div>
+
         {/* Summary Card */}
-        {/* <Card>
-          <CardHeader className='pb-3'>
-            <CardTitle className='text-lg'>Summary</CardTitle>
-            <CardDescription>Total sites: {totalCount}</CardDescription>
-          </CardHeader>
-        </Card> */}
+        <div className='flex items-center justify-between px-1'>
+          <p className='text-xs font-semibold text-slate-500 uppercase tracking-wider'>
+            Site Locations
+          </p>
+          <p className='text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full'>
+            {totalCount} total
+          </p>
+        </div>
 
         {/* Sites List */}
         {isLoading && page === 1 ? (

@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { siteSchemas, type siteTypes } from "@pkg/schema";
 import useHandleParams from "@/hooks/useHandleParams";
-import { constants } from "@pkg/utils";
+import { capitalizeEachWord, constants } from "@pkg/utils";
 
 const { ROLES } = constants;
 
@@ -38,9 +38,9 @@ const CreateSiteDialog = () => {
   const officeId = getParam("officeId");
   const officeName = getParam("officeName");
   const siteId = getParam("siteId");
-  const isAddMode = dialog === "create-site";
+  const isCreateMode = dialog === "create-site";
   const isEditMode = dialog === "update-site";
-  const isOpenDialog = isAddMode || isEditMode;
+  const isOpenDialog = isCreateMode || isEditMode;
 
   const form = useForm<siteTypes.siteBaseType>({
     resolver: zodResolver(siteSchemas.siteBaseSchema),
@@ -73,7 +73,7 @@ const CreateSiteDialog = () => {
         search: operatorSearch,
       },
       {
-        enabled: isAddMode,
+        enabled: isCreateMode,
       },
     );
 
@@ -86,7 +86,7 @@ const CreateSiteDialog = () => {
       { enabled: isEditMode && !!siteId },
     );
 
-  const addSite = trpc.siteMutation.createSite.useMutation({
+  const createSite = trpc.siteMutation.createSite.useMutation({
     onSuccess: () => {
       toast.success("Site added successfully");
       utils.officeQuery.getOffices.invalidate();
@@ -141,7 +141,7 @@ const CreateSiteDialog = () => {
         state: siteData.state || "",
         pincode: siteData.pincode || "",
       });
-    } else if (isAddMode) {
+    } else if (isCreateMode) {
       form.reset({
         name: "",
         address: "",
@@ -150,14 +150,14 @@ const CreateSiteDialog = () => {
         state: "",
       });
     }
-  }, [isEditMode, isAddMode, siteData, isSiteLoading, form]);
+  }, [isEditMode, isCreateMode, siteData, isSiteLoading, form]);
 
   async function onSubmit(values: siteTypes.siteBaseType) {
     try {
       if (isEditMode && siteId) {
         await editSite.mutateAsync({ ...values, siteId: Number(siteId) });
-      } else if (isAddMode && officeId) {
-        await addSite.mutateAsync({
+      } else if (isCreateMode && officeId) {
+        await createSite.mutateAsync({
           ...values,
           office_id: Number(officeId),
           operator_ids:
@@ -181,17 +181,17 @@ const CreateSiteDialog = () => {
       description={
         isEditMode
           ? "Update site information"
-          : "Add a new site and assign operators"
+          : "Create a new site and assign operators"
       }
       open={isOpenDialog}
-      size={isAddMode ? "lg" : "sm"}
-      isLoading={isSiteLoading || (isAddMode && isLoadingOperators)}
+      size={isCreateMode ? "lg" : "sm"}
+      isLoading={isSiteLoading || (isCreateMode && isLoadingOperators)}
       setOpen={handleClose}>
       <Form {...form}>
         <CustomForm onSubmit={form.handleSubmit(onSubmit)}>
           <div className='max-h-[60vh] overflow-y-auto pr-2 space-y-6'>
             <div className='space-y-4'>
-              {isAddMode && (
+              {isCreateMode && (
                 <div className='border-b pb-2'>
                   <h3 className='text-base font-semibold text-gray-800'>
                     Site Information
@@ -243,7 +243,7 @@ const CreateSiteDialog = () => {
             </div>
 
             {/* Operator Assignment Section - Only in Add Mode */}
-            {isAddMode && (
+            {isCreateMode && (
               <div className='space-y-4'>
                 <div className='border-b pb-2'>
                   <h3 className='text-base font-semibold text-gray-800'>
@@ -309,7 +309,7 @@ const CreateSiteDialog = () => {
                                         ? "text-[#035864]"
                                         : "text-gray-900",
                                     )}>
-                                    {user.name}
+                                    {capitalizeEachWord(user.name)}
                                   </p>
                                   <p className='text-xs text-gray-500 flex items-center gap-1.5 mt-0.5'>
                                     <Mail className='h-3 w-3' />

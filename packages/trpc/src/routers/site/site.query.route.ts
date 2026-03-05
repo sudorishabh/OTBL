@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { and, count, desc, eq, like, or } from "drizzle-orm";
 import { schema } from "@pkg/db";
 import { Site } from "@pkg/db/types";
 import { router } from "../../trpc";
@@ -58,23 +58,37 @@ export const siteQueryRouter = router({
     .input(siteSchemas.getAllSitesByOfficeIdSchema)
     .query(
       handleQuery(async ({ input, ctx }) => {
-        const { office_id, page, limit } = input;
+        const { office_id, page, limit, searchQuery, status } = input;
         const offset = (page - 1) * limit;
 
         try {
-          // Get total count of sites for this office
-          const allSites = await ctx.db
-            .select()
-            .from(siteTable)
-            .where(eq(siteTable.office_id, office_id));
+          const whereClause = and(
+            eq(siteTable.office_id, office_id),
+            searchQuery && searchQuery.trim() !== ""
+              ? or(
+                  like(siteTable.name, `%${searchQuery}%`),
+                  like(siteTable.address, `%${searchQuery}%`),
+                  like(siteTable.city, `%${searchQuery}%`),
+                )
+              : undefined,
+            status && status !== "all"
+              ? eq(siteTable.status, status as any)
+              : undefined,
+          );
 
-          const totalCount = allSites.length;
+          // Get total count of sites for this office
+          const [countResult] = await ctx.db
+            .select({ count: count(siteTable.id) })
+            .from(siteTable)
+            .where(whereClause);
+
+          const totalCount = countResult?.count ?? 0;
 
           // Get paginated sites
           const sites: Site[] = await ctx.db
             .select()
             .from(siteTable)
-            .where(eq(siteTable.office_id, office_id))
+            .where(whereClause)
             .orderBy(desc(siteTable.created_at))
             .limit(limit)
             .offset(offset);

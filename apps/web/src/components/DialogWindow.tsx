@@ -19,7 +19,7 @@ interface Props {
   setOpen: (open: boolean) => void;
   className?: string;
   title?: string;
-  size: "sm" | "md" | "lg" | "xl" | "full";
+  size: "sm" | "md" | "lg" | "xl" | "2xl" | "full";
   description?: string;
 
   heightFull?: boolean;
@@ -53,6 +53,7 @@ const DialogWindow = ({
     md: "w-[100vw] sm:max-w-[700px]",
     lg: "w-[100vw] sm:max-w-[900px]",
     xl: "w-[100vw] sm:max-w-[1100px]",
+    "2xl": "w-[100vw] sm:max-w-[1300px]",
     full: "w-[calc(100vw-4rem)] max-w-none sm:max-w-none",
   };
 
@@ -62,6 +63,7 @@ const DialogWindow = ({
     md: "h-[500px]",
     lg: "h-[600px]",
     xl: "h-[700px]",
+    "2xl": "h-[800px]",
     full: "h-[calc(100vh-4rem)]",
   };
 
@@ -128,7 +130,7 @@ const DialogWindow = ({
               <Loading />
             </div>
           ) : (
-            <div>{children}</div>
+            <div className='h-full'>{children}</div>
           )}
         </div>
       </DialogContent>

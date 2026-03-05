@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "4c831b65-0dba-4816-9111-808cbd1360fb",
+  "id": "230cf9ba-7523-469d-82da-9202f0527c37",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "bio_oil_zapping": {
@@ -35,18 +35,32 @@
           "notNull": false,
           "autoincrement": false
         },
+        "type": {
+          "name": "type",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "document_url": {
+          "name": "document_url",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
         "estimated_quantity": {
           "name": "estimated_quantity",
           "type": "decimal(10,2)",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "intended_quantity": {
           "name": "intended_quantity",
           "type": "decimal(10,2)",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         },
         "created_at": {
@@ -165,9 +179,9 @@
           "notNull": true,
           "autoincrement": false
         },
-        "estimated_quantity": {
-          "name": "estimated_quantity",
-          "type": "decimal(10,2)",
+        "application_month": {
+          "name": "application_month",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
@@ -885,75 +899,6 @@
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
-    "measurement_sheets": {
-      "name": "measurement_sheets",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": true
-        },
-        "work_order_site_id": {
-          "name": "work_order_site_id",
-          "type": "int",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "document_url": {
-          "name": "document_url",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "(now())"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "onUpdate": true,
-          "default": "(now())"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "measurement_sheets_work_order_site_id_work_order_sites_id_fk": {
-          "name": "measurement_sheets_work_order_site_id_work_order_sites_id_fk",
-          "tableFrom": "measurement_sheets",
-          "tableTo": "work_order_sites",
-          "columnsFrom": [
-            "work_order_site_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {
-        "measurement_sheets_id": {
-          "name": "measurement_sheets_id",
-          "columns": [
-            "id"
-          ]
-        }
-      },
-      "uniqueConstraints": {},
-      "checkConstraint": {}
-    },
     "offices": {
       "name": "offices",
       "columns": {
@@ -1278,7 +1223,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'rejected'"
+          "default": "'pending'"
         },
         "created_by": {
           "name": "created_by",
@@ -1626,8 +1571,22 @@
           "notNull": true,
           "autoincrement": false
         },
+        "schedule_of_rates_id": {
+          "name": "schedule_of_rates_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "activity": {
           "name": "activity",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unit": {
+          "name": "unit",
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true,
@@ -1659,6 +1618,19 @@
           "tableTo": "work_order_sites",
           "columnsFrom": [
             "work_order_site_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "site_activity_items_schedule_of_rates_id_schedule_of_rates_id_fk": {
+          "name": "site_activity_items_schedule_of_rates_id_schedule_of_rates_id_fk",
+          "tableFrom": "site_activity_items",
+          "tableTo": "schedule_of_rates",
+          "columnsFrom": [
+            "schedule_of_rates_id"
           ],
           "columnsTo": [
             "id"
@@ -2160,6 +2132,13 @@
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "document_id": {
+          "name": "document_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "type": {

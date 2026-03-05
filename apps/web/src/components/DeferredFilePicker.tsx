@@ -22,6 +22,7 @@ interface DeferredFilePickerProps {
   isDeleting?: boolean;
   /** Callback to delete the uploaded file */
   onDelete?: () => void;
+  isUploadBgWhite?: boolean;
   /** URL of the uploaded file (for viewing) */
   uploadedUrl?: string;
   /** Label for the picker */
@@ -34,6 +35,8 @@ interface DeferredFilePickerProps {
   className?: string;
   /** Helper text to display */
   helperText?: string;
+  /** Whether to allow multiple file selection */
+  multiple?: boolean;
 }
 
 /**
@@ -60,6 +63,7 @@ const DeferredFilePicker: React.FC<DeferredFilePickerProps> = ({
   uploadProgress = 0,
   isUploading = false,
   isDeleting = false,
+  isUploadBgWhite = true,
   onDelete,
   uploadedUrl,
   label = "Select Document",
@@ -67,6 +71,7 @@ const DeferredFilePicker: React.FC<DeferredFilePickerProps> = ({
   maxSizeMB = 50,
   className,
   helperText,
+  multiple = false,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -95,12 +100,21 @@ const DeferredFilePicker: React.FC<DeferredFilePickerProps> = ({
 
   const handleFileChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (file && validateFile(file)) {
-        onFileSelect(file);
+      if (multiple) {
+        const files = Array.from(e.target.files || []);
+        files.forEach((file) => {
+          if (validateFile(file)) {
+            onFileSelect(file);
+          }
+        });
+      } else {
+        const file = e.target.files?.[0];
+        if (file && validateFile(file)) {
+          onFileSelect(file);
+        }
       }
     },
-    [onFileSelect, validateFile],
+    [onFileSelect, validateFile, multiple],
   );
 
   const handleDrop = useCallback(
@@ -108,12 +122,21 @@ const DeferredFilePicker: React.FC<DeferredFilePickerProps> = ({
       e.preventDefault();
       e.stopPropagation();
 
-      const file = e.dataTransfer.files?.[0];
-      if (file && validateFile(file)) {
-        onFileSelect(file);
+      if (multiple) {
+        const files = Array.from(e.dataTransfer.files || []);
+        files.forEach((file) => {
+          if (validateFile(file)) {
+            onFileSelect(file);
+          }
+        });
+      } else {
+        const file = e.dataTransfer.files?.[0];
+        if (file && validateFile(file)) {
+          onFileSelect(file);
+        }
       }
     },
-    [onFileSelect, validateFile],
+    [onFileSelect, validateFile, multiple],
   );
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -151,16 +174,20 @@ const DeferredFilePicker: React.FC<DeferredFilePickerProps> = ({
           onClick={() => fileInputRef.current?.click()}
           onDragOver={handleDragOver}
           onDrop={handleDrop}
-          className='group border border-dashed border-gray-300 rounded-md px-3 py-2 flex items-center gap-2 cursor-pointer hover:bg-gray-50/50 hover:border-primary/40 transition-all'>
+          className={cn(
+            "group border border-dashed border-gray-300 rounded-md px-3 py-2 flex items-center gap-2 cursor-pointer hover:bg-gray-50/50 hover:border-primary/40 transition-all",
+            isUploadBgWhite && "bg-white",
+          )}>
           <input
             type='file'
             ref={fileInputRef}
             onChange={handleFileChange}
             className='hidden'
             accept={allowedExtensions.join(",")}
+            multiple={multiple}
           />
           <Upload className='h-4 w-4 text-gray-400 group-hover:text-primary/60 transition-colors' />
-          <span className='text-sm text-gray-500 group-hover:text-gray-600'>
+          <span className='text-xs text-gray-500 group-hover:text-gray-600'>
             {label}
           </span>
           <span className='text-xs text-gray-400 ml-auto hidden sm:inline'>
@@ -208,6 +235,7 @@ const DeferredFilePicker: React.FC<DeferredFilePickerProps> = ({
                 <Progress
                   value={uploadProgress}
                   className='h-1 flex-1 max-w-[120px]'
+                  indicatorClassName='bg-emerald-600'
                 />
                 <span className='text-xs text-gray-400'>{uploadProgress}%</span>
               </div>

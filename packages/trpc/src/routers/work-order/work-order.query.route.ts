@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, like, or } from "drizzle-orm";
+import { and, asc, count, desc, eq, like, or, inArray } from "drizzle-orm";
 import { schema } from "@pkg/db";
 import { router } from "../../trpc";
 import { publicProcedure } from "../../core";
@@ -17,12 +17,19 @@ import { handleQuery } from "../../helper/typed-handler";
 const {
   workOrderTable,
   workOrderSiteTable,
+  workOrderSiteDocsTable,
   clientTable,
   officeTable,
   siteTable,
   siteUserTable,
   userTable,
   scheduleOfRatesTable,
+  cleaningUpSoilAreaTable,
+  liftingRecoveryOilSlushTable,
+  excavationContSoilTable,
+  transportationContSoilTable,
+  refillingExcavatedContSoilTable,
+  bioremediationContSoilTable,
 } = schema;
 
 export const workOrderQueryRouter = router({
@@ -260,34 +267,52 @@ export const workOrderQueryRouter = router({
             site_pincode: siteTable.pincode,
             end_date: workOrderSiteTable.end_date,
             status: workOrderSiteTable.status,
+            created_at: workOrderSiteTable.created_at,
           })
           .from(workOrderSiteTable)
           .leftJoin(siteTable, eq(workOrderSiteTable.site_id, siteTable.id))
           .where(eq(workOrderSiteTable.work_order_id, id))
           .limit(limit)
-          .offset(offset);
+          .offset(offset)
+          .orderBy(desc(workOrderSiteTable.created_at));
 
-        // Fetch users for the fetched sites
-        const sitesUsers = await Promise.all(
-          woSites.map((woSite) =>
-            ctx.db
-              .select({
-                site_id: siteUserTable.site_id,
-                user_id: siteUserTable.user_id,
-                user_name: userTable.name,
-                user_email: userTable.email,
-                user_contact_number: userTable.contact_number,
-                user_role: userTable.role,
-              })
-              .from(siteUserTable)
-              .leftJoin(userTable, eq(siteUserTable.user_id, userTable.id))
-              .where(eq(siteUserTable.site_id, woSite.site_id!)),
+        // Fetch users and measurement sheets for the fetched sites
+        const [sitesUsers, sitesSheets] = await Promise.all([
+          Promise.all(
+            woSites.map((woSite) =>
+              ctx.db
+                .select({
+                  site_id: siteUserTable.site_id,
+                  user_id: siteUserTable.user_id,
+                  user_name: userTable.name,
+                  user_email: userTable.email,
+                  user_contact_number: userTable.contact_number,
+                  user_role: userTable.role,
+                })
+                .from(siteUserTable)
+                .leftJoin(userTable, eq(siteUserTable.user_id, userTable.id))
+                .where(eq(siteUserTable.site_id, woSite.site_id!)),
+            ),
           ),
-        );
+          Promise.all(
+            woSites.map((woSite) =>
+              ctx.db
+                .select()
+                .from(workOrderSiteDocsTable)
+                .where(
+                  and(
+                    eq(workOrderSiteDocsTable.work_order_site_id, woSite.id),
+                    eq(workOrderSiteDocsTable.type, "measurement_sheet"),
+                  ),
+                ),
+            ),
+          ),
+        ]);
 
         const sitesWithDetails = woSites.map((woSite, index) => ({
           ...woSite,
           users: sitesUsers[index],
+          measurement_sheets: sitesSheets[index],
         }));
 
         const totalPages = Math.ceil(total / limit);
@@ -435,48 +460,183 @@ export const workOrderQueryRouter = router({
             site_pincode: siteTable.pincode,
             end_date: workOrderSiteTable.end_date,
             status: workOrderSiteTable.status,
+            created_at: workOrderSiteTable.created_at,
           })
           .from(workOrderSiteTable)
           .leftJoin(siteTable, eq(workOrderSiteTable.site_id, siteTable.id))
-          .where(eq(workOrderSiteTable.work_order_id, id));
+          .where(eq(workOrderSiteTable.work_order_id, id))
+          .orderBy(desc(workOrderSiteTable.created_at));
 
-        const sitesUsers = await Promise.all(
-          woSites.map((woSite: any) =>
-            ctx.db
-              .select({
-                site_id: siteUserTable.site_id,
-                user_id: siteUserTable.user_id,
-                user_name: userTable.name,
-                user_email: userTable.email,
-                user_contact_number: userTable.contact_number,
-                user_role: userTable.role,
-              })
-              .from(siteUserTable)
-              .leftJoin(userTable, eq(siteUserTable.user_id, userTable.id))
-              .where(eq(siteUserTable.site_id, woSite.site_id)),
+        const [sitesUsers, sitesSheets] = await Promise.all([
+          Promise.all(
+            woSites.map((woSite: any) =>
+              ctx.db
+                .select({
+                  site_id: siteUserTable.site_id,
+                  user_id: siteUserTable.user_id,
+                  user_name: userTable.name,
+                  user_email: userTable.email,
+                  user_contact_number: userTable.contact_number,
+                  user_role: userTable.role,
+                })
+                .from(siteUserTable)
+                .leftJoin(userTable, eq(siteUserTable.user_id, userTable.id))
+                .where(eq(siteUserTable.site_id, woSite.site_id)),
+            ),
           ),
-        );
+          Promise.all(
+            woSites.map((woSite: any) =>
+              ctx.db
+                .select()
+                .from(workOrderSiteDocsTable)
+                .where(
+                  and(
+                    eq(
+                      workOrderSiteDocsTable.work_order_site_id,
+                      woSite.wo_site_id,
+                    ),
+                    eq(workOrderSiteDocsTable.type, "measurement_sheet"),
+                  ),
+                ),
+            ),
+          ),
+        ]);
 
-        const sitesWithDetails = woSites.map((woSite: any, index: number) => ({
-          site: {
-            id: woSite.site_id,
-            name: woSite.site_name,
-            address: woSite.site_address,
-            city: woSite.site_city,
-            state: woSite.site_state,
-            pincode: woSite.site_pincode,
-          },
-          wo_site_id: woSite.wo_site_id,
-          start_date: woSite.start_date,
-          end_date: woSite.end_date,
-          status: woSite.status,
-          activity_type: woSite.activity_type,
-          metric_ton: woSite.metric_ton,
-          metric_ton_rate: woSite.metric_ton_rate,
-          budget_amount: woSite.budget_amount,
-          total_expense_amount: woSite.total_expense_amount,
-          users: sitesUsers[index],
-        }));
+        const woSiteIds = woSites.map((s: any) => s.wo_site_id);
+
+        let allCompletions: any[] = [];
+        if (woSiteIds.length > 0) {
+          const [
+            cleanSoilAreaExp,
+            liftingOilExp,
+            excavSoilExp,
+            transSoilExp,
+            refillSoilExp,
+            bioremSoilExp,
+          ] = await Promise.all([
+            ctx.db
+              .select()
+              .from(cleaningUpSoilAreaTable)
+              .where(
+                and(
+                  inArray(
+                    cleaningUpSoilAreaTable.work_order_site_id,
+                    woSiteIds,
+                  ),
+                  eq(cleaningUpSoilAreaTable.type, "completion" as any),
+                ),
+              ),
+            ctx.db
+              .select()
+              .from(liftingRecoveryOilSlushTable)
+              .where(
+                and(
+                  inArray(
+                    liftingRecoveryOilSlushTable.work_order_site_id,
+                    woSiteIds,
+                  ),
+                  eq(liftingRecoveryOilSlushTable.type, "completion" as any),
+                ),
+              ),
+            ctx.db
+              .select()
+              .from(excavationContSoilTable)
+              .where(
+                and(
+                  inArray(
+                    excavationContSoilTable.work_order_site_id,
+                    woSiteIds,
+                  ),
+                  eq(excavationContSoilTable.type, "completion" as any),
+                ),
+              ),
+            ctx.db
+              .select()
+              .from(transportationContSoilTable)
+              .where(
+                and(
+                  inArray(
+                    transportationContSoilTable.work_order_site_id,
+                    woSiteIds,
+                  ),
+                  eq(transportationContSoilTable.type, "completion" as any),
+                ),
+              ),
+            ctx.db
+              .select()
+              .from(refillingExcavatedContSoilTable)
+              .where(
+                and(
+                  inArray(
+                    refillingExcavatedContSoilTable.work_order_site_id,
+                    woSiteIds,
+                  ),
+                  eq(refillingExcavatedContSoilTable.type, "completion" as any),
+                ),
+              ),
+            ctx.db
+              .select()
+              .from(bioremediationContSoilTable)
+              .where(
+                and(
+                  inArray(
+                    bioremediationContSoilTable.work_order_site_id,
+                    woSiteIds,
+                  ),
+                  eq(bioremediationContSoilTable.type, "completion" as any),
+                ),
+              ),
+          ]);
+
+          const mapCompletion = (items: any[], activityName: string) =>
+            items.map((item) => ({
+              ...item,
+              activity_name: activityName,
+            }));
+
+          allCompletions = [
+            ...mapCompletion(cleanSoilAreaExp, "clean_soil_area"),
+            ...mapCompletion(liftingOilExp, "lifting_oil_slush"),
+            ...mapCompletion(excavSoilExp, "excav_cont_soil"),
+            ...mapCompletion(transSoilExp, "trans_cont_soil"),
+            ...mapCompletion(refillSoilExp, "refill_excav_soil"),
+            ...mapCompletion(bioremSoilExp, "biorem_cont_soil"),
+          ];
+        }
+
+        const sitesWithDetails = woSites.map((woSite: any, index: number) => {
+          const siteCompletions = allCompletions.filter(
+            (e: any) => e.work_order_site_id === woSite.wo_site_id,
+          );
+          const totalCompletionAmount = siteCompletions.reduce(
+            (acc: number, curr: any) => acc + Number(curr.amount || 0),
+            0,
+          );
+
+          return {
+            site: {
+              id: woSite.site_id,
+              name: woSite.site_name,
+              address: woSite.site_address,
+              city: woSite.site_city,
+              state: woSite.site_state,
+              pincode: woSite.site_pincode,
+            },
+            wo_site_id: woSite.wo_site_id,
+            start_date: woSite.start_date,
+            end_date: woSite.end_date,
+            status: woSite.status,
+            activity_type: woSite.activity_type,
+            metric_ton: woSite.metric_ton,
+            metric_ton_rate: woSite.metric_ton_rate,
+            budget_amount: woSite.budget_amount,
+            total_completion_amount: totalCompletionAmount.toString(),
+            created_at: woSite.created_at,
+            users: sitesUsers[index],
+            measurement_sheets: sitesSheets[index],
+            completions: siteCompletions,
+          };
+        });
 
         const scheduleOfRates = await ctx.db
           .select()

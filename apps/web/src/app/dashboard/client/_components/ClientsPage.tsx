@@ -45,7 +45,7 @@ const ClientsPage = () => {
               <TabsTrigger
                 value='clients'
                 className='text-xs cursor-pointer flex items-center gap-2'>
-                <Building2 className='h-4 w-4' />
+                <Building2 className='h-4 w-4 text-gray-500' />
                 Clients
                 <Badge
                   variant='secondary'
@@ -56,7 +56,7 @@ const ClientsPage = () => {
               <TabsTrigger
                 value='contacts'
                 className='text-xs cursor-pointer flex items-center gap-2'>
-                <Users className='h-4 w-4' />
+                <Users className='h-4 w-4 text-gray-500' />
                 Contacts
                 <Badge
                   variant='secondary'
