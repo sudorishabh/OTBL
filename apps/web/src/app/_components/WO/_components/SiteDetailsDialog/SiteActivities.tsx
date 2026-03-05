@@ -3,7 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { constants } from "@pkg/utils";
 import { BioremediationSections } from "./BioremediationSections";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FlaskConical, Building2, Trash2, ExternalLink } from "lucide-react";
+import { FlaskConical, Building2, Trash2, ExternalLink, CheckCircle, FileText, X, Receipt, BarChart3, Rows3 } from "lucide-react";
 import DeferredFilePicker from "@/components/DeferredFilePicker";
 import { useSharePointUpload } from "@/hooks/useSharePointUpload";
 import { Input } from "@/components/ui/input";
@@ -461,17 +461,27 @@ const PhaseForm = ({
     setFileFn: (f: File | null) => void,
   ) => {
     const existing = siteDocuments?.find((d) => d.type === type);
+    const label = PHASE_LABELS[type as DocType] || type;
+
     if (existing && !currentFile) {
       return (
-        <div className='flex justify-between items-center bg-slate-50 p-2 rounded-md border border-slate-200 mb-2'>
-          <a
-            href={existing.document_url}
-            target='_blank'
-            rel='noopener noreferrer'
-            className='text-[11px] font-medium flex items-center text-gray-600 truncate hover:text-emerald-600 transition-colors leading-tight'>
-            View {PHASE_LABELS[type as DocType] || type} Document
-            <ExternalLink className='inline size-3.5 text-gray-700 ml-1 opacity-40 group-hover:opacity-100 transition-opacity' />
-          </a>
+        <div className='group relative flex items-center gap-3 bg-emerald-50/60 p-3 rounded-xl border border-emerald-200/70 transition-all hover:border-emerald-300 hover:shadow-sm'>
+          <div className='flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-100 text-emerald-600 shrink-0'>
+            <CheckCircle className='size-4' />
+          </div>
+          <div className='flex-1 min-w-0'>
+            <p className='text-[11px] font-semibold text-emerald-800 leading-tight'>
+              {label} Document
+            </p>
+            <a
+              href={existing.document_url}
+              target='_blank'
+              rel='noopener noreferrer'
+              className='text-[10px] text-emerald-600 hover:text-emerald-700 flex items-center gap-1 mt-0.5 transition-colors'>
+              View uploaded file
+              <ExternalLink className='size-3' />
+            </a>
+          </div>
           <Button
             size='sm'
             variant='ghost'
@@ -479,116 +489,185 @@ const PhaseForm = ({
               confirm("Delete this document?") &&
               deleteDocumentMutation.mutate({ id: existing.id })
             }
-            className='h-6 w-6 p-0 text-slate-400 hover:text-red-500'>
+            className='h-7 w-7 p-0 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all'>
             <Trash2 className='size-3.5' />
           </Button>
         </div>
       );
     }
     return (
-      <div className='mb-2'>
-        <DeferredFilePicker
-          label={`Upload ${PHASE_LABELS[type as DocType] || type} Document`}
-          selectedFile={currentFile}
-          onFileSelect={setFileFn}
-          isUploading={isFileUploading}
-          uploadProgress={progress}
-          className='bg-white'
-        />
-      </div>
+      <DeferredFilePicker
+        label={`Upload ${label} Document`}
+        selectedFile={currentFile}
+        onFileSelect={setFileFn}
+        isUploading={isFileUploading}
+        uploadProgress={progress}
+        className='bg-white rounded-xl'
+      />
     );
   };
 
   return (
-    <div className='space-y-4'>
-      <div>
+    <div className='space-y-5'>
+      {/* === Documents Section === */}
+      <div className='rounded-xl border border-slate-200 bg-white p-4'>
+        <div className='flex items-center gap-2 mb-3'>
+          <FileText className='size-4 text-slate-500' />
+          <h4 className='text-[11px] font-semibold text-slate-600 uppercase tracking-wider'>
+            Required Documents
+          </h4>
+        </div>
+
         {phase === "estimate_sub-wo" ? (
-          <>
-            {renderDocumentSection("sub_wo", subWoFile, setSubWoFile)}
-            {renderDocumentSection("estimate", estimateFile, setEstimateFile)}
-          </>
+          <div className='grid grid-cols-2 gap-3'>
+            <div className='space-y-1.5'>
+              <span className='text-[10px] font-medium text-slate-500 uppercase tracking-wider px-0.5'>
+                Sub WO
+              </span>
+              {renderDocumentSection("sub_wo", subWoFile, setSubWoFile)}
+            </div>
+            <div className='space-y-1.5'>
+              <span className='text-[10px] font-medium text-slate-500 uppercase tracking-wider px-0.5'>
+                Estimate
+              </span>
+              {renderDocumentSection("estimate", estimateFile, setEstimateFile)}
+            </div>
+          </div>
         ) : phase === "completion" ? (
-          <>
-            {renderDocumentSection(
-              "completion_certificate",
-              completionCertFile,
-              setCompletionCertFile,
-            )}
-            <div className='bg-white/30 p-3 rounded-lg border border-slate-200'>
-              <h4 className='text-[10px] font-semibold text-slate-500 mb-2 uppercase tracking-wider'>
-                Bills
-              </h4>
-              <div className='space-y-1.5 mb-3'>
-                {siteDocuments
-                  ?.filter((d) => d.type === "bills")
-                  .map((doc, index) => (
-                    <div
-                      key={doc.id}
-                      className='flex justify-between items-center bg-slate-50/50 p-1.5 rounded border border-slate-200/60'>
-                      <a
-                        href={doc.document_url}
-                        target='_blank'
-                        rel='noopener noreferrer'
-                        className='text-[11px] font-medium flex items-center text-gray-600 truncate hover:text-emerald-600 transition-colors leading-tight'>
-                        Bill Document {index + 1}
-                        <ExternalLink className='size-3.5 ml-1' />
-                      </a>
-                      <Button
-                        size='sm'
-                        variant='ghost'
-                        onClick={() =>
-                          confirm("Delete this bill?") &&
-                          deleteDocumentMutation.mutate({ id: doc.id })
-                        }
-                        className='h-5 w-5 p-0 text-slate-400 hover:text-red-500'>
-                        <Trash2 className='size-3.5' />
-                      </Button>
-                    </div>
-                  ))}
+          <div className='space-y-4'>
+            <div className='space-y-1.5'>
+              <span className='text-[10px] font-medium text-slate-500 uppercase tracking-wider px-0.5'>
+                Completion Certificate
+              </span>
+              {renderDocumentSection(
+                "completion_certificate",
+                completionCertFile,
+                setCompletionCertFile,
+              )}
+            </div>
+
+            {/* Bills Sub-section */}
+            <div className='rounded-xl border border-slate-200/80 bg-slate-50/50 p-3'>
+              <div className='flex items-center justify-between mb-2.5'>
+                <div className='flex items-center gap-2'>
+                  <Receipt className='size-3.5 text-slate-400' />
+                  <h4 className='text-[10px] font-semibold text-slate-500 uppercase tracking-wider'>
+                    Bills
+                  </h4>
+                  {(siteDocuments?.filter((d) => d.type === "bills").length ||
+                    0) > 0 && (
+                    <span className='text-[9px] font-bold bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded-full'>
+                      {siteDocuments?.filter((d) => d.type === "bills").length}
+                    </span>
+                  )}
+                </div>
               </div>
+
+              {/* Existing Bills */}
+              {(siteDocuments?.filter((d) => d.type === "bills").length || 0) >
+                0 && (
+                <div className='grid grid-cols-2 gap-2 mb-3'>
+                  {siteDocuments
+                    ?.filter((d) => d.type === "bills")
+                    .map((doc, index) => (
+                      <div
+                        key={doc.id}
+                        className='group flex items-center gap-2.5 bg-white p-2 rounded-lg border border-slate-200/70 hover:border-slate-300 transition-all'>
+                        <div className='flex items-center justify-center w-7 h-7 rounded-md bg-blue-50 text-blue-500 text-[10px] font-bold shrink-0'>
+                          {index + 1}
+                        </div>
+                        <a
+                          href={doc.document_url}
+                          target='_blank'
+                          rel='noopener noreferrer'
+                          className='text-[11px] font-medium text-gray-600 truncate hover:text-blue-600 flex items-center gap-1 transition-colors flex-1 min-w-0'>
+                          Bill Document {index + 1}
+                          <ExternalLink className='size-3 shrink-0 opacity-50' />
+                        </a>
+                        <Button
+                          size='sm'
+                          variant='ghost'
+                          onClick={() =>
+                            confirm("Delete this bill?") &&
+                            deleteDocumentMutation.mutate({ id: doc.id })
+                          }
+                          className='h-6 w-6 p-0 rounded-md text-slate-300 hover:text-red-500 hover:bg-red-50 opacity-0 group-hover:opacity-100 transition-all shrink-0'>
+                          <Trash2 className='size-3' />
+                        </Button>
+                      </div>
+                    ))}
+                </div>
+              )}
+
+              {/* Upload New Bill */}
               <DeferredFilePicker
                 label='Add New Bill'
-                onFileSelect={(f) => f && setBillFiles((prev) => [...prev, f])}
+                onFileSelect={(f) =>
+                  f && setBillFiles((prev) => [...prev, f])
+                }
                 selectedFile={null}
                 isUploading={isFileUploading}
                 uploadProgress={progress}
-                className='bg-white h-9'
+                className='bg-white h-9 rounded-lg'
               />
+
+              {/* Pending Bill Files */}
               {billFiles.length > 0 && (
-                <div className='mt-2 space-y-1'>
+                <div className='mt-2 space-y-1.5'>
+                  <span className='text-[9px] font-semibold text-amber-600 uppercase tracking-wider'>
+                    Pending Upload ({billFiles.length})
+                  </span>
                   {billFiles.map((f, i) => (
                     <div
                       key={i}
-                      className='text-[10px] text-slate-500 flex items-center justify-between bg-blue-50/50 px-2 py-1 rounded border border-blue-100'>
-                      <span className='truncate mr-2'>{f.name}</span>
+                      className='flex items-center justify-between bg-amber-50/60 px-2.5 py-1.5 rounded-lg border border-amber-200/60'>
+                      <div className='flex items-center gap-2 min-w-0'>
+                        <div className='w-5 h-5 rounded bg-amber-100 flex items-center justify-center'>
+                          <FileText className='size-3 text-amber-600' />
+                        </div>
+                        <span className='text-[10px] text-slate-600 truncate'>
+                          {f.name}
+                        </span>
+                      </div>
                       <button
                         onClick={() =>
                           setBillFiles((prev) =>
                             prev.filter((_, idx) => idx !== i),
                           )
                         }
-                        className='text-red-400 hover:text-red-600 font-bold'>
-                        ×
+                        className='text-red-400 hover:text-red-600 p-0.5 rounded hover:bg-red-50 transition-colors shrink-0'>
+                        <X className='size-3' />
                       </button>
                     </div>
                   ))}
                 </div>
               )}
             </div>
-          </>
+          </div>
         ) : (
           renderDocumentSection(phase, file, setFile)
         )}
       </div>
-      {/* SOR Availability Summary */}
+
+      {/* === SOR Availability Section === */}
       {activities.some((a) => a.sor_estimated_quantity) && (
-        <div className='rounded-lg border border-slate-200 bg-white/60 overflow-hidden'>
-          <div className='px-3 py-2 bg-slate-100/80 border-b border-slate-200 flex items-center gap-1.5'>
-            <span className='text-[10px] font-semibold uppercase tracking-wider text-slate-500'>
-              SOR Availability (Based on Completion)
-            </span>
+        <div className='rounded-xl border border-slate-200 bg-white overflow-hidden'>
+          <div className='px-4 py-3 bg-gradient-to-r from-slate-50 to-blue-50/30 border-b border-slate-200 flex items-center justify-between'>
+            <div className='flex items-center gap-2'>
+              <div className='w-6 h-6 rounded-md bg-blue-100 flex items-center justify-center'>
+                <BarChart3 className='size-3.5 text-blue-600' />
+              </div>
+              <div>
+                <span className='text-[11px] font-semibold text-slate-700'>
+                  SOR Availability
+                </span>
+                <p className='text-[9px] text-slate-400'>
+                  Based on completion data
+                </p>
+              </div>
+            </div>
           </div>
-          <div className='divide-y divide-slate-100'>
+          <div className='p-3 space-y-2'>
             {activities
               .filter((a) => a.sor_estimated_quantity)
               .map((activity) => {
@@ -603,42 +682,88 @@ const PhaseForm = ({
                   sorQty > 0
                     ? Math.min(100, (completionUsed / sorQty) * 100)
                     : 0;
+                const statusColor =
+                  usedPct >= 100
+                    ? "red"
+                    : usedPct >= 80
+                      ? "amber"
+                      : "emerald";
+
                 return (
                   <div
                     key={activity.id}
-                    className='px-3 py-2'>
-                    <div className='flex items-center justify-between mb-1'>
-                      <span className='text-[11px] font-medium text-slate-700'>
+                    className='rounded-lg border border-slate-100 bg-slate-50/50 p-3 hover:border-slate-200 transition-colors'>
+                    <div className='flex items-center justify-between mb-2'>
+                      <span className='text-xs font-semibold text-slate-700'>
                         {formatName(activity.activity)}
                       </span>
-                      <div className='flex items-center gap-3 text-[10px]'>
-                        <span className='text-slate-400'>
-                          SOR:{" "}
-                          <span className='font-medium text-slate-600'>
-                            {sorQty.toFixed(2)} {activity.unit || "Nos"}
+                      <span
+                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                          statusColor === "red"
+                            ? "bg-red-100 text-red-700"
+                            : statusColor === "amber"
+                              ? "bg-amber-100 text-amber-700"
+                              : "bg-emerald-100 text-emerald-700"
+                        }`}>
+                        {usedPct.toFixed(0)}% used
+                      </span>
+                    </div>
+                    <div className='grid grid-cols-3 gap-2 mb-2'>
+                      <div className='bg-white rounded-md px-2.5 py-1.5 border border-slate-100'>
+                        <p className='text-[9px] text-slate-400 uppercase tracking-wider font-medium'>
+                          SOR Qty
+                        </p>
+                        <p className='text-xs font-bold text-slate-700'>
+                          {sorQty.toFixed(2)}{" "}
+                          <span className='font-normal text-[9px] text-slate-400'>
+                            {activity.unit || "Nos"}
                           </span>
-                        </span>
-                        <span className='text-amber-600'>
-                          Completed:{" "}
-                          <span className='font-semibold'>
-                            {completionUsed.toFixed(2)}
-                          </span>
-                        </span>
-                        <span
-                          className={
-                            available < 0 ? "text-red-600" : "text-emerald-600"
-                          }>
-                          Available:{" "}
-                          <span className='font-bold'>
-                            {available.toFixed(2)}
-                          </span>
-                        </span>
+                        </p>
+                      </div>
+                      <div className='bg-white rounded-md px-2.5 py-1.5 border border-slate-100'>
+                        <p className='text-[9px] text-amber-500 uppercase tracking-wider font-medium'>
+                          Completed
+                        </p>
+                        <p className='text-xs font-bold text-amber-600'>
+                          {completionUsed.toFixed(2)}
+                        </p>
+                      </div>
+                      <div
+                        className={`rounded-md px-2.5 py-1.5 border ${
+                          available < 0
+                            ? "bg-red-50 border-red-100"
+                            : "bg-emerald-50 border-emerald-100"
+                        }`}>
+                        <p
+                          className={`text-[9px] uppercase tracking-wider font-medium ${
+                            available < 0
+                              ? "text-red-400"
+                              : "text-emerald-500"
+                          }`}>
+                          Available
+                        </p>
+                        <p
+                          className={`text-xs font-bold ${
+                            available < 0
+                              ? "text-red-600"
+                              : "text-emerald-700"
+                          }`}>
+                          {available.toFixed(2)}
+                        </p>
                       </div>
                     </div>
                     <div className='h-1.5 bg-slate-100 rounded-full overflow-hidden'>
                       <div
-                        className={`h-full rounded-full transition-all ${usedPct >= 100 ? "bg-red-400" : usedPct >= 80 ? "bg-amber-400" : "bg-emerald-400"}`}
-                        style={{ width: `${Math.min(100, usedPct)}%` }}
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          usedPct >= 100
+                            ? "bg-red-400"
+                            : usedPct >= 80
+                              ? "bg-amber-400"
+                              : "bg-emerald-400"
+                        }`}
+                        style={{
+                          width: `${Math.min(100, usedPct)}%`,
+                        }}
                       />
                     </div>
                   </div>
@@ -647,39 +772,49 @@ const PhaseForm = ({
           </div>
         </div>
       )}
+
+      {/* === Activity Data Table === */}
       {(() => {
         const hasTransportActivity = activities.some(
           (a) => a.activity === "trans_cont_soil",
         );
         return (
-          <div className='border rounded-lg overflow-hidden bg-white/50 border-slate-200 shadow-xs'>
+          <div className='rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm'>
+            <div className='px-4 py-3 bg-gradient-to-r from-slate-50 to-slate-50/50 border-b border-slate-200 flex items-center gap-2'>
+              <div className='w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center'>
+                <Rows3 className='size-3.5 text-slate-500' />
+              </div>
+              <span className='text-[11px] font-semibold text-slate-700'>
+                Activity Data
+              </span>
+            </div>
             <Table className='w-full text-xs'>
-              <TableHeader className='bg-gray-200/50'>
-                <TableRow className='border-b border-slate-200 hover:bg-transparent'>
-                  <TableHead className='px-4 py-3 text-left border-r border-slate-200 w-[30%] text-slate-600 font-semibold h-auto'>
+              <TableHeader>
+                <TableRow className='bg-slate-50/80 border-b border-slate-200 hover:bg-slate-50/80'>
+                  <TableHead className='px-4 py-3 text-left w-[30%] text-slate-500 font-semibold h-auto text-[10px] uppercase tracking-wider'>
                     Activity Name
                   </TableHead>
-                  <TableHead className='px-2 py-3 text-center border-r border-slate-200 w-[10%] text-slate-600 font-semibold h-auto'>
+                  <TableHead className='px-2 py-3 text-center w-[10%] text-slate-500 font-semibold h-auto text-[10px] uppercase tracking-wider'>
                     Unit
                   </TableHead>
-                  <TableHead className='px-2 py-3 text-center border-r border-slate-200 w-[15%] text-slate-600 font-semibold h-auto'>
+                  <TableHead className='px-2 py-3 text-center w-[15%] text-slate-500 font-semibold h-auto text-[10px] uppercase tracking-wider'>
                     Rate
                   </TableHead>
-                  <TableHead className='px-2 py-3 text-center border-r border-slate-200 w-[15%] text-slate-600 font-semibold h-auto'>
+                  <TableHead className='px-2 py-3 text-center w-[15%] text-slate-500 font-semibold h-auto text-[10px] uppercase tracking-wider'>
                     Est. Qty
                   </TableHead>
                   <TableHead
-                    className={`px-2 py-3 text-center ${hasTransportActivity ? "border-r border-slate-200" : ""} w-[15%] text-slate-600 font-semibold h-auto`}>
+                    className={`px-2 py-3 text-center ${hasTransportActivity ? "" : ""} w-[15%] text-slate-500 font-semibold h-auto text-[10px] uppercase tracking-wider`}>
                     Amount
                   </TableHead>
                   {hasTransportActivity && (
-                    <TableHead className='px-2 py-3 text-center w-[15%] text-slate-600 font-semibold h-auto'>
+                    <TableHead className='px-2 py-3 text-center w-[15%] text-slate-500 font-semibold h-auto text-[10px] uppercase tracking-wider'>
                       Transport (KM)
                     </TableHead>
                   )}
                 </TableRow>
               </TableHeader>
-              <TableBody className='divide-y divide-slate-200 bg-white/40'>
+              <TableBody className='divide-y divide-slate-100'>
                 {activities.map((activity) => {
                   const currentData = formData[activity.activity] || {
                     estimated_quantity: "",
@@ -722,17 +857,19 @@ const PhaseForm = ({
                   return (
                     <TableRow
                       key={activity.id}
-                      className='group hover:bg-slate-50/50 transition-colors border-slate-200'>
-                      <TableCell className='px-4 py-2 border-r border-slate-200 font-medium text-slate-700 bg-slate-50/30'>
+                      className='group hover:bg-blue-50/20 transition-colors'>
+                      <TableCell className='px-4 py-2.5 font-medium text-slate-700 text-xs'>
                         {formatName(activity.activity)}
                       </TableCell>
-                      <TableCell className='px-2 py-2 border-r border-slate-200 text-center text-slate-500 bg-slate-50/20'>
-                        {activity.unit || "Nos"}
+                      <TableCell className='px-2 py-2.5 text-center'>
+                        <span className='text-[10px] font-medium bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full'>
+                          {activity.unit || "Nos"}
+                        </span>
                       </TableCell>
-                      <TableCell className='px-2 py-2 border-r border-slate-200 text-center text-emerald-600 font-medium bg-emerald-50/20'>
-                        {activity.rate || "0.00"}
+                      <TableCell className='px-2 py-2.5 text-center text-emerald-600 font-semibold'>
+                        ₹{activity.rate || "0.00"}
                       </TableCell>
-                      <TableCell className='p-0 border-r border-slate-200'>
+                      <TableCell className='p-0'>
                         <Input
                           value={currentData.estimated_quantity}
                           onChange={(e) =>
@@ -783,11 +920,11 @@ const PhaseForm = ({
                           </div>
                         )}
                       </TableCell>
-                      <TableCell className='p-0 border-r border-slate-200'>
+                      <TableCell className='p-0'>
                         <Input
                           value={currentData.amount}
                           readOnly
-                          className='h-10 w-full border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-slate-50/50 px-3 text-center text-xs font-semibold text-slate-700 placeholder:text-slate-300'
+                          className='h-10 w-full border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-slate-50/30 px-3 text-center text-xs font-semibold text-slate-700 placeholder:text-slate-300'
                           placeholder='0.00'
                         />
                       </TableCell>
@@ -807,8 +944,8 @@ const PhaseForm = ({
                               placeholder='0.00'
                             />
                           ) : (
-                            <div className='flex items-center justify-center h-10 text-slate-400'>
-                              -
+                            <div className='flex items-center justify-center h-10 text-slate-300'>
+                              —
                             </div>
                           )}
                         </TableCell>
@@ -822,7 +959,8 @@ const PhaseForm = ({
         );
       })()}
 
-      <div className='flex justify-end pt-2'>
+      {/* === Save Button === */}
+      <div className='flex justify-end pt-1'>
         <CustomButton
           variant='primary'
           text={`Save ${PHASE_LABELS[phase]} Data`}
@@ -928,66 +1066,85 @@ const SiteActivities = ({
   );
 
   return (
-    <div>
-      <div className='space-y-4'>
-        <div className={`rounded-xl bg-gray-100/60 p-5 border`}>
-          <Tabs
-            defaultValue='estimate_sub-wo'
-            className='w-full'>
-            <div className='flex items-start justify-between'>
-              <h3
-                className={`text-xs font-medium uppercase tracking-wide flex items-center gap-2 text-gray-700`}>
+    <div className='space-y-5'>
+      {/* Main Phase Card */}
+      <div className='rounded-xl bg-white border border-slate-200 shadow-sm overflow-hidden'>
+        {/* Header */}
+        <div className='px-5 py-4 bg-gradient-to-r from-slate-50 via-slate-50/80 to-transparent border-b border-slate-200'>
+          <div className='flex items-center justify-between'>
+            <div className='flex items-center gap-3'>
+              <div
+                className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+                  processType === "bioremediation"
+                    ? "bg-violet-100 text-violet-600"
+                    : "bg-blue-100 text-blue-600"
+                }`}>
                 {processType === "bioremediation" ? (
-                  <FlaskConical className='w-4 h-4' />
+                  <FlaskConical className='w-4.5 h-4.5' />
                 ) : (
-                  <Building2 className='w-4 h-4' />
+                  <Building2 className='w-4.5 h-4.5' />
                 )}
-                {processType === "bioremediation"
-                  ? "Bioremediation Data"
-                  : "Restoration Data"}
-              </h3>
-
-              <TabsList className='grid w-[30%] cursor-pointer grid-cols-2 mb-4 bg-gray-200 p-1 rounded-lg'>
-                {PHASES.map((phase) => (
-                  <TabsTrigger
-                    key={phase}
-                    value={phase}
-                    className='text-xs data-[state=active]:bg-white data-[state=active]:shadow-sm'>
-                    {PHASE_LABELS[phase]}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
+              </div>
+              <div>
+                <h3 className='text-sm font-bold text-gray-800'>
+                  {processType === "bioremediation"
+                    ? "Bioremediation Data"
+                    : "Restoration Data"}
+                </h3>
+                <p className='text-[10px] text-slate-400'>
+                  Enter estimate and completion data for activities
+                </p>
+              </div>
             </div>
-            {PHASES.map((phase) => (
-              <TabsContent
-                key={phase}
-                value={phase}
-                className='space-y-6'>
-                {siteActivitiesQuery.data &&
-                siteActivitiesQuery.data.length > 0 ? (
-                  <PhaseForm
-                    woSiteId={woSiteId}
-                    phase={phase}
-                    processType={processType}
-                    activities={siteActivitiesQuery.data}
-                    getActivityData={getActivityData}
-                    siteDocuments={siteDocumentsQuery.data}
-                    oilZappingData={bioremediationDataQuery.data?.oilZapping}
-                  />
-                ) : (
-                  <div className='text-xs text-center text-slate-500 italic py-4'>
-                    No activities found for this site.
-                  </div>
-                )}
-              </TabsContent>
-            ))}
-          </Tabs>
+          </div>
         </div>
 
-        {processType === "bioremediation" && (
-          <BioremediationSections woSiteId={woSiteId} />
-        )}
+        {/* Tabs inside card */}
+        <Tabs
+          defaultValue='estimate_sub-wo'
+          className='w-full'>
+          <div className='px-5 pt-3'>
+            <TabsList className='grid w-full max-w-xs grid-cols-2 bg-slate-100 p-1 rounded-lg h-9'>
+              {PHASES.map((phase) => (
+                <TabsTrigger
+                  key={phase}
+                  value={phase}
+                  className='text-xs font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:font-semibold rounded-md transition-all'>
+                  {PHASE_LABELS[phase]}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </div>
+
+          {PHASES.map((phase) => (
+            <TabsContent
+              key={phase}
+              value={phase}
+              className='p-5 pt-4'>
+              {siteActivitiesQuery.data &&
+              siteActivitiesQuery.data.length > 0 ? (
+                <PhaseForm
+                  woSiteId={woSiteId}
+                  phase={phase}
+                  processType={processType}
+                  activities={siteActivitiesQuery.data}
+                  getActivityData={getActivityData}
+                  siteDocuments={siteDocumentsQuery.data}
+                  oilZappingData={bioremediationDataQuery.data?.oilZapping}
+                />
+              ) : (
+                <div className='text-xs text-center text-slate-400 italic py-10 border-2 border-dashed border-slate-200 rounded-xl'>
+                  No activities found for this site.
+                </div>
+              )}
+            </TabsContent>
+          ))}
+        </Tabs>
       </div>
+
+      {processType === "bioremediation" && (
+        <BioremediationSections woSiteId={woSiteId} />
+      )}
     </div>
   );
 };
