@@ -135,7 +135,7 @@ const ProposalWOMain = ({ clientId }: Props) => {
       </div>
       <CreateProposalDialog clientId={Number(clientId)} />
       <CreateWODialog proposalTitle={proposalTitle} />
-      <ProposalWODetailsDialog />
+      <ProposalWODetailsDialog clientId={Number(clientId)} />
       <ProposalDetailDialog />
     </div>
   );
