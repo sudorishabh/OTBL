@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -9,7 +9,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ReceiptIndianRupee } from "lucide-react";
+import {
+  ReceiptIndianRupee,
+  MapPin,
+  ChevronDown,
+  ChevronRight,
+  TrendingUp,
+} from "lucide-react";
 import DialogWindow from "@/components/DialogWindow";
 import useHandleParams from "@/hooks/useHandleParams";
 
@@ -61,6 +67,148 @@ const formatActivityName = (name: string) => {
     .join(" ");
 };
 
+const SiteSpendingCard = ({
+  site,
+  index,
+}: {
+  site: SiteWithCompletions;
+  index: number;
+}) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const completions = site.completions || [];
+  const hasCompletions = completions.length > 0;
+
+  const siteTotal = completions.reduce(
+    (acc, comp) => acc + Number(comp.amount || 0),
+    0,
+  );
+
+  return (
+    <div
+      className={`border rounded-lg overflow-hidden transition-all duration-200 ${
+        hasCompletions
+          ? "border-slate-200 bg-white hover:border-slate-300 shadow-sm"
+          : "border-slate-100 bg-slate-50/50"
+      }`}>
+      {/* Site Header */}
+      <button
+        onClick={() => hasCompletions && setIsExpanded(!isExpanded)}
+        disabled={!hasCompletions}
+        className={`w-full flex items-center justify-between px-4 py-3 transition-colors ${
+          hasCompletions
+            ? "cursor-pointer hover:bg-slate-50/80"
+            : "cursor-default"
+        }`}>
+        <div className='flex items-center gap-3'>
+          <div
+            className={`flex items-center justify-center w-7 h-7 rounded-full text-xs font-bold ${
+              hasCompletions
+                ? "bg-emerald-100 text-emerald-700"
+                : "bg-slate-100 text-slate-400"
+            }`}>
+            {index + 1}
+          </div>
+          <div className='flex items-center gap-2'>
+            <MapPin
+              className={`w-3.5 h-3.5 ${hasCompletions ? "text-slate-500" : "text-slate-300"}`}
+            />
+            <span
+              className={`text-sm font-semibold ${hasCompletions ? "text-gray-800" : "text-gray-400"}`}>
+              {site.site.name}
+            </span>
+          </div>
+          {hasCompletions && (
+            <Badge
+              variant='outline'
+              className='bg-emerald-50 text-emerald-700 border-emerald-200 text-[10px] font-medium'>
+              {completions.length}{" "}
+              {completions.length === 1 ? "activity" : "activities"}
+            </Badge>
+          )}
+          {!hasCompletions && (
+            <span className='text-[10px] text-slate-400 italic'>
+              No completion data
+            </span>
+          )}
+        </div>
+        <div className='flex items-center gap-3'>
+          {hasCompletions && (
+            <span className='text-sm font-bold text-emerald-700'>
+              {formatCurrency(siteTotal)}
+            </span>
+          )}
+          {hasCompletions &&
+            (isExpanded ? (
+              <ChevronDown className='w-4 h-4 text-slate-400' />
+            ) : (
+              <ChevronRight className='w-4 h-4 text-slate-400' />
+            ))}
+        </div>
+      </button>
+
+      {/* Expanded Activity Table */}
+      {isExpanded && hasCompletions && (
+        <div className='border-t border-slate-100'>
+          <Table>
+            <TableHeader>
+              <TableRow className='bg-slate-50/80 hover:bg-slate-50/80'>
+                <TableHead className='text-[11px] font-semibold text-slate-500 uppercase tracking-wider py-2.5 pl-14'>
+                  Activity
+                </TableHead>
+                <TableHead className='text-[11px] font-semibold text-slate-500 uppercase tracking-wider text-right py-2.5'>
+                  Quantity
+                </TableHead>
+                <TableHead className='text-[11px] font-semibold text-slate-500 uppercase tracking-wider text-right py-2.5'>
+                  Trans. Km
+                </TableHead>
+                <TableHead className='text-[11px] font-semibold text-slate-500 uppercase tracking-wider text-right py-2.5 pr-4'>
+                  Amount
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {completions.map((comp, idx) => (
+                <TableRow
+                  key={`${comp.id}-${idx}`}
+                  className='hover:bg-emerald-50/30 transition-colors border-b border-slate-50 last:border-0'>
+                  <TableCell className='py-2.5 pl-14 text-xs font-medium text-gray-700'>
+                    {formatActivityName(comp.activity_name)}
+                  </TableCell>
+                  <TableCell className='py-2.5 text-right font-mono text-xs text-gray-600'>
+                    {comp.estimated_quantity}
+                  </TableCell>
+                  <TableCell className='py-2.5 text-right font-mono text-xs text-gray-600'>
+                    {comp.transportation_km ? (
+                      <span>{comp.transportation_km} km</span>
+                    ) : (
+                      <span className='text-gray-300'>-</span>
+                    )}
+                  </TableCell>
+                  <TableCell className='py-2.5 text-right font-semibold text-xs text-gray-800 pr-4'>
+                    {formatCurrency(comp.amount)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+            <TableFooter className='bg-emerald-50/40'>
+              <TableRow className='hover:bg-emerald-50/40'>
+                <TableCell
+                  colSpan={3}
+                  className='text-right text-xs font-bold text-emerald-800 py-2.5'>
+                  Site Total
+                </TableCell>
+                <TableCell className='text-right text-xs font-bold text-emerald-700 pr-4 py-2.5'>
+                  {formatCurrency(siteTotal)}
+                </TableCell>
+              </TableRow>
+            </TableFooter>
+          </Table>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const ScheduleOfRatesTable = ({ scheduleOfRates, sites }: Props) => {
   const { getParam, deleteParam } = useHandleParams();
   const dialog = getParam("dialog");
@@ -89,6 +237,22 @@ const ScheduleOfRatesTable = ({ scheduleOfRates, sites }: Props) => {
     );
   }, 0);
 
+  const spendingPct =
+    grandTotal > 0
+      ? Math.min(100, (totalSiteCompletions / grandTotal) * 100)
+      : 0;
+
+  // Sort sites: those with completions first, then without
+  const sortedSites = [...(sites || [])].sort((a, b) => {
+    const aHas = (a.completions || []).length > 0 ? 0 : 1;
+    const bHas = (b.completions || []).length > 0 ? 0 : 1;
+    return aHas - bHas;
+  });
+
+  const sitesWithData = sortedSites.filter(
+    (s) => (s.completions || []).length > 0,
+  );
+
   return (
     <DialogWindow
       size='2xl'
@@ -97,6 +261,7 @@ const ScheduleOfRatesTable = ({ scheduleOfRates, sites }: Props) => {
       open={isDialogOpen}
       setOpen={handleClose}>
       <div className='space-y-10 pb-10'>
+        {/* --- SOR Table Section (unchanged) --- */}
         <section>
           <div className='flex items-center gap-2 mb-4 px-1'>
             <div className='p-2 bg-blue-50 rounded-lg'>
@@ -197,95 +362,112 @@ const ScheduleOfRatesTable = ({ scheduleOfRates, sites }: Props) => {
           </div>
         </section>
 
+        {/* --- Site-wise Spending Breakdown Section --- */}
         <section>
           <div className='flex items-center gap-2 mb-4 px-1'>
             <div className='p-2 bg-emerald-50 rounded-lg'>
-              <ReceiptIndianRupee className='w-5 h-5 text-emerald-600' />
+              <TrendingUp className='w-5 h-5 text-emerald-600' />
             </div>
             <div>
               <h3 className='text-lg font-bold text-gray-900'>
-                Site-wise Activity Completion
+                Site-wise Spending Breakdown
               </h3>
               <p className='text-xs text-gray-500'>
-                Detailed breakdown of actual completion data recorded across all
-                sites
+                Activity completion spendings for each site under this work
+                order
               </p>
             </div>
           </div>
-          <div className='border rounded-xl overflow-hidden bg-white shadow-sm'>
-            <Table>
-              <TableHeader>
-                <TableRow className='bg-gray-50/50 hover:bg-gray-50/50 border-b'>
-                  <TableHead className='font-semibold text-gray-700 py-4'>
-                    Site Name
-                  </TableHead>
-                  <TableHead className='font-semibold text-gray-700'>
-                    Activity
-                  </TableHead>
-                  <TableHead className='font-semibold text-gray-700 text-right'>
-                    Quantity
-                  </TableHead>
-                  <TableHead className='font-semibold text-gray-700 text-right'>
-                    Trans. Km
-                  </TableHead>
-                  <TableHead className='font-semibold text-gray-700 text-right'>
-                    Amount
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sites?.some((s) => (s.completions || []).length > 0) ? (
-                  sites.map((site) =>
-                    (site.completions || []).map((comp, idx) => (
-                      <TableRow
-                        key={`${site.site.name}-${comp.id}-${idx}`}
-                        className='hover:bg-emerald-50/30 transition-colors border-b last:border-0'>
-                        <TableCell className='font-medium text-gray-800 p-4'>
-                          {idx === 0 ? site.site.name : ""}
-                        </TableCell>
-                        <TableCell className='text-gray-600'>
-                          {formatActivityName(comp.activity_name)}
-                        </TableCell>
-                        <TableCell className='text-right font-mono text-gray-600'>
-                          {comp.estimated_quantity}
-                        </TableCell>
-                        <TableCell className='text-right font-mono text-gray-600'>
-                          {comp.transportation_km ? (
-                            <span>{comp.transportation_km} km</span>
-                          ) : (
-                            <span className='text-gray-300'>-</span>
-                          )}
-                        </TableCell>
-                        <TableCell className='text-right font-semibold text-gray-800'>
-                          {formatCurrency(comp.amount)}
-                        </TableCell>
-                      </TableRow>
-                    )),
-                  )
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      className='text-center py-8 text-gray-400 italic'>
-                      No completion data recorded for any site yet.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-              <TableFooter className='bg-emerald-50/50 border-t-2 border-emerald-100'>
-                <TableRow>
-                  <TableCell
-                    colSpan={4}
-                    className='text-right font-bold text-base text-emerald-900 py-4'>
-                    Total Site Completion Amount
-                  </TableCell>
-                  <TableCell className='text-right font-bold text-lg text-emerald-700'>
+
+          {/* Spending Summary Bar */}
+          <div className='mb-5 rounded-lg border border-slate-200 bg-gradient-to-r from-slate-50 to-emerald-50/30 p-4'>
+            <div className='flex items-center justify-between mb-2'>
+              <div className='flex items-center gap-4'>
+                <div>
+                  <span className='text-[10px] uppercase tracking-wider text-slate-500 font-semibold'>
+                    Total Spent
+                  </span>
+                  <p className='text-lg font-bold text-emerald-700'>
                     {formatCurrency(totalSiteCompletions)}
-                  </TableCell>
-                </TableRow>
-              </TableFooter>
-            </Table>
+                  </p>
+                </div>
+                <div className='h-8 w-px bg-slate-200' />
+                <div>
+                  <span className='text-[10px] uppercase tracking-wider text-slate-500 font-semibold'>
+                    SOR Budget
+                  </span>
+                  <p className='text-lg font-bold text-slate-700'>
+                    {formatCurrency(grandTotal)}
+                  </p>
+                </div>
+              </div>
+              <div className='text-right'>
+                <span className='text-[10px] uppercase tracking-wider text-slate-500 font-semibold'>
+                  Utilization
+                </span>
+                <p
+                  className={`text-lg font-bold ${
+                    spendingPct >= 100
+                      ? "text-red-600"
+                      : spendingPct >= 80
+                        ? "text-amber-600"
+                        : "text-emerald-600"
+                  }`}>
+                  {spendingPct.toFixed(1)}%
+                </p>
+              </div>
+            </div>
+            <div className='h-2 bg-slate-200 rounded-full overflow-hidden'>
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${
+                  spendingPct >= 100
+                    ? "bg-red-500"
+                    : spendingPct >= 80
+                      ? "bg-amber-500"
+                      : "bg-emerald-500"
+                }`}
+                style={{ width: `${Math.min(100, spendingPct)}%` }}
+              />
+            </div>
+            <div className='flex justify-between mt-1.5 text-[10px] text-slate-400'>
+              <span>
+                {sitesWithData.length} of {sortedSites.length} sites with
+                completion data
+              </span>
+              <span>
+                Remaining: {formatCurrency(grandTotal - totalSiteCompletions)}
+              </span>
+            </div>
           </div>
+
+          {/* Site Cards */}
+          {sortedSites.length > 0 ? (
+            <div className='space-y-2'>
+              {sortedSites.map((site, index) => (
+                <SiteSpendingCard
+                  key={`${site.site.name}-${index}`}
+                  site={site}
+                  index={index}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className='text-center py-10 text-gray-400 italic text-sm border rounded-lg bg-slate-50/50'>
+              No sites found for this work order.
+            </div>
+          )}
+
+          {/* Grand Total Footer */}
+          {totalSiteCompletions > 0 && (
+            <div className='mt-4 px-4 py-3 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-between'>
+              <span className='text-sm font-bold text-emerald-900'>
+                Total Site Completion Amount
+              </span>
+              <span className='text-lg font-bold text-emerald-700'>
+                {formatCurrency(totalSiteCompletions)}
+              </span>
+            </div>
+          )}
         </section>
       </div>
     </DialogWindow>
