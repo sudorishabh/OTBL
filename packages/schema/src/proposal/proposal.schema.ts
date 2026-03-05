@@ -7,6 +7,9 @@ import {
   documentKeyValidator,
   currencyValidator,
   dateValidator,
+  pageValidator,
+  limitValidator,
+  searchQueryValidator,
 } from "../validators";
 
 // Base schemas
@@ -35,6 +38,13 @@ export const updateProposalSchema = createProposalSchema.extend({
 
 export const getProposalsByClientSchema = z.object({
   client_id: positiveIntValidator,
+});
+
+export const getProposalsByClientPaginatedSchema = z.object({
+  client_id: positiveIntValidator,
+  page: pageValidator,
+  limit: limitValidator,
+  searchQuery: searchQueryValidator,
 });
 
 export const getProposalByIdSchema = z.object({

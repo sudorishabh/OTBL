@@ -756,10 +756,10 @@ const PhaseForm = ({
                       <div
                         className={`h-full rounded-full transition-all duration-500 ${
                           usedPct >= 100
-                            ? "bg-red-400"
+                            ? "bg-red-600"
                             : usedPct >= 80
-                              ? "bg-amber-400"
-                              : "bg-emerald-400"
+                              ? "bg-amber-500"
+                              : "bg-emerald-500"
                         }`}
                         style={{
                           width: `${Math.min(100, usedPct)}%`,

@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { and, count, desc, eq, like, or } from "drizzle-orm";
 import { schema } from "@pkg/db";
 import { router } from "../../trpc";
 import { publicProcedure } from "../../core";
@@ -30,6 +30,79 @@ export const proposalQueryRouter = router({
           return { proposals };
         } catch (error) {
           throw fromDatabaseError(error, "Fetching proposals");
+        }
+      }),
+    ),
+
+  // Get proposals for a specific client with pagination
+  getProposalsByClientPaginated: publicProcedure
+    .input(proposalSchemas.getProposalsByClientPaginatedSchema)
+    .query(
+      handleQuery(async ({ input, ctx }) => {
+        const { client_id, page, limit, searchQuery } = input;
+
+        let conditions: any = eq(proposalTable.client_id, client_id);
+
+        if (searchQuery && searchQuery.trim() !== "") {
+          conditions = and(
+            conditions,
+            or(
+              like(proposalTable.code, `%${searchQuery}%`),
+              like(proposalTable.title, `%${searchQuery}%`),
+            ),
+          );
+        }
+
+        try {
+          const [totalResult] = await ctx.db
+            .select({ count: count() })
+            .from(proposalTable)
+            .where(conditions);
+
+          const total = totalResult?.count ?? 0;
+
+          if (total === 0) {
+            return {
+              proposals: [],
+              pagination: {
+                page,
+                limit,
+                total,
+                hasMore: false,
+                totalPages: 0,
+              },
+            };
+          }
+
+          const offset = (page - 1) * limit;
+
+          const proposals = await ctx.db
+            .select({ proposal: proposalTable, workOrder: workOrderTable })
+            .from(proposalTable)
+            .leftJoin(
+              workOrderTable,
+              eq(workOrderTable.proposal_id, proposalTable.id),
+            )
+            .where(conditions)
+            .limit(limit)
+            .offset(offset)
+            .orderBy(desc(proposalTable.created_at));
+
+          const totalPages = Math.ceil(total / limit);
+          const hasMore = offset + proposals.length < total;
+
+          return {
+            proposals,
+            pagination: {
+              page,
+              limit,
+              total,
+              hasMore,
+              totalPages,
+            },
+          };
+        } catch (error) {
+          throw fromDatabaseError(error, "Fetching paginated proposals");
         }
       }),
     ),
