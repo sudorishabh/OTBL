@@ -2,6 +2,7 @@
 import DialogWindow from "@/components/DialogWindow";
 import useHandleParams from "@/hooks/useHandleParams";
 import { trpc } from "@/lib/trpc";
+import { useRouter } from "next/navigation";
 import { capitalFirstLetter } from "@pkg/utils";
 import { format } from "date-fns";
 import {
@@ -141,7 +142,8 @@ const ProposalCardSkeleton = () => (
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 const ProposalWODetailsDialog = ({ clientId }: Props) => {
-  const { getParam, setParam, deleteParam, deleteParams } = useHandleParams();
+  const { getParam, setParam, setParams, deleteParam, deleteParams } = useHandleParams();
+  const router = useRouter();
   const isOpen = getParam("dialog") === "proposal-wo";
   const isFull = getParam("window") === "full";
 
@@ -307,7 +309,18 @@ const ProposalWODetailsDialog = ({ clientId }: Props) => {
                   <div className="p-5">
                     <div className="grid grid-cols-[1fr_48px_1fr] items-stretch gap-0">
                       {/* ─── Proposal Side ───────────────────────── */}
-                      <div className="pr-3">
+                      <div
+                        className="pr-3 cursor-pointer rounded-lg hover:bg-sky-50/50 transition-colors duration-200 -m-1 p-1"
+                        onClick={() => {
+                          deleteParams(["dialog", "window"]);
+                          setTimeout(() => {
+                            setParams({
+                              dialog: "proposal-detail",
+                              "proposal-id": proposal.id.toString(),
+                            });
+                          }, 100);
+                        }}
+                        title="View proposal details">
                         {/* Header badges */}
                         <div className="flex items-center gap-2 mb-2.5">
                           <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-sky-50 text-sky-700 text-[11px] font-mono font-medium ring-1 ring-sky-200">
@@ -399,7 +412,24 @@ const ProposalWODetailsDialog = ({ clientId }: Props) => {
                       </div>
 
                       {/* ─── Work Order Side ─────────────────────── */}
-                      <div className="pl-3">
+                      <div
+                        className={`pl-3 rounded-lg transition-colors duration-200 -m-1 p-1 ${
+                          workOrder
+                            ? "cursor-pointer hover:bg-emerald-50/50"
+                            : ""
+                        }`}
+                        onClick={() => {
+                          if (workOrder) {
+                            router.push(
+                              `/dashboard/client/workorder/${workOrder.id}`,
+                            );
+                          }
+                        }}
+                        title={
+                          workOrder
+                            ? "Go to work order page"
+                            : undefined
+                        }>
                         {workOrder ? (
                           <>
                             {/* Header badges */}

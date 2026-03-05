@@ -1,8 +1,6 @@
 import CustomButton from "@/components/CustomButton";
 import {
-  ArrowUpRight,
   Check,
-  CheckCircle2,
   Clock,
   FileText,
   Link2Off,
@@ -20,6 +18,7 @@ import CreateWODialog from "../create-wo/CreateWODialog";
 import ClientProposalSkeleton from "../../skeleton/ClientProposalSkeleton";
 import ProposalWODetailsDialog from "./ProposalWODetailsDialog";
 import ProposalDetailDialog from "./ProposalDetailDialog";
+import RightSidePanel from "./RightSidePanel";
 
 interface Props {
   clientId: string;
@@ -122,17 +121,7 @@ const ProposalWOMain = ({ clientId }: Props) => {
         </div>
       </div>
 
-      <div className='w-4/12 bg-linear-to-br from-white to-gray-50 shadow-sm py-2 px-0.5  rounded-xl border'>
-        <div className='flex items-center justify-between py-2 px-4'>
-          <h3 className='text-base font-semibold text-gray-900 flex items-center gap-2'>
-            <CheckCircle2 className='h-4 w-4 text-green-600' /> Completed
-          </h3>
-          <div className='h-8 w-8 rounded-full bg-white border hover:border-0 group flex items-center justify-center hover:bg-emerald-600 relative cursor-pointer'>
-            <ArrowUpRight className='h-4 w-4 text-emerald-700 group-hover:text-white' />
-          </div>
-        </div>
-        <div className='px-4 pb-4 pt-2 grid grid-cols-1 gap-5'></div>
-      </div>
+      <RightSidePanel proposals={proposals} />
       <CreateProposalDialog clientId={Number(clientId)} />
       <CreateWODialog proposalTitle={proposalTitle} />
       <ProposalWODetailsDialog clientId={Number(clientId)} />
