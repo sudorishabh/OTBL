@@ -112,6 +112,7 @@ const saveRestorationPhaseSchema = z.object({
 
 const {
   siteActivityTable,
+  workOrderSiteTable,
   workOrderSiteDocsTable,
   bioremediationContSoilTable,
   bioSampleTable,
@@ -433,6 +434,14 @@ export const workOrderSiteMutationRouter = router({
               ...data,
             } as any);
           }
+
+          if (phase === "completion") {
+            await ctx.db
+              .update(workOrderSiteTable)
+              .set({ is_completed: true })
+              .where(eq(workOrderSiteTable.id, work_order_site_id));
+          }
+
           return { success: true, message: "Contaminated Soil saved" };
         } catch (error) {
           throw fromDatabaseError(error, "Saving contaminated soil");
@@ -731,6 +740,13 @@ export const workOrderSiteMutationRouter = router({
               refill_excav_soil,
               "refilling_excavated_oil_contaminated_soil_land",
             );
+
+            if (phase === "completion") {
+              await tx
+                .update(workOrderSiteTable)
+                .set({ is_completed: true })
+                .where(eq(workOrderSiteTable.id, work_order_site_id));
+            }
           });
 
           return {

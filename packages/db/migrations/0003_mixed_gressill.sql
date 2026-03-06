@@ -1,0 +1,1 @@
+ALTER TABLE `work_order_sites` ADD `isCompleted` boolean DEFAULT false NOT NULL;

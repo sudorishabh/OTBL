@@ -2,6 +2,7 @@ import {
   mysqlTable,
   timestamp,
   varchar,
+  boolean,
   int,
   decimal,
   text,
@@ -376,6 +377,7 @@ export const workOrderSiteTable = mysqlTable(
     })
       .notNull()
       .default(WORK_ORDER_STATUS.PENDING),
+    is_completed: boolean("isCompleted").notNull().default(false),
     created_at: timestamp("created_at").notNull().defaultNow(),
     updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
   },
@@ -424,6 +426,7 @@ export const workOrderSiteDocsTable = mysqlTable("work_order_site_docs", {
     .references(() => workOrderSiteTable.id, { onDelete: "cascade" }),
   document_url: varchar("document_url", { length: 255 }).notNull(),
   document_id: varchar("document_id", { length: 255 }),
+
   type: varchar("type", {
     enum: [
       "sub_wo",

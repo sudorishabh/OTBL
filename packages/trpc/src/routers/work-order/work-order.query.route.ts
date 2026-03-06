@@ -460,6 +460,7 @@ export const workOrderQueryRouter = router({
             site_pincode: siteTable.pincode,
             end_date: workOrderSiteTable.end_date,
             status: workOrderSiteTable.status,
+            is_completed: workOrderSiteTable.is_completed,
             created_at: workOrderSiteTable.created_at,
           })
           .from(workOrderSiteTable)
@@ -626,6 +627,7 @@ export const workOrderQueryRouter = router({
             start_date: woSite.start_date,
             end_date: woSite.end_date,
             status: woSite.status,
+            is_completed: woSite.is_completed,
             activity_type: woSite.activity_type,
             metric_ton: woSite.metric_ton,
             metric_ton_rate: woSite.metric_ton_rate,
