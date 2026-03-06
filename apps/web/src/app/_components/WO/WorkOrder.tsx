@@ -161,8 +161,6 @@ const WorkOrder = ({ workOrderId, from }: Props) => {
     totalSites: stats.total_sites || 0,
     completedSites:
       (sites || []).filter((s: any) => s.is_completed === true)?.length || 0,
-    completedActivities:
-      (sites || []).filter((s: any) => s.status === "completed")?.length || 0,
     totalBudgetAmount: totalBudgetAmount,
     totalCompletionAmount: totalCompletionAmount,
     budgetUtilization:

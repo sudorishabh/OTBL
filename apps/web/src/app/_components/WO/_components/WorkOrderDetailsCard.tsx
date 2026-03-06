@@ -40,7 +40,6 @@ interface Props {
   stats: {
     totalSites: number;
     completedSites: number;
-    completedActivities: number;
     totalBudgetAmount: number;
     totalCompletionAmount: number;
     budgetUtilization: number;
@@ -50,8 +49,6 @@ interface Props {
 const WorkOrderDetailsCard = ({ workOrder, stats }: Props) => {
   const [isTotalSitesDialog, setIsTotalSitesDialog] = useState(false);
   const [isCompletedSitesDialog, setIsCompletedSitesDialog] = useState(false);
-  const [isCompletedActivitiesDialog, setIsCompletedActivitiesDialog] =
-    useState(false);
   const [isTotalBudgetDialog, setIsTotalBudgetDialog] = useState(false);
   const [isTotalCompletionDialog, setIsTotalCompletionDialog] = useState(false);
   const [isBudgetUtilizationDialog, setIsBudgetUtilizationDialog] =
@@ -247,7 +244,7 @@ const WorkOrderDetailsCard = ({ workOrder, stats }: Props) => {
         </CardContent>
       </Card>
 
-      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4'>
+      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4'>
         <WorkOrderStatCard
           Icon={MapPin}
           title='Total Sites'
@@ -262,13 +259,7 @@ const WorkOrderDetailsCard = ({ workOrder, stats }: Props) => {
           openDialog={isCompletedSitesDialog}
           setOpenDialog={setIsCompletedSitesDialog}
         />
-        <WorkOrderStatCard
-          Icon={CheckCircle2}
-          title='Completed Activities'
-          stat={Number(stats.completedActivities).toLocaleString()}
-          openDialog={isCompletedActivitiesDialog}
-          setOpenDialog={setIsCompletedActivitiesDialog}
-        />
+
         <WorkOrderStatCard
           Icon={IndianRupee}
           title='Total Budget'
