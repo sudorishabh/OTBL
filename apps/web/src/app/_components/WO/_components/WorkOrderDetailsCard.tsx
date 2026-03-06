@@ -53,6 +53,7 @@ const WorkOrderDetailsCard = ({ workOrder, stats }: Props) => {
   const [isTotalCompletionDialog, setIsTotalCompletionDialog] = useState(false);
   const [isBudgetUtilizationDialog, setIsBudgetUtilizationDialog] =
     useState(false);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -225,9 +226,15 @@ const WorkOrderDetailsCard = ({ workOrder, stats }: Props) => {
               <div className='text-[11px] uppercase tracking-wide text-gray-500 mb-2'>
                 Description
               </div>
-              <p className='text-gray-700 text-sm leading-relaxed'>
+              <p
+                className={`text-gray-700 text-sm leading-relaxed ${!isDescriptionExpanded ? "line-clamp-2" : ""}`}>
                 {capitalFirstLetter(workOrder.description)}
               </p>
+              <button
+                onClick={() => setIsDescriptionExpanded((prev) => !prev)}
+                className='text-xs text-emerald-600 hover:text-emerald-700 font-medium mt-1'>
+                {isDescriptionExpanded ? "Read less" : "Read more"}
+              </button>
             </div>
           )}
 
