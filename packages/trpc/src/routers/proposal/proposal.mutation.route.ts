@@ -40,7 +40,6 @@ export const proposalMutationRouter = router({
         try {
           const result = await ctx.db.insert(proposalTable).values({
             ...input,
-            proposal_amount: input.proposal_amount.toString(),
           });
 
           return {

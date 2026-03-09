@@ -122,10 +122,6 @@ export const proposalTable = mysqlTable(
     title: varchar("title", { length: 255 }).notNull(),
     document_key: varchar("document_key", { length: 255 }).notNull(),
     description: text("description"),
-    proposal_amount: decimal("proposal_amount", {
-      precision: 20,
-      scale: 2,
-    }).notNull(),
     proposal_submission_date: timestamp("proposal_submission_date").notNull(),
 
     status: varchar("status", {

@@ -20,7 +20,6 @@ export type proposalType = {
   title: string;
   document_key: string;
   description: string | null;
-  proposal_amount: string;
   proposal_submission_date: string;
   status: "approved" | "rejected" | "pending";
   created_by: number | null;

@@ -1,7 +1,6 @@
 import {
   ArrowUpRight,
   FileText,
-  IndianRupee,
   CalendarDays,
   CheckCircle2,
   XCircle,
@@ -17,15 +16,6 @@ import useHandleParams from "@/hooks/useHandleParams";
 interface Props {
   proposal: proposalTypes.proposalType;
 }
-
-const formatCurrency = (amount: string | number) => {
-  const num = typeof amount === "string" ? parseFloat(amount) : amount;
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(num);
-};
 
 const ProposalCard = ({ proposal }: Props) => {
   const { setParams } = useHandleParams();
@@ -81,21 +71,6 @@ const ProposalCard = ({ proposal }: Props) => {
 
       {/* Info Grid */}
       <div className='grid grid-cols-2 gap-2 mb-3'>
-        {/* Proposal Amount */}
-        <div className='flex items-center gap-2 rounded-md border border-gray-100 bg-linear-to-r from-emerald-50/50 to-transparent px-2.5 py-2'>
-          <IndianRupee className='w-4 h-4 text-emerald-600 shrink-0' />
-          <div className='min-w-0'>
-            <div className='text-[10px] uppercase tracking-wider text-gray-500'>
-              Amount
-            </div>
-            <div className='text-xs font-semibold text-gray-800 truncate'>
-              {proposal?.proposal_amount
-                ? formatCurrency(proposal.proposal_amount)
-                : "—"}
-            </div>
-          </div>
-        </div>
-
         {/* Submission Date */}
         <div className='flex items-center gap-2 rounded-md border border-gray-100 bg-linear-to-r from-blue-50/50 to-transparent px-2.5 py-2'>
           <CalendarDays className='w-4 h-4 text-emerald-600 shrink-0' />

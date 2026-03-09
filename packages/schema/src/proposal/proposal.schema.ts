@@ -5,7 +5,6 @@ import {
   longDescriptionValidator,
   positiveIntValidator,
   documentKeyValidator,
-  currencyValidator,
   dateValidator,
   pageValidator,
   limitValidator,
@@ -20,7 +19,6 @@ export const baseProposalSchema = z.object({
   description: longDescriptionValidator,
   document_key: documentKeyValidator,
   office_id: positiveIntValidator,
-  proposal_amount: currencyValidator,
   proposal_submission_date: dateValidator,
 });
 

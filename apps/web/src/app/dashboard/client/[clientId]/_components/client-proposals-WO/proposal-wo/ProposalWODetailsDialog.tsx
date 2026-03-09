@@ -8,7 +8,6 @@ import { format } from "date-fns";
 import {
   Search,
   FileText,
-  IndianRupee,
   CalendarDays,
   Clock,
   CheckCircle2,
@@ -39,15 +38,6 @@ interface Props {
 const ITEMS_PER_PAGE = 4;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const formatCurrency = (amount: string | number) => {
-  const num = typeof amount === "string" ? parseFloat(amount) : amount;
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: 0,
-  }).format(num);
-};
 
 const formatDate = (date: Date | string | null | undefined) => {
   if (!date) return "—";
@@ -340,20 +330,7 @@ const ProposalWODetailsDialog = ({ clientId }: Props) => {
                         </h4>
 
                         {/* Info chips */}
-                        <div className="grid grid-cols-2 gap-2 mb-3">
-                          <div className="flex items-center gap-2 rounded-lg border border-gray-100 bg-gradient-to-r from-emerald-50/60 to-transparent px-2.5 py-2">
-                            <IndianRupee className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                            <div className="min-w-0">
-                              <div className="text-[9px] uppercase tracking-wider text-gray-400 font-medium">
-                                Amount
-                              </div>
-                              <div className="text-xs font-semibold text-gray-800 truncate">
-                                {proposal.proposal_amount
-                                  ? formatCurrency(proposal.proposal_amount)
-                                  : "—"}
-                              </div>
-                            </div>
-                          </div>
+                        <div className="grid grid-cols-1 gap-2 mb-3">
                           <div className="flex items-center gap-2 rounded-lg border border-gray-100 bg-gradient-to-r from-blue-50/60 to-transparent px-2.5 py-2">
                             <CalendarDays className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                             <div className="min-w-0">

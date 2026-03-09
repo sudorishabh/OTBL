@@ -10,7 +10,6 @@ import {
   CheckCircle2,
   Clock,
   FileText,
-  IndianRupee,
   Link,
   XCircle,
   Briefcase,
@@ -33,15 +32,6 @@ const ProposalDetailDialog = () => {
   const workOrder = data?.workOrder;
 
   const isApproved = proposal?.status === "approved";
-
-  const formatCurrency = (amount: string | number) => {
-    const num = typeof amount === "string" ? parseFloat(amount) : amount;
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
-    }).format(num);
-  };
 
   const formatDate = (date: Date | string | null | undefined) => {
     if (!date) return "—";
@@ -106,21 +96,7 @@ const ProposalDetailDialog = () => {
               )}
             </div>
 
-            <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
-              <div className='p-4 rounded-lg bg-gray-50 border border-gray-100'>
-                <div className='flex items-center gap-2 text-gray-500 mb-1'>
-                  <IndianRupee className='w-4 h-4' />
-                  <span className='text-xs font-medium uppercase tracking-wide'>
-                    Amount
-                  </span>
-                </div>
-                <div className='text-lg font-semibold text-gray-900'>
-                  {proposal.proposal_amount
-                    ? formatCurrency(proposal.proposal_amount)
-                    : "—"}
-                </div>
-              </div>
-
+            <div className='grid grid-cols-1 sm:grid-cols-2 gap-4'>
               <div className='p-4 rounded-lg bg-gray-50 border border-gray-100'>
                 <div className='flex items-center gap-2 text-gray-500 mb-1'>
                   <CalendarDays className='w-4 h-4' />

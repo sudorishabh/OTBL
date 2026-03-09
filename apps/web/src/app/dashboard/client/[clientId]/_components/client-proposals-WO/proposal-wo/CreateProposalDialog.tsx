@@ -69,7 +69,6 @@ const CreateProposalDialog = ({ clientId }: Props) => {
       description: "",
       document_key: "",
       office_id: undefined,
-      proposal_amount: 0,
       proposal_submission_date: undefined,
     },
   });
@@ -101,7 +100,6 @@ const CreateProposalDialog = ({ clientId }: Props) => {
         description: "",
         document_key: "",
         office_id: undefined,
-        proposal_amount: 0,
         proposal_submission_date: undefined,
       });
       setSelectedFile(null);
@@ -119,7 +117,6 @@ const CreateProposalDialog = ({ clientId }: Props) => {
         description: "",
         document_key: "",
         office_id: undefined,
-        proposal_amount: 0,
         proposal_submission_date: undefined,
       });
       setSelectedFile(null);
@@ -265,16 +262,6 @@ const CreateProposalDialog = ({ clientId }: Props) => {
           />
 
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-            <CustomInput
-              control={form.control}
-              fieldName='proposal_amount'
-              Label='Proposal Amount (₹)'
-              type='number'
-              placeholder='Enter amount'
-              parseValue={(val) => (val === "" ? 0 : Number(val))}
-              formatDisplay={(val) => (val === 0 ? "" : val.toString())}
-            />
-
             <CustomInput
               control={form.control}
               fieldName='proposal_submission_date'
