@@ -19,6 +19,10 @@ const ProposalWOMain = dynamic(
   () => import("./_components/client-proposals-WO/proposal-wo/ProposalWOMain"),
 );
 
+const UpdateClientDialog = dynamic(
+  () => import("./_components/UpdateClientDialog"),
+);
+
 type PageProps = {
   params: Promise<{ clientId: string }>;
 };
@@ -49,6 +53,7 @@ const Client = ({ params }: PageProps) => {
           <ProposalWOMain clientId={clientId} />
         </Suspense>
       </div>
+      <UpdateClientDialog clientId={clientId} />
     </Wrapper>
   );
 };
