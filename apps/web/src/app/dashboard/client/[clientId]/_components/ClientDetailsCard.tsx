@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import {
-  Edit,
   MapPin,
   Phone,
   Users,
@@ -82,7 +81,6 @@ const ClientDetailsCard = ({ clientId }: Props) => {
   const {
     data: clientData,
     isLoading,
-    error,
     isError,
   } = trpc.clientQuery.getClient.useQuery(
     { clientId: Number(clientId) },
@@ -99,7 +97,7 @@ const ClientDetailsCard = ({ clientId }: Props) => {
   const formatDate = useCallback((d?: string): string => {
     try {
       return d ? format(new Date(d), "dd MMM yyyy") : "-";
-    } catch (e) {
+    } catch {
       return d ?? "-";
     }
   }, []);
@@ -261,6 +259,14 @@ const ClientDetailsCard = ({ clientId }: Props) => {
                       {client.email || "-"}
                     </a>
                   </div>
+
+                  <CustomButton
+                    variant='outline'
+                    Icon={Users}
+                    text='View Contacts'
+                    onClick={() => toggleDialog("contacts")}
+                    className='mt-2 absolute top-3 right-4.5'
+                  />
                 </InfoSection>
               </div>
             </div>

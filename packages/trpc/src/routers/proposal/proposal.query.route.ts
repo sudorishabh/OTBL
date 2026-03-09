@@ -9,15 +9,21 @@ import { proposalSchemas } from "@pkg/schema";
 const { proposalTable, workOrderTable } = schema;
 
 export const proposalQueryRouter = router({
-  // Get proposals for a specific client (no pagination)
+  // Get proposals for a specific client (with optional limit)
   getProposalsByClient: publicProcedure
     .input(proposalSchemas.getProposalsByClientSchema)
     .query(
       handleQuery(async ({ input, ctx }) => {
-        const { client_id } = input;
+        const { client_id, limit } = input;
 
         try {
-          const proposals = await ctx.db
+          const [totalResult] = await ctx.db
+            .select({ count: count() })
+            .from(proposalTable)
+            .where(eq(proposalTable.client_id, client_id));
+          const total = totalResult?.count ?? 0;
+
+          const baseQuery = ctx.db
             .select({ proposal: proposalTable, workOrder: workOrderTable })
             .from(proposalTable)
             .where(eq(proposalTable.client_id, client_id))
@@ -25,9 +31,14 @@ export const proposalQueryRouter = router({
               workOrderTable,
               eq(workOrderTable.proposal_id, proposalTable.id),
             )
-            .orderBy(desc(proposalTable.created_at));
+            .orderBy(desc(proposalTable.created_at))
+            .$dynamic();
 
-          return { proposals };
+          const proposals = limit
+            ? await baseQuery.limit(limit)
+            : await baseQuery;
+
+          return { proposals, total };
         } catch (error) {
           throw fromDatabaseError(error, "Fetching proposals");
         }

@@ -1,11 +1,5 @@
 import CustomButton from "@/components/CustomButton";
-import {
-  Check,
-  Clock,
-  FileText,
-  Link2Off,
-  Plus,
-} from "lucide-react";
+import { Check, Clock, FileText, Link2Off, Plus } from "lucide-react";
 import React from "react";
 import NoFetchData from "@/components/NoFetchData";
 import CreateProposalDialog from "./CreateProposalDialog";
@@ -27,7 +21,7 @@ const ProposalWOMain = ({ clientId }: Props) => {
   const { setParam, getParam } = useHandleParams();
 
   const { data, isLoading } = trpc.proposalQuery.getProposalsByClient.useQuery(
-    { client_id: Number(clientId) },
+    { client_id: Number(clientId), limit: 6 },
     { enabled: !!clientId },
   );
 
@@ -36,6 +30,8 @@ const ProposalWOMain = ({ clientId }: Props) => {
   }
 
   const proposals = data?.proposals || [];
+  const total = data?.total ?? 0;
+  const hasMore = total > proposals.length;
 
   const proposalId = getParam("proposal-id");
   const selectedProposal = proposals.find(
@@ -50,6 +46,11 @@ const ProposalWOMain = ({ clientId }: Props) => {
           <h3 className='text-base font-semibold text-gray-900 flex items-center gap-2'>
             <Clock className='h-4 w-4 text-amber-600' />
             Proposal - Work Orders
+            {total > 0 && (
+              <span className='text-xs font-normal text-gray-400'>
+                {hasMore ? `Showing 6 of ${total}` : `${total} total`}
+              </span>
+            )}
           </h3>
           <div className='flex items-center gap-3'>
             <CustomButton
@@ -116,6 +117,15 @@ const ProposalWOMain = ({ clientId }: Props) => {
                 title='No proposals'
                 description='Create a new proposal to get started.'
               />
+            </div>
+          )}
+          {hasMore && (
+            <div className='pt-1 pb-2 flex justify-center'>
+              <button
+                onClick={() => setParam("dialog", "proposal-wo")}
+                className='text-xs text-emerald-600 hover:text-emerald-700 font-medium transition-colors'>
+                View all {total} proposals →
+              </button>
             </div>
           )}
         </div>
