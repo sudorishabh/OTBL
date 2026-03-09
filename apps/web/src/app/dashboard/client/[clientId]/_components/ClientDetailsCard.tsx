@@ -20,10 +20,6 @@ import { trpc } from "@/lib/trpc";
 import Error from "@/components/Error";
 import ClientInfoSkeleton from "./skeleton/ClientInfoSkeleton";
 import ClientStatCard from "./client-stats/ClientStatCard";
-import TotalSitesDialog from "./client-stats/client-stats-dialogs/TotalSitesDialog";
-import CompletedWODialog from "./client-stats/client-stats-dialogs/CompletedWODialog";
-import TotalExpenseDialog from "./client-stats/client-stats-dialogs/TotalExpenseDialog";
-import TotalBudgetDialog from "./client-stats/client-stats-dialogs/TotalBudgetDialog";
 import useHandleParams from "@/hooks/useHandleParams";
 
 interface Props {
@@ -31,19 +27,10 @@ interface Props {
 }
 
 // Dialog state management types
-type DialogType =
-  | "contacts"
-  | "totalSites"
-  | "completedWO"
-  | "totalBudget"
-  | "totalExpense";
+type DialogType = "contacts";
 
 interface DialogState {
   contacts: boolean;
-  totalSites: boolean;
-  completedWO: boolean;
-  totalBudget: boolean;
-  totalExpense: boolean;
 }
 
 // Extract icon container as a reusable component
@@ -85,10 +72,6 @@ const ClientDetailsCard = ({ clientId }: Props) => {
   // Consolidated dialog state
   const [dialogState, setDialogState] = useState<DialogState>({
     contacts: false,
-    totalSites: false,
-    completedWO: false,
-    totalBudget: false,
-    totalExpense: false,
   });
 
   const [showFullGst, setShowFullGst] = useState(false);
@@ -308,29 +291,21 @@ const ClientDetailsCard = ({ clientId }: Props) => {
           Icon={MapPin}
           title='Total Sites'
           stat={stats.siteCount.toLocaleString()}
-          openDialog={dialogState.totalSites}
-          setOpenDialog={() => toggleDialog("totalSites")}
         />
         <ClientStatCard
           Icon={CheckCircle2}
           title='Completed Work Orders'
           stat={stats.completedWorkOrders.toLocaleString()}
-          openDialog={dialogState.completedWO}
-          setOpenDialog={() => toggleDialog("completedWO")}
         />
         <ClientStatCard
           Icon={IndianRupee}
           title='Total Budget'
           stat={stats.totalBudgetAmount.toLocaleString()}
-          openDialog={dialogState.totalBudget}
-          setOpenDialog={() => toggleDialog("totalBudget")}
         />
         <ClientStatCard
           Icon={IndianRupee}
           title='Total Expense'
           stat={stats.totalExpenseAmount.toLocaleString()}
-          openDialog={dialogState.totalExpense}
-          setOpenDialog={() => toggleDialog("totalExpense")}
         />
       </div>
 
@@ -339,22 +314,6 @@ const ClientDetailsCard = ({ clientId }: Props) => {
         open={dialogState.contacts}
         onClose={() => closeDialog("contacts")}
         users={clientUsers}
-      />
-      <TotalSitesDialog
-        open={dialogState.totalSites}
-        setOpen={() => closeDialog("totalSites")}
-      />
-      <CompletedWODialog
-        open={dialogState.completedWO}
-        setOpen={() => closeDialog("completedWO")}
-      />
-      <TotalBudgetDialog
-        open={dialogState.totalBudget}
-        setOpen={() => closeDialog("totalBudget")}
-      />
-      <TotalExpenseDialog
-        open={dialogState.totalExpense}
-        setOpen={() => closeDialog("totalExpense")}
       />
     </>
   );
