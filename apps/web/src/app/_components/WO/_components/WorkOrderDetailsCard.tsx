@@ -47,12 +47,7 @@ interface Props {
 }
 
 const WorkOrderDetailsCard = ({ workOrder, stats }: Props) => {
-  const [isTotalSitesDialog, setIsTotalSitesDialog] = useState(false);
-  const [isCompletedSitesDialog, setIsCompletedSitesDialog] = useState(false);
-  const [isTotalBudgetDialog, setIsTotalBudgetDialog] = useState(false);
-  const [isTotalCompletionDialog, setIsTotalCompletionDialog] = useState(false);
-  const [isBudgetUtilizationDialog, setIsBudgetUtilizationDialog] =
-    useState(false);
+
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   const getStatusColor = (status: string) => {
@@ -256,37 +251,26 @@ const WorkOrderDetailsCard = ({ workOrder, stats }: Props) => {
           Icon={MapPin}
           title='Total Sites'
           stat={Number(stats.totalSites).toLocaleString()}
-          openDialog={isTotalSitesDialog}
-          setOpenDialog={setIsTotalSitesDialog}
         />
         <WorkOrderStatCard
           Icon={CheckCircle2}
           title='Completed Sites'
           stat={Number(stats.completedSites).toLocaleString()}
-          openDialog={isCompletedSitesDialog}
-          setOpenDialog={setIsCompletedSitesDialog}
         />
-
         <WorkOrderStatCard
           Icon={IndianRupee}
           title='Total Budget'
           stat={`${Number(stats.totalBudgetAmount).toLocaleString()}`}
-          openDialog={isTotalBudgetDialog}
-          setOpenDialog={setIsTotalBudgetDialog}
         />
         <WorkOrderStatCard
           Icon={IndianRupee}
           title='Total Completion'
           stat={`${Number(stats.totalCompletionAmount).toLocaleString()}`}
-          openDialog={isTotalCompletionDialog}
-          setOpenDialog={setIsTotalCompletionDialog}
         />
         <WorkOrderStatCard
           Icon={TrendingUp}
           title='Budget Utilization'
           stat={`${Number(stats.budgetUtilization).toFixed(1)}%`}
-          openDialog={isBudgetUtilizationDialog}
-          setOpenDialog={setIsBudgetUtilizationDialog}
         />
       </div>
     </>
