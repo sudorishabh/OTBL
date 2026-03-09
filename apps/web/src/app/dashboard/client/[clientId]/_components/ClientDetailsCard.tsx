@@ -223,23 +223,6 @@ const ClientDetailsCard = ({ clientId }: Props) => {
                 </div>
               </div>
             </div>
-
-            <div className='flex items-center gap-3'>
-              <CustomButton
-                text='Contacts'
-                Icon={Users}
-                variant='outline'
-                onClick={() => toggleDialog("contacts")}
-                aria-label='View client contacts'
-              />
-
-              <CustomButton
-                Icon={Edit}
-                text='Edit'
-                variant='outline'
-                aria-label='Edit client details'
-              />
-            </div>
           </div>
         </CardHeader>
 
