@@ -12,6 +12,7 @@ import CreateWODialog from "../create-wo/CreateWODialog";
 import ClientProposalSkeleton from "../../skeleton/ClientProposalSkeleton";
 import ProposalWODetailsDialog from "./ProposalWODetailsDialog";
 import ProposalDetailDialog from "./ProposalDetailDialog";
+import ClientWOStatsDialog from "./ClientWOStatsDialog";
 import RightSidePanel from "./RightSidePanel";
 
 interface Props {
@@ -136,6 +137,12 @@ const ProposalWOMain = ({ clientId }: Props) => {
       <CreateWODialog proposalTitle={proposalTitle} />
       <ProposalWODetailsDialog clientId={Number(clientId)} />
       <ProposalDetailDialog />
+      <ClientWOStatsDialog 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ongoingWOs={proposals.filter(p => p.workOrder?.status === "pending").map(p => p.workOrder) as any[]}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        completedWOs={proposals.filter(p => p.workOrder?.status === "completed").map(p => p.workOrder) as any[]}
+      />
     </div>
   );
 };

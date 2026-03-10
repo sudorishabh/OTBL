@@ -17,6 +17,8 @@ import {
   Loader2,
 } from "lucide-react";
 
+import { useHandleParams } from "@/hooks/useHandleParams";
+
 type WorkOrder = {
   id: number;
   code: string;
@@ -166,6 +168,7 @@ const MiniWOCard = ({ wo }: { wo: WorkOrder }) => {
 // ─── Main Panel ───────────────────────────────────────────────────────────────
 
 const RightSidePanel = ({ proposals }: Props) => {
+  const { setParam } = useHandleParams();
   const [activeTab, setActiveTab] = useState<TabKey>("ongoing");
 
   // Derive work orders from proposals
@@ -199,11 +202,20 @@ const RightSidePanel = ({ proposals }: Props) => {
     <div className="w-4/12 bg-gradient-to-br from-white to-gray-50 shadow-sm py-2 px-0.5 rounded-xl border flex flex-col">
       {/* ─── Header ─────────────────────────────────────────────── */}
       <div className="px-4 py-2">
-        <div className="flex items-center gap-2 mb-3">
-          <Briefcase className="h-4 w-4 text-gray-600" />
-          <h3 className="text-base font-semibold text-gray-900">
-            Work Orders
-          </h3>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <Briefcase className="h-4 w-4 text-gray-600" />
+            <h3 className="text-base font-semibold text-gray-900">
+              Work Orders
+            </h3>
+          </div>
+          <button 
+            title="View spending stats"
+            onClick={() => setParam("dialog", "client-wo-stats")}
+            className="p-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"
+          >
+            <AlignEndHorizontal className="w-4 h-4" />
+          </button>
         </div>
 
         {/* ─── Tab Toggle ───────────────────────────────────────── */}
