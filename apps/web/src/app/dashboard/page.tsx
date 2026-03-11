@@ -2,40 +2,9 @@
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { trpc } from "@/lib/trpc";
-import { useEffect } from "react";
 
 export default function DashboardPage() {
   const { user, logout, isUserLoading } = useAuthContext();
-
-  // // SharePoint connection test (for debugging)
-  // const { mutateAsync: createFolder } =
-  //   trpc.sharePointMutation.createFolder.useMutation();
-
-  // const { data: folders } = trpc.sharePointQuery.getFolders.useQuery({
-  //   folderPath: "/OTBL",
-  // });
-
-  // const createFolderHandler = async () => {
-  //   try {
-  //     const result = await createFolder({
-  //       parentPath: "/OTBL",
-  //       folderName: "TestFolder2",
-  //     });
-
-  //     console.log(result);
-  //     console.log("Folder created successfully");
-  //   } catch (error) {
-  //     console.error("Error creating folder:", error);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   createFolderHandler();
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, []);
-
-  // console.log(folders);
 
   if (isUserLoading) {
     return (

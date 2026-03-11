@@ -45,7 +45,7 @@ const Client = ({ params }: PageProps) => {
           onClick={() => setParam("dialog", "update-client")}
         />
       }>
-      <div className='mt-4 space-y-6'>
+      <div className='mt-4 space-y-4'>
         <Suspense fallback={<ClientInfoSkeleton />}>
           <ClientDetailsCard clientId={clientId} />
         </Suspense>
