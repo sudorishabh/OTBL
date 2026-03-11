@@ -1,3 +1,4 @@
+"use client"
 import WorkOrder from "@/app/_components/WO/WorkOrder";
 import useHandleParams from "@/hooks/useHandleParams";
 import React, { useEffect } from "react";

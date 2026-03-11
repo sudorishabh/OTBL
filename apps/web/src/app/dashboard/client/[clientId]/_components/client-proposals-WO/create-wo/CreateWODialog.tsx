@@ -234,7 +234,7 @@ const CreateWODialog = ({ proposalTitle }: Props) => {
       title='Create Work Order'
       description={`Create a new work order for proposal: ${proposalTitle}`}
       heightMode='full'
-      open={isOpenDialog}
+      open={isOpenDialog as boolean}
       size='2xl'
       setOpen={handleCloseDialog}>
       <Form {...form}>

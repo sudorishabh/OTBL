@@ -9,10 +9,10 @@ import {
   Loader,
 } from "lucide-react";
 
-const enum variantEnum {
-  "primary" = "primary",
-  "secondary" = "secondary",
-}
+// const enum variantEnum {
+//   "primary" = "primary",
+//   "secondary" = "secondary",
+// }
 
 interface Props {
   Icon?: React.ElementType;

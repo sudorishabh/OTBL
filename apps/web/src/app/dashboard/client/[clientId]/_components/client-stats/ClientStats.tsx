@@ -31,7 +31,7 @@ const ClientStats = ({ stats, clientId }: Props) => {
           Icon={MapPin}
           title='Total Sites'
           stat={stats ? Number(stats.siteCount).toLocaleString() : 0}
-          openDialog={isTotalSiteDialog}
+          openDialog={isTotalSiteDialog as boolean}
           setOpenDialog={setIsTotalSiteDialog}
         />
         <ClientStatCard

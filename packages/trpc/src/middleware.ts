@@ -16,8 +16,8 @@ import {
   type UserRole,
 } from "./authorization";
 
-// Re-export schema from @pkg/db/schema to make types portable
-export * as schema from "@pkg/db/schema";
+import * as schema from "@pkg/db/schema";
+export { schema };
 
 export { router } from "./trpc";
 
