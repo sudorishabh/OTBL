@@ -196,7 +196,7 @@ export const workOrderSiteQueryRouter = router({
         if (activities.length === 0) return [];
 
         const sorIds = activities
-          .map((a) => a.schedule_of_rates_id)
+          .map((a: any) => a.schedule_of_rates_id)
           .filter(Boolean) as number[];
 
         // Get all site activity IDs for these SOR IDs
@@ -208,7 +208,7 @@ export const workOrderSiteQueryRouter = router({
           .from(siteActivityTable)
           .where(inArray(siteActivityTable.schedule_of_rates_id, sorIds));
 
-        const saIds = allSiteActivities.map((sa) => sa.id);
+        const saIds = allSiteActivities.map((sa: any) => sa.id);
 
         if (saIds.length > 0) {
           // Fetch all possible work order sites related to the same work order
@@ -235,7 +235,7 @@ export const workOrderSiteQueryRouter = router({
               ),
             );
 
-          const siteIds = relatedSites.map((s) => s.id);
+          const siteIds = relatedSites.map((s: any) => s.id);
 
           // Fetch quantities from all child tables using site IDs
           const [q1, q2, q3, q4, q5, q6] = await Promise.all([
@@ -375,7 +375,7 @@ export const workOrderSiteQueryRouter = router({
               const saEntries: any[] = [];
               for (const table of entriesByTable) {
                 const matched = table.entries.filter(
-                  (e) =>
+                  (e: any) =>
                     e.site_activity_id === sa.id ||
                     (e.work_order_site_id === sa.work_order_site_id &&
                       table.name === sa.activity),
@@ -385,9 +385,9 @@ export const workOrderSiteQueryRouter = router({
 
               if (saEntries.length === 0) continue;
 
-              const completion = saEntries.find((e) => e.type === "completion");
+              const completion = saEntries.find((e: any) => e.type === "completion");
               const estimate = saEntries.find(
-                (e) => e.type === "estimate_sub-wo",
+                (e: any) => e.type === "estimate_sub-wo",
               );
 
               const bestQty = parseFloat(
@@ -404,7 +404,7 @@ export const workOrderSiteQueryRouter = router({
             completionUtilizationMap.set(sorId, totalCompletion);
           }
 
-          return activities.map((a) => ({
+          return activities.map((a: any) => ({
             ...a,
             total_used_quantity: (
               utilizationMap.get(a.schedule_of_rates_id!) || 0

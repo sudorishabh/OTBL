@@ -536,7 +536,7 @@ export const workOrderSiteMutationRouter = router({
       handleMutation(async ({ input, ctx }) => {
         const { work_order_site_id, data } = input;
         try {
-          await ctx.db.transaction(async (tx) => {
+          await ctx.db.transaction(async (tx: any) => {
             await tx
               .delete(bioSampleTable)
               .where(eq(bioSampleTable.work_order_site_id, work_order_site_id));
@@ -573,7 +573,7 @@ export const workOrderSiteMutationRouter = router({
       handleMutation(async ({ input, ctx }) => {
         const { work_order_site_id, data } = input;
         try {
-          await ctx.db.transaction(async (tx) => {
+          await ctx.db.transaction(async (tx: any) => {
             await tx
               .delete(bioOilZappingTable)
               .where(
@@ -699,7 +699,7 @@ export const workOrderSiteMutationRouter = router({
         };
 
         try {
-          await ctx.db.transaction(async (tx) => {
+          await ctx.db.transaction(async (tx: any) => {
             if (document_url && phase !== "estimate_sub-wo") {
               await upsertDoc(tx, document_url, phase);
             }
