@@ -21,8 +21,15 @@ import { proposalQueryRouter } from "./routers/proposal/proposal.query.route";
 // import { technologyQueryRouter } from "./routers/technology/technology.query.route";
 import { sharePointQueryRouter } from "./routers/sharepoint/sharepoint.query.route";
 import { sharePointMutationRouter } from "./routers/sharepoint/sharepoint.mutation.route";
+import { publicProcedure } from "./middleware";
 
 export const appRouter = router({
+
+  // Default route
+  default: publicProcedure.query(() => {
+    return { message: "Working" };
+  }),
+
   // Auth
   authQuery: authQueryRouter,
   authMutation: authMutationRouter,
