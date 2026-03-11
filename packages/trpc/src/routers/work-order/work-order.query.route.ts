@@ -279,7 +279,7 @@ export const workOrderQueryRouter = router({
         // Fetch users and measurement sheets for the fetched sites
         const [sitesUsers, sitesSheets] = await Promise.all([
           Promise.all(
-            woSites.map((woSite) =>
+            woSites.map((woSite: any) =>
               ctx.db
                 .select({
                   site_id: siteUserTable.site_id,
@@ -295,7 +295,7 @@ export const workOrderQueryRouter = router({
             ),
           ),
           Promise.all(
-            woSites.map((woSite) =>
+            woSites.map((woSite: any) =>
               ctx.db
                 .select()
                 .from(workOrderSiteDocsTable)
@@ -309,7 +309,7 @@ export const workOrderQueryRouter = router({
           ),
         ]);
 
-        const sitesWithDetails = woSites.map((woSite, index) => ({
+        const sitesWithDetails = woSites.map((woSite: any, index: any) => ({
           ...woSite,
           users: sitesUsers[index],
           measurement_sheets: sitesSheets[index],

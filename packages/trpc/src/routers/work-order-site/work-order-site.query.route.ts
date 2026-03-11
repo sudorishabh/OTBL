@@ -415,7 +415,7 @@ export const workOrderSiteQueryRouter = router({
           }));
         }
 
-        return activities.map((a) => ({
+        return activities.map((a: any) => ({
           ...a,
           total_used_quantity: "0.00",
           total_completion_quantity: "0.00",

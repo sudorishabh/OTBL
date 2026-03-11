@@ -82,7 +82,7 @@ export const workOrderMutationRouter = router({
 
           // Create schedule of rates entries
           if (input.schedule_of_rates && input.schedule_of_rates.length > 0) {
-            const scheduleOfRatesData = input.schedule_of_rates.map((sor) => ({
+            const scheduleOfRatesData = input.schedule_of_rates.map((sor: any) => ({
               work_order_id: workOrderId,
               activity: sor.activity.name,
               unit: sor.unit,
@@ -139,7 +139,7 @@ export const workOrderMutationRouter = router({
     .input(workOrderSchemas.createWorkOrderSiteSchema)
     .mutation(
       handleMutation(async ({ input, ctx }) => {
-        return await ctx.db.transaction(async (tx) => {
+        return await ctx.db.transaction(async (tx: any) => {
           let siteId = input.site_id;
 
           // 1. Handle new site creation if provided
@@ -219,7 +219,7 @@ export const workOrderMutationRouter = router({
               input.selected_activities.length > 0
             ) {
               const activityValues = input.selected_activities.map(
-                (activity) => ({
+                (activity: any) => ({
                   work_order_site_id: workOrderSiteId,
                   activity: activity.name,
                   unit: activity.unit,
