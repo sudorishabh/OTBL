@@ -7,7 +7,7 @@ type PageProps = {
   params: Promise<{ workOrderId: string }>;
 };
 
-const WorkOrderPage = ({ params }: PageProps) => {
+const WorkOrderPageContent = ({ params }: PageProps) => {
   const { workOrderId } = React.use(params);
   const { setParam } = useHandleParams();
 
@@ -20,6 +20,14 @@ const WorkOrderPage = ({ params }: PageProps) => {
       workOrderId={workOrderId}
       from='list'
     />
+  );
+};
+
+const WorkOrderPage = ({ params }: PageProps) => {
+  return (
+    <React.Suspense fallback={<div>Loading work order...</div>}>
+      <WorkOrderPageContent params={params} />
+    </React.Suspense>
   );
 };
 

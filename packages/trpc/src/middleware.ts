@@ -1,4 +1,3 @@
-import { TRPCError } from "@trpc/server";
 import { transformToTRPCError } from "./errors";
 import { t } from "./trpc";
 import { loggingMiddleware } from "./logging-middleware";

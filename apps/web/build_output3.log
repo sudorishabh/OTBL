@@ -1,0 +1,37 @@
+
+> web@0.1.0 build C:\Users\Rishabh.Negi_i\OneDrive - The Energy and Resources Institute\Desktop\My_Files\Projects\OTBL\otbl-monorepo-2\apps\web
+> next build --turbopack
+
+ ⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\Users\Rishabh.Negi_i\yarn.lock as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * C:\Users\Rishabh.Negi_i\OneDrive - The Energy and Resources Institute\Desktop\My_Files\Projects\OTBL\otbl-monorepo-2\apps\web\pnpm-lock.yaml
+   * C:\Users\Rishabh.Negi_i\OneDrive - The Energy and Resources Institute\Desktop\My_Files\Projects\OTBL\otbl-monorepo-2\pnpm-lock.yaml
+
+   ▲ Next.js 15.5.2 (Turbopack)
+   - Environments: .env
+
+   Creating an optimized production build ...
+ ✓ Finished writing to disk in 415ms
+ ✓ Compiled successfully in 9.1s
+   Skipping validation of types
+   Skipping linting
+   Collecting page data ...
+   Generating static pages (0/10) ...
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/dashboard/client". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at g (C:\Users\Rishabh.Negi_i\OneDrive - The Energy and Resources Institute\Desktop\My_Files\Projects\OTBL\otbl-monorepo-2\apps\web\.next\server\chunks\ssr\970f1_next_dist_5fd4079e._.js:4:5013)
+    at m (C:\Users\Rishabh.Negi_i\OneDrive - The Energy and Resources Institute\Desktop\My_Files\Projects\OTBL\otbl-monorepo-2\apps\web\.next\server\chunks\ssr\970f1_next_dist_5fd4079e._.js:4:6648)
+    at d (C:\Users\Rishabh.Negi_i\OneDrive - The Energy and Resources Institute\Desktop\My_Files\Projects\OTBL\otbl-monorepo-2\apps\web\.next\server\chunks\ssr\52f37_ and Resources Institute_Desktop_My_Files_Projects_OTBL_otbl-monorepo-2_f2d40c07._.js:1:3776)
+    at f (C:\Users\Rishabh.Negi_i\OneDrive - The Energy and Resources Institute\Desktop\My_Files\Projects\OTBL\otbl-monorepo-2\apps\web\.next\server\chunks\ssr\52f37_ and Resources Institute_Desktop_My_Files_Projects_OTBL_otbl-monorepo-2_07f844ce._.js:1:9969)
+    at n3 (C:\Users\Rishabh.Negi_i\OneDrive - The Energy and Resources Institute\Desktop\My_Files\Projects\OTBL\otbl-monorepo-2\node_modules\.pnpm\next@15.5.2_react-dom@19.1.0_react@19.1.0__react@19.1.0\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:2:82831)
+    at n6 (C:\Users\Rishabh.Negi_i\OneDrive - The Energy and Resources Institute\Desktop\My_Files\Projects\OTBL\otbl-monorepo-2\node_modules\.pnpm\next@15.5.2_react-dom@19.1.0_react@19.1.0__react@19.1.0\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:2:84601)
+    at n6 (C:\Users\Rishabh.Negi_i\OneDrive - The Energy and Resources Institute\Desktop\My_Files\Projects\OTBL\otbl-monorepo-2\node_modules\.pnpm\next@15.5.2_react-dom@19.1.0_react@19.1.0__react@19.1.0\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:2:101560)
+    at n5 (C:\Users\Rishabh.Negi_i\OneDrive - The Energy and Resources Institute\Desktop\My_Files\Projects\OTBL\otbl-monorepo-2\node_modules\.pnpm\next@15.5.2_react-dom@19.1.0_react@19.1.0__react@19.1.0\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:2:104801)
+    at n7 (C:\Users\Rishabh.Negi_i\OneDrive - The Energy and Resources Institute\Desktop\My_Files\Projects\OTBL\otbl-monorepo-2\node_modules\.pnpm\next@15.5.2_react-dom@19.1.0_react@19.1.0__react@19.1.0\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:2:102219)
+    at aa (C:\Users\Rishabh.Negi_i\OneDrive - The Energy and Resources Institute\Desktop\My_Files\Projects\OTBL\otbl-monorepo-2\node_modules\.pnpm\next@15.5.2_react-dom@19.1.0_react@19.1.0__react@19.1.0\node_modules\next\dist\compiled\next-server\app-page-turbo.runtime.prod.js:2:108211)
+Error occurred prerendering page "/dashboard/client". Read more: https://nextjs.org/docs/messages/prerender-error
+Export encountered an error on /dashboard/client/page: /dashboard/client, exiting the build.
+ ⨯ Next.js build worker exited with code: 1 and signal: null
+ ELIFECYCLE  Command failed with exit code 1.

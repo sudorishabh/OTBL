@@ -10,7 +10,7 @@ import { useWorkOrderManagementContext } from "@/contexts/WorkOrderManagementCon
 import WorkOrderSearchNFilter from "./_components/WorkOrderSearchNFilter";
 import { IWorkOrder } from "@/types/work-order.types";
 
-const WorkOrders = () => {
+const WorkOrdersContent = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [allWorkOrdersList, setAllWorkOrdersList] = useState<IWorkOrder[]>([]);
 
@@ -95,6 +95,14 @@ const WorkOrders = () => {
         />
       </div>
     </Wrapper>
+  );
+};
+
+const WorkOrders = () => {
+  return (
+    <React.Suspense fallback={<div>Loading work orders...</div>}>
+      <WorkOrdersContent />
+    </React.Suspense>
   );
 };
 

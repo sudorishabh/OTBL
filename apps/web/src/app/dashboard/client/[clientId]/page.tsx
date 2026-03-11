@@ -27,7 +27,7 @@ type PageProps = {
   params: Promise<{ clientId: string }>;
 };
 
-const Client = ({ params }: PageProps) => {
+const ClientContent = ({ params }: PageProps) => {
   const { setParam, getParam } = useHandleParams();
   const { clientId } = use(params);
   const router = useRouter();
@@ -55,6 +55,14 @@ const Client = ({ params }: PageProps) => {
       </div>
       <UpdateClientDialog clientId={clientId} />
     </Wrapper>
+  );
+};
+
+const Client = ({ params }: PageProps) => {
+  return (
+    <Suspense fallback={<div>Loading client details...</div>}>
+      <ClientContent params={params} />
+    </Suspense>
   );
 };
 
