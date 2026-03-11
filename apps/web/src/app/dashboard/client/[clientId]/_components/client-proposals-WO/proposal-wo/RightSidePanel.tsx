@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import { useHandleParams } from "@/hooks/useHandleParams";
+import CustomButton from "@/components/CustomButton";
 
 type WorkOrder = {
   id: number;
@@ -209,13 +210,14 @@ const RightSidePanel = ({ proposals }: Props) => {
               Work Orders
             </h3>
           </div>
-          <button 
+          <CustomButton   type="button" variant="arrow" arrowType="upright" onClick={() => setParam("dialog", "client-wo-stats")}/>
+          {/* <button 
             title="View spending stats"
             onClick={() => setParam("dialog", "client-wo-stats")}
             className="p-1.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-md transition-colors"
           >
             <AlignEndHorizontal className="w-4 h-4" />
-          </button>
+          </button> */}
         </div>
 
         {/* ─── Tab Toggle ───────────────────────────────────────── */}

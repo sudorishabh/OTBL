@@ -143,6 +143,14 @@ const ClientDetailsCard = ({ clientId }: Props) => {
     [clientData],
   );
 
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
   // Loading state
   if (isLoading) {
     return <ClientInfoSkeleton />;
@@ -289,12 +297,12 @@ const ClientDetailsCard = ({ clientId }: Props) => {
         <ClientStatCard
           Icon={IndianRupee}
           title='Total Budget'
-          stat={stats.totalBudgetAmount.toLocaleString()}
+          stat={formatCurrency(stats.totalBudgetAmount)}
         />
         <ClientStatCard
           Icon={IndianRupee}
           title='Total Expense'
-          stat={stats.totalExpenseAmount.toLocaleString()}
+          stat={formatCurrency(stats.totalExpenseAmount)}
         />
       </div>
 

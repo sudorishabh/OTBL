@@ -6,8 +6,19 @@ import { clientSchemas } from "@pkg/schema";
 import { notFound, fromDatabaseError } from "../../errors";
 import { handleQuery } from "../../helper/typed-handler";
 
-const { clientTable, clientContactTable, workOrderTable, workOrderSiteTable } =
-  schema;
+const { 
+  clientTable, 
+  clientContactTable, 
+  workOrderTable, 
+  workOrderSiteTable,
+  scheduleOfRatesTable,
+  cleaningUpSoilAreaTable,
+  liftingRecoveryOilSlushTable,
+  excavationContSoilTable,
+  transportationContSoilTable,
+  refillingExcavatedContSoilTable,
+  bioremediationContSoilTable
+} = schema;
 
 export const clientQueryRouter = router({
   totalClientAndContact: protectedProcedure.query(
@@ -93,6 +104,8 @@ export const clientQueryRouter = router({
 
         let siteCount = 0;
         let completedWorkOrders = 0;
+        let totalBudgetAmount = 0;
+        let totalExpenseAmount = 0;
 
         if (workOrderIds.length > 0) {
           const woSites = await ctx.db
@@ -106,6 +119,91 @@ export const clientQueryRouter = router({
           completedWorkOrders = workOrders.filter(
             (wo) => wo.status === "completed",
           ).length;
+
+          const sors = await ctx.db
+            .select({ total_cost: scheduleOfRatesTable.total_cost })
+            .from(scheduleOfRatesTable)
+            .where(inArray(scheduleOfRatesTable.work_order_id, workOrderIds));
+            
+          totalBudgetAmount = sors.reduce((acc, curr) => acc + Number(curr.total_cost || 0), 0);
+
+          if (woSites.length > 0) {
+            const woSiteIds = woSites.map(s => s.id);
+            const [
+              cleanSoilAreaExp,
+              liftingOilExp,
+              excavSoilExp,
+              transSoilExp,
+              refillSoilExp,
+              bioremSoilExp,
+            ] = await Promise.all([
+              ctx.db
+                .select({ amount: cleaningUpSoilAreaTable.amount })
+                .from(cleaningUpSoilAreaTable)
+                .where(
+                  and(
+                    inArray(cleaningUpSoilAreaTable.work_order_site_id, woSiteIds),
+                    eq(cleaningUpSoilAreaTable.type, "completion" as any)
+                  )
+                ),
+              ctx.db
+                .select({ amount: liftingRecoveryOilSlushTable.amount })
+                .from(liftingRecoveryOilSlushTable)
+                .where(
+                  and(
+                    inArray(liftingRecoveryOilSlushTable.work_order_site_id, woSiteIds),
+                    eq(liftingRecoveryOilSlushTable.type, "completion" as any)
+                  )
+                ),
+              ctx.db
+                .select({ amount: excavationContSoilTable.amount })
+                .from(excavationContSoilTable)
+                .where(
+                  and(
+                    inArray(excavationContSoilTable.work_order_site_id, woSiteIds),
+                    eq(excavationContSoilTable.type, "completion" as any)
+                  )
+                ),
+              ctx.db
+                .select({ amount: transportationContSoilTable.amount })
+                .from(transportationContSoilTable)
+                .where(
+                  and(
+                    inArray(transportationContSoilTable.work_order_site_id, woSiteIds),
+                    eq(transportationContSoilTable.type, "completion" as any)
+                  )
+                ),
+              ctx.db
+                .select({ amount: refillingExcavatedContSoilTable.amount })
+                .from(refillingExcavatedContSoilTable)
+                .where(
+                  and(
+                    inArray(refillingExcavatedContSoilTable.work_order_site_id, woSiteIds),
+                    eq(refillingExcavatedContSoilTable.type, "completion" as any)
+                  )
+                ),
+              ctx.db
+                .select({ amount: bioremediationContSoilTable.amount })
+                .from(bioremediationContSoilTable)
+                .where(
+                  and(
+                    inArray(bioremediationContSoilTable.work_order_site_id, woSiteIds),
+                    eq(bioremediationContSoilTable.type, "completion" as any)
+                  )
+                ),
+            ]);
+
+            const allAmounts = [
+              ...cleanSoilAreaExp,
+              ...liftingOilExp,
+              ...excavSoilExp,
+              ...transSoilExp,
+              ...refillSoilExp,
+              ...bioremSoilExp,
+            ];
+
+            totalExpenseAmount = allAmounts.reduce((acc, curr) => acc + Number(curr.amount || 0), 0);
+          }
         }
 
         return {
@@ -113,8 +211,8 @@ export const clientQueryRouter = router({
           clientUsers,
           siteCount,
           completedWorkOrders,
-          totalBudgetAmount: 0,
-          totalExpenseAmount: 0,
+          totalBudgetAmount,
+          totalExpenseAmount,
         };
       } catch (error) {
         // Re-throw AppError instances (like notFound)
