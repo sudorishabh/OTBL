@@ -270,7 +270,10 @@ const PhaseForm = ({
         const totalCompletionUsed = parseFloat(
           activity.total_completion_quantity || "0",
         );
-        const availableForThisSite = sorQty - totalCompletionUsed;
+        const prevSaved = parseFloat(
+          getActivityData(activity.activity, "completion", isBioremediation)?.estimated_quantity?.toString() || "0"
+        );
+        const availableForThisSite = sorQty - (totalCompletionUsed - prevSaved);
 
         // Only enforce SOR limit on completion phase
         if (
@@ -674,9 +677,28 @@ const PhaseForm = ({
                 const sorQty = parseFloat(
                   activity.sor_estimated_quantity || "0",
                 );
-                const completionUsed = parseFloat(
+                
+                let completionUsed = parseFloat(
                   activity.total_completion_quantity || "0",
                 );
+
+                const prevSaved = parseFloat(
+                  getActivityData(activity.activity, "completion", isBioremediation)?.estimated_quantity?.toString() || "0"
+                );
+
+                const isBioremActivity =
+                  isBioremediation &&
+                  (activity.activity === "biorem_cont_soil" ||
+                    activity.activity ===
+                      constants.WO_ACTIVITIES.BIOREMEDIATION_OIL_CONTAMINATED_SOIL);
+
+                if (isBioremActivity) {
+                  completionUsed = completionUsed - prevSaved + totalOilZappingQty;
+                } else if (phase === "completion") {
+                  const currentFormQty = parseFloat(formData[activity.activity]?.estimated_quantity || "0");
+                  completionUsed = completionUsed - prevSaved + currentFormQty;
+                }
+
                 const available = sorQty - completionUsed;
                 const usedPct =
                   sorQty > 0
