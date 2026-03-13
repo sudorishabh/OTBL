@@ -1,0 +1,51 @@
+
+> otbl-monorepo@ build C:\Users\Rishabh.Negi_i\OneDrive - The Energy and Resources Institute\Desktop\My_Files\Projects\OTBL\otbl-monorepo-2
+> turbo run build "--filter" "@pkg/utils"
+
+turbo 2.6.1
+
+• Packages in scope: @pkg/utils
+• Running build in 1 packages
+• Remote caching disabled
+@pkg/utils:build: cache miss, executing 570bb0907fa3185d
+@pkg/utils:build: 
+@pkg/utils:build: > @pkg/utils@0.1.0 prebuild C:\Users\Rishabh.Negi_i\OneDrive - The Energy and Resources Institute\Desktop\My_Files\Projects\OTBL\otbl-monorepo-2\packages\utils
+@pkg/utils:build: > pnpm run clean
+@pkg/utils:build: 
+@pkg/utils:build: 
+@pkg/utils:build: > @pkg/utils@0.1.0 clean C:\Users\Rishabh.Negi_i\OneDrive - The Energy and Resources Institute\Desktop\My_Files\Projects\OTBL\otbl-monorepo-2\packages\utils
+@pkg/utils:build: > node -e "require('fs').rmSync('dist', {recursive: true, force: true})"
+@pkg/utils:build: 
+@pkg/utils:build: 
+@pkg/utils:build: > @pkg/utils@0.1.0 build C:\Users\Rishabh.Negi_i\OneDrive - The Energy and Resources Institute\Desktop\My_Files\Projects\OTBL\otbl-monorepo-2\packages\utils
+@pkg/utils:build: > tsc -p tsconfig.build.json
+@pkg/utils:build: 
+@pkg/utils:build: node:internal/modules/cjs/loader:1424
+@pkg/utils:build:   throw err;
+@pkg/utils:build:   ^
+@pkg/utils:build: 
+@pkg/utils:build: Error: Cannot find module 'C:\Users\Rishabh.Negi_i\OneDrive - The Energy and Resources Institute\Desktop\My_Files\Projects\OTBL\otbl-monorepo-2\packages\utils\node_modules\typescript\bin\tsc'
+@pkg/utils:build:     at Module._resolveFilename (node:internal/modules/cjs/loader:1421:15)
+@pkg/utils:build:     at defaultResolveImpl (node:internal/modules/cjs/loader:1059:19)
+@pkg/utils:build:     at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1064:22)
+@pkg/utils:build:     at Module._load (node:internal/modules/cjs/loader:1227:37)
+@pkg/utils:build:     at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+@pkg/utils:build:     at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+@pkg/utils:build:     at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+@pkg/utils:build:     at node:internal/main/run_main_module:33:47 {
+@pkg/utils:build:   code: 'MODULE_NOT_FOUND',
+@pkg/utils:build:   requireStack: []
+@pkg/utils:build: }
+@pkg/utils:build: 
+@pkg/utils:build: Node.js v24.12.0
+@pkg/utils:build:  ELIFECYCLE  Command failed with exit code 1.
+@pkg/utils:build: ERROR: command finished with error: command (C:\Users\Rishabh.Negi_i\OneDrive - The Energy and Resources Institute\Desktop\My_Files\Projects\OTBL\otbl-monorepo-2\packages\utils) C:\nvm4w\nodejs\pnpm.CMD run build exited (1)
+@pkg/utils#build: command (C:\Users\Rishabh.Negi_i\OneDrive - The Energy and Resources Institute\Desktop\My_Files\Projects\OTBL\otbl-monorepo-2\packages\utils) C:\nvm4w\nodejs\pnpm.CMD run build exited (1)
+
+ Tasks:    0 successful, 1 total
+Cached:    0 cached, 1 total
+  Time:    3.481s 
+Failed:    @pkg/utils#build
+
+ ERROR  run failed: command  exited (1)
+ ELIFECYCLE  Command failed with exit code 1.
