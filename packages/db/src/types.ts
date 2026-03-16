@@ -27,7 +27,7 @@ import {
   ACTIVITY_TYPE,
   ACTIVITY_ITEM_TABLES,
   ACTIVITY_PHASE,
-} from "./schema.js";
+} from "./schema";
 
 // ============================================================
 // USER TYPES

@@ -1,6 +1,6 @@
-import createDB from "./init.js";
-import * as schema from "./schema.js";
+import createDB from "./init";
+import * as schema from "./schema";
 
 export { createDB, schema };
-export type { Database } from "./init.js";
-export * from "./types.js";
+export type { Database } from "./init";
+export * from "./types";
