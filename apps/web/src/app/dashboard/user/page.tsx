@@ -1,4 +1,4 @@
-import Wrapper from "@/components/wrapper/Wrapper";
+import Wrapper from "@/components/wrapper";
 import UserPage from "./_components/UserPage";
 import CreateUserButton from "./_components/CreateUserButton";
 

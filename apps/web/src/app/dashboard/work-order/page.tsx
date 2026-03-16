@@ -1,5 +1,5 @@
 "use client";
-import Wrapper from "@/components/wrapper/Wrapper";
+import Wrapper from "@/components/wrapper";
 import React, { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import CustomButton from "@/components/CustomButton";
@@ -8,11 +8,11 @@ import { trpc } from "@/lib/trpc";
 import PageLoading from "@/components/loading/PageLoading";
 import { useWorkOrderManagementContext } from "@/contexts/WorkOrderManagementContext";
 import WorkOrderSearchNFilter from "./_components/WorkOrderSearchNFilter";
-import { IWorkOrder } from "@/types/work-order.types";
+import { workOrderTypes} from "@pkg/schema";
 
 const WorkOrdersContent = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [allWorkOrdersList, setAllWorkOrdersList] = useState<IWorkOrder[]>([]);
+  const [allWorkOrdersList, setAllWorkOrdersList] = useState([]);
 
   const { searchQuery, filters, workOrderOrder } =
     useWorkOrderManagementContext();

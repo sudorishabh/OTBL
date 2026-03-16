@@ -1,6 +1,6 @@
 "use client";
 import React, { use } from "react";
-import Wrapper from "@/components/wrapper/Wrapper";
+import Wrapper from "@/components/wrapper";
 import { PencilLine } from "lucide-react";
 import { capitalFirstLetter } from "@pkg/utils";
 import { useRouter } from "next/navigation";
