@@ -5,11 +5,8 @@ services:
       dockerfile: ./apps/server/Dockerfile
     restart: always
     # No public ports exposed for the server, it will be accessed via Next.js rewrites on the internal network
-    environment:
-      - DATABASE_URL=${DATABASE_URL:-mysql://root:password@host.docker.internal:3306/otbl}
-      - NODE_ENV=production
-      - JWT_SECRET=Or2gnO3GthHEXStkqjSYMXdt1VK8s8JZ7878FVZW9N9EU3TnDRzuuxCrEECm0WycmwQ39QjCUy6LF1kdU9ZbOKqqzsU05iU5p96bh54xPpFrAdTMD3rTjHZTeIpU7ClIGK6xjiHHFi1017a5knCrZhLunDwrnW0Wa266bPPeYIwNHhh06wwqjN0QF2KBhlzzSITec234JhenCngIdl6yOr2eW1ufwdrQARcoX2ZlrKYD2PBpKjmuKDoOuhJAp2eP
-      - JWT_REFRESH_SECRET=0LbgjGpH8vSbkh7XU6wMjyrnlFwT5EfjaOpNKGwfq6sPcIx6kAytXdqYSvIJeBfL0lgdEQid45U87m7hDahW0WStkf8xFYNZIawmaYoOhKgt9tULR1EwRgjaeDvYarqRJlELdKg1iN6mAOoeYp77ErRuhmbkVdA2H5qSWEMrkBarj6r8UaaZieqTncWSXL2XRZQ9PAQAtg2HF5jvmivSStPOAHBDDY4OxWKykZq02IZrH1ZWY8TZlhVp3mxIjEwSun9ERCguOni2TzcUNi4Td7dDtBUQaLTdQpMPm6CBQAu8cdgGIB1AaTKSB82F2nYFTX2gX5ru6FdxfdRLUS3Dm6wVaBBhxWs4twqYZFPWLtqftmXdzCZS4J9BYEHXarD1egDtRy5OTDQH7rIRFsGes9RQz4vbW5j0EgZkACxAmIH8Ss44NcehSm78KWURPg7q7ug1KoJmlFYxPo6AiSsCABj6yCzXYDlo
+    env_file:
+      - ./apps/server/.env
     networks:
       - otbl-network
     extra_hosts:
