@@ -165,6 +165,9 @@ importers:
       '@pkg/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@pkg/trpc':
+        specifier: workspace:*
+        version: link:../../packages/trpc
       '@pkg/utils':
         specifier: workspace:*
         version: link:../../packages/utils
@@ -217,9 +220,6 @@ importers:
         specifier: ^4.0.17
         version: 4.1.13
     devDependencies:
-      '@pkg/trpc':
-        specifier: workspace:*
-        version: link:../../packages/trpc
       '@repo/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
