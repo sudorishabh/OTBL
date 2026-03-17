@@ -1,5 +1,5 @@
 "use client";
-import Wrapper from "@/components/wrapper";
+import { PageWrapper } from "@/components/wrapper/PageWrapper";
 import React from "react";
 import CreateOfficeButton from "./_components/CreateOfficeButton";
 import OfficeSitePage from "./_components/OfficeSitePage";

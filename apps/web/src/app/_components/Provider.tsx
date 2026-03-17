@@ -35,7 +35,7 @@ const Provider = ({ children }: { children: React.ReactNode }) => {
         // Call the me endpoint directly via fetch to trigger token refresh
         // The server will set new cookies if refresh token is valid
         const response = await fetch(
-          "http://localhost:7200/trpc/authQuery.me",
+          `${process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:7200/trpc"}/authQuery.me`,
           {
             method: "GET",
             credentials: "include",
@@ -120,12 +120,12 @@ const Provider = ({ children }: { children: React.ReactNode }) => {
           condition: (op) => op.type === "mutation",
           // Mutations use httpLink (POST requests)
           true: httpLink({
-            url: "http://localhost:7200/trpc",
+            url: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:7200/trpc",
             fetch: customFetch,
           }),
           // Queries use httpBatchLink (GET requests with batching)
           false: httpBatchLink({
-            url: "http://localhost:7200/trpc",
+            url: process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:7200/trpc",
             fetch: customFetch,
           }),
         }),

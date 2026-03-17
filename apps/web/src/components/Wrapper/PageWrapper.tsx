@@ -2,7 +2,7 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import BuildingPatterns from "./BuildingPatterns";
+import { BuildingPatterns } from "./BuildingPatterns";
 
 interface Props {
   children: React.ReactNode;
@@ -12,7 +12,7 @@ interface Props {
   backClick?: () => void;
 }
 
-const Wrapper = ({
+export const PageWrapper = ({
   children,
   title,
   description,
@@ -52,4 +52,3 @@ const Wrapper = ({
   );
 };
 
-export default Wrapper;

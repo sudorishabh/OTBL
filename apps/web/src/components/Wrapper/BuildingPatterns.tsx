@@ -1,6 +1,6 @@
 import React from "react";
 
-const BuildingPatterns = () => {
+export const BuildingPatterns = () => {
   return (
     <div
       aria-hidden='true'
@@ -1142,5 +1142,3 @@ const BuildingPatterns = () => {
     </div>
   );
 };
-
-export default BuildingPatterns;

@@ -1,0 +1,55 @@
+services:
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: otbl
+      MYSQL_ROOT_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - otbl-network
+
+  server:
+    build:
+      context: .
+      dockerfile: ./apps/server/Dockerfile
+    restart: always
+    ports:
+      - "7200:7200"
+    environment:
+      - DATABASE_URL=mysql://root:password@db:3306/otbl
+      - NODE_ENV=production
+      - JWT_SECRET=Or2gnO3GthHEXStkqjSYMXdt1VK8s8JZ7878FVZW9N9EU3TnDRzuuxCrEECm0WycmwQ39QjCUy6LF1kdU9ZbOKqqzsU05iU5p96bh54xPpFrAdTMD3rTjHZTeIpU7ClIGK6xjiHHFi1017a5knCrZhLunDwrnW0Wa266bPPeYIwNHhh06wwqjN0QF2KBhlzzSITec234JhenCngIdl6yOr2eW1ufwdrQARcoX2ZlrKYD2PBpKjmuKDoOuhJAp2eP
+      - JWT_REFRESH_SECRET=0LbgjGpH8vSbkh7XU6wMjyrnlFwT5EfjaOpNKGwfq6sPcIx6kAytXdqYSvIJeBfL0lgdEQid45U87m7hDahW0WStkf8xFYNZIawmaYoOhKgt9tULR1EwRgjaeDvYarqRJlELdKg1iN6mAOoeYp77ErRuhmbkVdA2H5qSWEMrkBarj6r8UaaZieqTncWSXL2XRZQ9PAQAtg2HF5jvmivSStPOAHBDDY4OxWKykZq02IZrH1ZWY8TZlhVp3mxIjEwSun9ERCguOni2TzcUNi4Td7dDtBUQaLTdQpMPm6CBQAu8cdgGIB1AaTKSB82F2nYFTX2gX5ru6FdxfdRLUS3Dm6wVaBBhxWs4twqYZFPWLtqftmXdzCZS4J9BYEHXarD1egDtRy5OTDQH7rIRFsGes9RQz4vbW5j0EgZkACxAmIH8Ss44NcehSm78KWURPg7q7ug1KoJmlFYxPo6AiSsCABj6yCzXYDlo
+      # Add other env vars as needed
+    depends_on:
+      - db
+    networks:
+      - otbl-network
+
+  web:
+    build:
+      context: .
+      dockerfile: ./apps/web/Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=http://localhost:7200/trpc
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:7200/trpc
+      - NODE_ENV=production
+    depends_on:
+      - server
+    networks:
+      - otbl-network
+
+networks:
+  otbl-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
