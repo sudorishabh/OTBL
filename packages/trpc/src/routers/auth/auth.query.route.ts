@@ -5,7 +5,7 @@ import {
   setAuthenticationCookies,
   verifyRefreshTokenSafe,
   type UserRole,
-} from "@pkg/utils";
+} from "@pkg/utils/auth";
 import { schema } from "@pkg/db";
 import { constants } from "@pkg/utils";
 import { router } from "../../trpc";

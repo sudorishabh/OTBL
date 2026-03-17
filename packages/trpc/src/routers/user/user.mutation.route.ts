@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { schema } from "@pkg/db";
-import { hashPassword, USER_ROLES, verifyPassword } from "@pkg/utils";
+import { hashPassword, USER_ROLES, verifyPassword } from "@pkg/utils/auth";
 import { adminProcedure, protectedProcedure } from "../../middleware";
 import { router } from "../../trpc";
 import {

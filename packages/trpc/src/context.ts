@@ -1,4 +1,4 @@
-import type { UserRole } from "@pkg/utils";
+import type { UserRole } from "@pkg/utils/auth";
 import type { Database } from "@pkg/db";
 
 /**
