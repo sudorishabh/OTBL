@@ -32,7 +32,6 @@
   "dependencies": {
     "@pkg/schema": "workspace:*",
     "@pkg/utils": "workspace:*",
-    "@pkg/auth": "workspace:*",
     "@pkg/db": "workspace:*",
     "@trpc/server": "^11.7.2",
     "drizzle-orm": "^0.44.7",

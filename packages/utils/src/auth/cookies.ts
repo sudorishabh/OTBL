@@ -1,5 +1,5 @@
-import { CookieOptions, Response } from "express";
-import { dateTimeUtils } from "@pkg/utils";
+import { Response, CookieOptions } from "express";
+import * as dateTimeUtils from "../date-time";
 
 const { calculateExpirationDate } = dateTimeUtils;
 

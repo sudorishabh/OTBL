@@ -1,6 +1,6 @@
 import { t } from "./trpc";
 import type { TrpcUser, TrpcAuthenticatedContext } from "./context";
-import { USER_ROLES, ROLE_HIERARCHY, type UserRole } from "@pkg/auth";
+import { USER_ROLES, ROLE_HIERARCHY, type UserRole } from "@pkg/utils";
 import {
   createUnauthorizedError,
   createInsufficientPermissionsError,

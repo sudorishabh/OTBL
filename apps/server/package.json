@@ -17,7 +17,7 @@
   "devDependencies": {
     "@pkg/trpc": "workspace:*",
     "@pkg/db": "workspace:*",
-    "@pkg/auth": "workspace:*",
+    "@pkg/utils": "workspace:*",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/bcrypt": "^6.0.0",

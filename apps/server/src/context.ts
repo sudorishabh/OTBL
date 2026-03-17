@@ -7,7 +7,7 @@ import {
   signRefreshToken,
   setAuthenticationCookies,
   type UserRole,
-} from "@pkg/auth";
+} from "@pkg/utils";
 import appEnv from "./config/app-env";
 import type { TrpcContext, TrpcUser } from "@pkg/trpc";
 
