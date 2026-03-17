@@ -1,7 +1,9 @@
 {
-  "extends": "./tsconfig.build.json",
+  "extends": "@repo/typescript-config/react-library.json",
   "compilerOptions": {
-    "incremental": true,
-    "composite": true
-  }
+    "outDir": "dist",
+    "strictNullChecks": true
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
 }

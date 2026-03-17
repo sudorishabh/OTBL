@@ -26,9 +26,11 @@
     "dist"
   ],
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "clean": "node -e \"require('fs').rmSync('dist', {recursive: true, force: true})\"",
-    "prebuild": "pnpm run clean",
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "check-types": "turbo run check-types",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio"
@@ -45,3 +47,10 @@
     "drizzle-kit": "^0.31.4"
   }
 }
+
+
+/*
+"build": "tsc -p tsconfig.build.json",
+"clean": "node -e \"require('fs').rmSync('dist', {recursive: true, force: true})\"",
+"prebuild": "pnpm run clean",
+*/
