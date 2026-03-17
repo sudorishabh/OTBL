@@ -24,6 +24,8 @@
     "zod": "^4.3.5"
   },
   "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
     "rimraf": "^3.0.0",
     "typescript": "^5.0.0"
   }
