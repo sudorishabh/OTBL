@@ -25,10 +25,7 @@ COPY --from=installer /app/ .
 COPY --from=pruner /app/out/full/ .
 COPY turbo.json turbo.json
 
-# Environment variables must be available at build time for Next.js if they are prefixed with NEXT_PUBLIC_
-ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
-
+# Build the application
 RUN pnpm turbo run build --filter=web...
 
 # Stage 4: Production runner

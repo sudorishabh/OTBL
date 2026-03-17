@@ -1,11 +1,24 @@
 # Docker Setup for OTBL Monorepo
 
-This project is configured to run using Docker and Docker Compose. This setup includes the Next.js web application, the Express server, and a MySQL database.
+This project is configured to run using Docker and Docker Compose with a single entry point (the Web application).
+
+## Architecture
+
+- **Single Entry Point**: The frontend (Next.js) runs on port **3000**.
+- **Internal Proxy**: All requests to `/trpc/*` are automatically proxied from the frontend to the backend server internally within the Docker network.
+- **External Database**: MySQL is expected to be external. By default, the server attempts to connect to `host.docker.internal:3306` (your host machine's MySQL).
 
 ## Prerequisites
 
 - [Docker](https://docs.docker.com/get-docker/)
 - [Docker Compose](https://docs.docker.com/compose/install/)
+- An external MySQL database.
+
+## Configuration
+
+Before running, ensure your `DATABASE_URL` is correct. You can set it in your host environment or modify the `docker-compose.yml`.
+
+Default: `mysql://root:password@host.docker.internal:3306/otbl`
 
 ## Getting Started
 
@@ -15,36 +28,16 @@ This project is configured to run using Docker and Docker Compose. This setup in
    docker-compose up --build
    ```
 
-2. **Access the applications:**
-   - **Web App:** [http://localhost:3000](http://localhost:3000)
-   - **Server API:** [http://localhost:7200](http://localhost:7200)
-   - **Database:** `localhost:3306` (Internal: `db:3306`)
+2. **Access the application:**
+   - **Web App**: [http://localhost:3000](http://localhost:3000)
+   - **Server API**: Accessed internally via proxy (not exposed to host).
 
 ## Running Migrations
 
-Once the database container is up, you can run migrations from your host machine (if you have the dependencies installed) or via a temporary container.
+Since the database is external, you should run migrations from your host machine:
 
-### Option 1: From Host (Recommended)
-Make sure your `.env` in `apps/server/.env` points to `localhost:3306`.
 ```bash
 pnpm --filter server db:migrate
 ```
 
-### Option 2: Inside Container
-```bash
-docker-compose exec server pnpm --filter server db:migrate
-```
-
-## Architecture Details
-
-- **Monorepo Management:** Uses [Turborepo](https://turbo.build/)'s `prune` command to minimize Docker image sizes by only including necessary packages for each service.
-- **Next.js Optimization:** The Web Dockerfile uses Next.js [Standalone Output](https://nextjs.org/docs/app/api-reference/next-config-js/output#standalone), resulting in much smaller images.
-- **Pnpm:** Managed via Corepack within the containers.
-
-## Environment Variables
-
-Default environment variables are provided in `docker-compose.yml`. For production, you should create a `.env.production` file and reference it in your compose file or CI/CD pipeline.
-
-- `DATABASE_URL`: Connection string for MySQL.
-- `NEXT_PUBLIC_API_URL`: The URL where the frontend can reach the backend.
-- `JWT_SECRET` & `JWT_REFRESH_SECRET`: Used for authentication.
+Ensure your `apps/server/.env` file has the correct `DATABASE_URL` for your host environment (e.g., `localhost:3306`).
