@@ -512,6 +512,12 @@ importers:
         specifier: ^4.1.13
         version: 4.1.13
     devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../eslint-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
       rimraf:
         specifier: ^3.0.0
         version: 3.0.2
