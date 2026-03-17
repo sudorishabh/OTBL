@@ -6,7 +6,12 @@ import * as trpcExpress from "@trpc/server/adapters/express";
 import { appRouter } from "@pkg/trpc";
 import { createContext } from "./context";
 import { errorHandler } from "./middlewares/error-handler";
-import "dotenv/config";
+import dotenv from "dotenv";
+import path from "path";
+
+dotenv.config({
+  path: path.resolve(__dirname, "../../.env"), 
+});
 
 const app = express();
 
