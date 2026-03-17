@@ -185,7 +185,7 @@ const WorkOrder = ({ workOrderId, from }: Props) => {
   };
 
   return (
-    <Wrapper
+    <PageWrapper
       title={`${workOrder.code.toUpperCase()} - ${capitalFirstLetter(workOrder.title || "Work Order")}`}
       description='Work Order Details and Management'
       backClick={() => {
@@ -312,7 +312,7 @@ const WorkOrder = ({ workOrderId, from }: Props) => {
         />
         <SiteDetailDialog />
       </div>
-    </Wrapper>
+    </PageWrapper>
   );
 };
 

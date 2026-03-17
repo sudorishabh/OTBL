@@ -6,12 +6,12 @@ import ClientsPage from "./_components/ClientsPage";
 const page = () => {
   return (
     <React.Suspense fallback={<div>Loading clients...</div>}>
-      <Wrapper
+      <PageWrapper
         title='Clients'
         description='Manage and monitor all your clients and their contacts'
         button={<CreateClientButton />}>
         <ClientsPage />
-      </Wrapper>
+      </PageWrapper>
     </React.Suspense>
   );
 };

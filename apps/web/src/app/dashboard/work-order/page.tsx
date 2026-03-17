@@ -68,7 +68,7 @@ const WorkOrdersContent = () => {
   }
 
   return (
-    <Wrapper
+    <PageWrapper
       title='Work Order Management'
       description='Manage work orders, track their progress across offices and sites'
       button={
@@ -94,7 +94,7 @@ const WorkOrdersContent = () => {
           isLoadingData={isFetchingMore}
         />
       </div>
-    </Wrapper>
+    </PageWrapper>
   );
 };
 

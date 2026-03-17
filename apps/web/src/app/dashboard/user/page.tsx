@@ -7,12 +7,12 @@ import React from "react";
 const page = () => {
   return (
     <React.Suspense fallback={<div>Loading users...</div>}>
-      <Wrapper
+      <PageWrapper
         title='User Management'
         description='Manage users, assign them to offices, and track their work locations'
         button={<CreateUserButton />}>
         <UserPage />
-      </Wrapper>
+      </PageWrapper>
     </React.Suspense>
   );
 };

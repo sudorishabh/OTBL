@@ -33,7 +33,7 @@ const ClientContent = ({ params }: PageProps) => {
   const router = useRouter();
 
   return (
-    <Wrapper
+    <PageWrapper
       title={capitalFirstLetter(getParam("name") || "Client Info")}
       description='Manage Client Info and Work Orders'
       backClick={() => router.push("/dashboard/client")}
@@ -54,7 +54,7 @@ const ClientContent = ({ params }: PageProps) => {
         </Suspense>
       </div>
       <UpdateClientDialog clientId={clientId} />
-    </Wrapper>
+    </PageWrapper>
   );
 };
 
