@@ -6,7 +6,7 @@ import {
   verifyPassword,
   verifyRefreshTokenSafe,
   type UserRole,
-} from "@pkg/auth";
+} from "@pkg/utils";
 import { eq } from "drizzle-orm";
 import { schema } from "@pkg/db";
 import { constants } from "@pkg/utils";
