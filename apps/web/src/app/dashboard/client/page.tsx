@@ -1,4 +1,4 @@
-import Wrapper from "@/components/wrapper/index";
+import Wrapper from "@/components/wrapper;
 import React from "react";
 import CreateClientButton from "./_components/CreateClientButton";
 import ClientsPage from "./_components/ClientsPage";

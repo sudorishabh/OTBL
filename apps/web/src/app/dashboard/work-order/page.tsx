@@ -1,5 +1,5 @@
 "use client";
-import Wrapper from "@/components/wrapper/index";
+import Wrapper from "@/components/wrapper;
 import React, { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import CustomButton from "@/components/CustomButton";
