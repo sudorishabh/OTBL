@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { PageWrapper } from "@/components/wrapper/PageWrapper";
+import { PageWrapper } from "@/components/wrapper/page-wrapper";
 import { trpc } from "@/lib/trpc";
 import { capitalFirstLetter } from "@pkg/utils";
 import { useRouter } from "next/navigation";

@@ -1,6 +1,6 @@
 import React from "react";
 import UserPage from "./_components/UserPage";
-import { PageWrapper } from "@/components/wrapper/PageWrapper";
+import { PageWrapper } from "@/components/wrapper/page-wrapper";
 import CreateUserButton from "./_components/CreateUserButton";
 
 const page = () => {

@@ -1,6 +1,6 @@
 "use client";
 import React, { use } from "react";
-import { PageWrapper } from "@/components/wrapper/PageWrapper";
+import { PageWrapper } from "@/components/wrapper/page-wrapper";
 import { PencilLine } from "lucide-react";
 import { capitalFirstLetter } from "@pkg/utils";
 import { useRouter } from "next/navigation";

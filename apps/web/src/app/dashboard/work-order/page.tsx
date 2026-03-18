@@ -1,5 +1,5 @@
 "use client";
-import { PageWrapper } from "@/components/wrapper/PageWrapper";
+import { PageWrapper } from "@/components/wrapper/page-wrapper";
 import React, { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import CustomButton from "@/components/CustomButton";
