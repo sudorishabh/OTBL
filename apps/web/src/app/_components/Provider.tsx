@@ -34,8 +34,9 @@ const Provider = ({ children }: { children: React.ReactNode }) => {
       try {
         // Call the me endpoint directly via fetch to trigger token refresh
         // The server will set new cookies if refresh token is valid
+        const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || "";
         const response = await fetch(
-          `/trpc/authQuery.me`,
+          `${serverUrl}/trpc/authQuery.me`,
           {
             method: "GET",
             credentials: "include",
@@ -112,26 +113,27 @@ const Provider = ({ children }: { children: React.ReactNode }) => {
     [attemptTokenRefresh]
   );
 
-  const [trpcClient] = useState(() =>
-    trpc.createClient({
+  const [trpcClient] = useState(() => {
+    const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || "";
+    return trpc.createClient({
       links: [
         splitLink({
           // Route based on operation type
           condition: (op) => op.type === "mutation",
           // Mutations use httpLink (POST requests)
           true: httpLink({
-            url: "/trpc",
+            url: `${serverUrl}/trpc`,
             fetch: customFetch,
           }),
           // Queries use httpBatchLink (GET requests with batching)
           false: httpBatchLink({
-            url: "/trpc",
+            url: `${serverUrl}/trpc`,
             fetch: customFetch,
           }),
         }),
       ],
-    })
-  );
+    });
+  });
 
   return (
     <trpc.Provider
