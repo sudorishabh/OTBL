@@ -8,7 +8,6 @@ services:
     env_file:
       - ./apps/server/.env
     environment:
-      - DATABASE_URL=mysql://root:rishabh11@host.docker.internal:3306/otbl
       - NODE_ENV=production
     networks:
       - otbl-network
