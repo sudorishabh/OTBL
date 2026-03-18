@@ -31,8 +31,10 @@ app.use(
 
 app.use(errorHandler);
 
-app.listen(7200, () => {
-  console.log(`Server is running on port 7200 in ${process.env.NODE_ENV} mode`);
+const PORT = process.env.PORT ? parseInt(process.env.PORT as string, 10) : 7200;
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server is running on port ${PORT} in ${process.env.NODE_ENV} mode`);
 });
 
 
