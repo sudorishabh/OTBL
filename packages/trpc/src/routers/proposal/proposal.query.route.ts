@@ -1,7 +1,13 @@
-import { and, count, desc, eq, like, or } from "drizzle-orm";
+import { and, count, desc, eq, inArray, like, or } from "drizzle-orm";
 import { schema } from "@pkg/db";
 import { router } from "../../trpc";
-import { publicProcedure } from "../../core";
+import { protectedProcedure } from "../../core";
+import {
+  assertCanAccessClient,
+  assertCanAccessProposal,
+  getAccessScope,
+  proposalIdsVisibleToScope,
+} from "../../access-scope";
 import { fromDatabaseError } from "../../errors";
 import { handleQuery } from "../../helper/typed-handler";
 import { proposalSchemas } from "@pkg/schema";
@@ -10,23 +16,41 @@ const { proposalTable, workOrderTable } = schema;
 
 export const proposalQueryRouter = router({
   // Get proposals for a specific client (with optional limit)
-  getProposalsByClient: publicProcedure
+  getProposalsByClient: protectedProcedure
     .input(proposalSchemas.getProposalsByClientSchema)
     .query(
       handleQuery(async ({ input, ctx }) => {
         const { client_id, limit } = input;
 
         try {
+          const scope = await getAccessScope(
+            ctx.db,
+            Number(ctx.user!.sub),
+            ctx.user!.role,
+          );
+          await assertCanAccessClient(ctx.db, scope, client_id);
+
+          let clientCond: any = eq(proposalTable.client_id, client_id);
+          if (scope.kind === "restricted") {
+            const pids =
+              (await proposalIdsVisibleToScope(ctx.db, scope)) ?? [];
+            const scopeFilter =
+              pids.length > 0
+                ? inArray(proposalTable.id, pids)
+                : eq(proposalTable.id, -1);
+            clientCond = and(clientCond, scopeFilter);
+          }
+
           const [totalResult] = await ctx.db
             .select({ count: count() })
             .from(proposalTable)
-            .where(eq(proposalTable.client_id, client_id));
+            .where(clientCond);
           const total = totalResult?.count ?? 0;
 
           const baseQuery = ctx.db
             .select({ proposal: proposalTable, workOrder: workOrderTable })
             .from(proposalTable)
-            .where(eq(proposalTable.client_id, client_id))
+            .where(clientCond)
             .leftJoin(
               workOrderTable,
               eq(workOrderTable.proposal_id, proposalTable.id),
@@ -46,13 +70,30 @@ export const proposalQueryRouter = router({
     ),
 
   // Get proposals for a specific client with pagination
-  getProposalsByClientPaginated: publicProcedure
+  getProposalsByClientPaginated: protectedProcedure
     .input(proposalSchemas.getProposalsByClientPaginatedSchema)
     .query(
       handleQuery(async ({ input, ctx }) => {
         const { client_id, page, limit, searchQuery } = input;
 
+        const scope = await getAccessScope(
+          ctx.db,
+          Number(ctx.user!.sub),
+          ctx.user!.role,
+        );
+        await assertCanAccessClient(ctx.db, scope, client_id);
+
         let conditions: any = eq(proposalTable.client_id, client_id);
+
+        if (scope.kind === "restricted") {
+          const pids =
+            (await proposalIdsVisibleToScope(ctx.db, scope)) ?? [];
+          const scopeFilter =
+            pids.length > 0
+              ? inArray(proposalTable.id, pids)
+              : eq(proposalTable.id, -1);
+          conditions = and(conditions, scopeFilter);
+        }
 
         if (searchQuery && searchQuery.trim() !== "") {
           conditions = and(
@@ -119,13 +160,20 @@ export const proposalQueryRouter = router({
     ),
 
   // Get single proposal by ID with optional work order
-  getProposalById: publicProcedure
+  getProposalById: protectedProcedure
     .input(proposalSchemas.getProposalByIdSchema)
     .query(
       handleQuery(async ({ input, ctx }) => {
         const { proposal_id } = input;
 
         try {
+          const scope = await getAccessScope(
+            ctx.db,
+            Number(ctx.user!.sub),
+            ctx.user!.role,
+          );
+          await assertCanAccessProposal(ctx.db, scope, proposal_id);
+
           const result = await ctx.db
             .select({ proposal: proposalTable, workOrder: workOrderTable })
             .from(proposalTable)

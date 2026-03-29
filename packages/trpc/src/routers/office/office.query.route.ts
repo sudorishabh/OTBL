@@ -1,8 +1,13 @@
-import { and, asc, count, desc, eq, like, or } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, like, or } from "drizzle-orm";
 import { schema } from "@pkg/db";
 import { constants } from "@pkg/utils";
 import { router } from "../../trpc";
 import { protectedProcedure, publicProcedure } from "../../core";
+import {
+  assertCanAccessOffice,
+  getAccessScope,
+  resolveVisibleOfficeIds,
+} from "../../access-scope";
 import { officeSchemas } from "@pkg/schema";
 import { fromDatabaseError } from "../../errors";
 import { handleQuery } from "../../helper/typed-handler";
@@ -50,10 +55,34 @@ export const officeQueryRouter = router({
               : asc(officeTable.created_at);
 
       try {
+        const scope = await getAccessScope(
+          ctx.db,
+          Number(ctx.user!.sub),
+          ctx.user!.role,
+        );
+        let officeWhere = officeQuery;
+
+        if (scope.kind === "restricted") {
+          if (scope.ui === "site_only" || scope.ui === "wo_site_upload") {
+            const noOffices = eq(officeTable.id, -1);
+            officeWhere = officeQuery ? and(officeQuery, noOffices) : noOffices;
+          } else {
+            const visibleOfficeIds =
+              (await resolveVisibleOfficeIds(ctx.db, scope)) ?? [];
+            const scopeFilter =
+              visibleOfficeIds.length > 0
+                ? inArray(officeTable.id, visibleOfficeIds)
+                : eq(officeTable.id, -1);
+            officeWhere = officeQuery
+              ? and(officeQuery, scopeFilter)
+              : scopeFilter;
+          }
+        }
+
         const offices = await ctx.db
           .select()
           .from(officeTable)
-          .where(officeQuery)
+          .where(officeWhere)
           .orderBy(officeOrder);
 
         // Get users for each office
@@ -97,11 +126,18 @@ export const officeQueryRouter = router({
   ),
 
   // Get work orders for an office
-  getOfficeWorkOrders: publicProcedure
+  getOfficeWorkOrders: protectedProcedure
     .input(officeSchemas.getOfficeWorkOrderSchema)
     .query(
       handleQuery(async ({ input, ctx }) => {
         try {
+          const scope = await getAccessScope(
+            ctx.db,
+            Number(ctx.user!.sub),
+            ctx.user!.role,
+          );
+          await assertCanAccessOffice(ctx.db, scope, input.officeId);
+
           const all = await ctx.db
             .select()
             .from(workOrderTable)
@@ -118,11 +154,18 @@ export const officeQueryRouter = router({
     ),
 
   // Get office statistics
-  getOfficeStats: publicProcedure
+  getOfficeStats: protectedProcedure
     .input(officeSchemas.getOfficeStatsSchema)
     .query(
       handleQuery(async ({ input, ctx }) => {
         try {
+          const scope = await getAccessScope(
+            ctx.db,
+            Number(ctx.user!.sub),
+            ctx.user!.role,
+          );
+          await assertCanAccessOffice(ctx.db, scope, input.officeId);
+
           const workOrders = await ctx.db
             .select({ id: workOrderTable.id })
             .from(workOrderTable)
@@ -178,11 +221,18 @@ export const officeQueryRouter = router({
     ),
 
   // Get users assigned to an office
-  getOfficeUsers: publicProcedure
+  getOfficeUsers: protectedProcedure
     .input(officeSchemas.getOfficeUsersSchema)
     .query(
       handleQuery(async ({ input, ctx }) => {
         try {
+          const scope = await getAccessScope(
+            ctx.db,
+            Number(ctx.user!.sub),
+            ctx.user!.role,
+          );
+          await assertCanAccessOffice(ctx.db, scope, input.office_id);
+
           const users = await ctx.db
             .select({
               id: userTable.id,

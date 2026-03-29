@@ -7,6 +7,7 @@ import {
   type UserRole,
 } from "@pkg/utils/auth";
 import { schema } from "@pkg/db";
+import { getAccessScope, getDashboardUi } from "../../access-scope";
 import { constants } from "@pkg/utils";
 import { router } from "../../trpc";
 import { protectedProcedure, publicProcedure } from "../../middleware";
@@ -14,7 +15,7 @@ import { fromDatabaseError } from "../../errors";
 import { handleQuery } from "../../helper/typed-handler";
 
 const { STATUS } = constants;
-const { userTable } = schema;
+const { userTable, workOrderSiteTable } = schema;
 
 export const authQueryRouter = router({
   me: publicProcedure.query(
@@ -139,4 +140,36 @@ export const authQueryRouter = router({
       role: ctx.user.role,
     };
   }),
+
+  /** Dashboard navigation mode and WO-site upload target for field operators. */
+  dashboardLayout: protectedProcedure.query(
+    handleQuery(async ({ ctx }) => {
+      const scope = await getAccessScope(
+        ctx.db,
+        Number(ctx.user!.sub),
+        ctx.user!.role as UserRole,
+      );
+      const ui = getDashboardUi(scope);
+
+      if (ui.mode !== "wo_site_upload" || !ui.defaultWorkOrderSiteId) {
+        return {
+          success: true as const,
+          ...ui,
+          workOrderId: null as number | null,
+        };
+      }
+
+      const [row] = await ctx.db
+        .select({ work_order_id: workOrderSiteTable.work_order_id })
+        .from(workOrderSiteTable)
+        .where(eq(workOrderSiteTable.id, ui.defaultWorkOrderSiteId))
+        .limit(1);
+
+      return {
+        success: true as const,
+        ...ui,
+        workOrderId: row?.work_order_id ?? null,
+      };
+    }),
+  ),
 });

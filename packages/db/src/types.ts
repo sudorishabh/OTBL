@@ -11,6 +11,7 @@ import {
   clientContactTable,
   officeUserTable,
   workOrderSiteTable,
+  workOrderSiteUserTable,
   siteUserTable,
   siteActivityTable,
   // siteActivityItemsTable,
@@ -86,6 +87,11 @@ export type NewWorkOrder = InferInsertModel<typeof workOrderTable>;
 
 export type WorkOrderSite = InferSelectModel<typeof workOrderSiteTable>;
 export type NewWorkOrderSite = InferInsertModel<typeof workOrderSiteTable>;
+
+export type WorkOrderSiteUser = InferSelectModel<typeof workOrderSiteUserTable>;
+export type NewWorkOrderSiteUser = InferInsertModel<
+  typeof workOrderSiteUserTable
+>;
 
 export type SiteUser = InferSelectModel<typeof siteUserTable>;
 export type NewSiteUser = InferInsertModel<typeof siteUserTable>;

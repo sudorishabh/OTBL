@@ -1,7 +1,15 @@
 import { and, asc, count, desc, eq, like, or, inArray } from "drizzle-orm";
 import { schema } from "@pkg/db";
 import { router } from "../../trpc";
-import { publicProcedure } from "../../core";
+import { protectedProcedure } from "../../core";
+import {
+  andScope,
+  assertCanAccessClient,
+  assertCanAccessOffice,
+  assertCanAccessWorkOrder,
+  getAccessScope,
+  workOrderScopeWhere,
+} from "../../access-scope";
 import { workOrderSchemas } from "@pkg/schema";
 
 const {
@@ -34,10 +42,17 @@ const {
 
 export const workOrderQueryRouter = router({
   // Get all work orders with pagination, search, and filters
-  getAll: publicProcedure.input(getAllWorkOrdersPaginatedSchema).query(
+  getAll: protectedProcedure.input(getAllWorkOrdersPaginatedSchema).query(
     handleQuery(async ({ input, ctx }) => {
       const { page, limit, searchQuery, status, office_id, workOrderOrder } =
         input;
+
+      const scope = await getAccessScope(
+        ctx.db,
+        Number(ctx.user!.sub),
+        ctx.user!.role,
+      );
+      const scopeWhere = workOrderScopeWhere(scope);
 
       let conditions: any = undefined;
 
@@ -67,6 +82,8 @@ export const workOrderQueryRouter = router({
           ),
         );
       }
+
+      conditions = andScope(conditions, scopeWhere);
 
       const orderBy =
         workOrderOrder === "asc"
@@ -147,9 +164,15 @@ export const workOrderQueryRouter = router({
   ),
 
   // Get all work orders (no pagination)
-  getWorkOrders: publicProcedure.query(
+  getWorkOrders: protectedProcedure.query(
     handleQuery(async ({ ctx }) => {
       try {
+        const scope = await getAccessScope(
+          ctx.db,
+          Number(ctx.user!.sub),
+          ctx.user!.role,
+        );
+        const scopeWhere = workOrderScopeWhere(scope);
         return await ctx.db
           .select({
             id: workOrderTable.id,
@@ -171,7 +194,8 @@ export const workOrderQueryRouter = router({
           })
           .from(workOrderTable)
           .leftJoin(clientTable, eq(workOrderTable.client_id, clientTable.id))
-          .leftJoin(officeTable, eq(workOrderTable.office_id, officeTable.id));
+          .leftJoin(officeTable, eq(workOrderTable.office_id, officeTable.id))
+          .where(scopeWhere);
       } catch (error) {
         throw fromDatabaseError(error, "Fetching all work orders");
       }
@@ -179,10 +203,17 @@ export const workOrderQueryRouter = router({
   ),
 
   // Get a single work order by ID with full details
-  getWorkOrder: publicProcedure.input(getWorkOrderSchema).query(
+  getWorkOrder: protectedProcedure.input(getWorkOrderSchema).query(
     handleQuery(async ({ input, ctx }) => {
       const { id } = input;
       try {
+        const scope = await getAccessScope(
+          ctx.db,
+          Number(ctx.user!.sub),
+          ctx.user!.role,
+        );
+        await assertCanAccessWorkOrder(ctx.db, scope, id);
+
         const workOrders = await ctx.db
           .select({
             id: workOrderTable.id,
@@ -227,17 +258,45 @@ export const workOrderQueryRouter = router({
     }),
   ),
 
-  getWorkOrderSites: publicProcedure.input(getWorkOrderSchema).query(
+  getWorkOrderSites: protectedProcedure.input(getWorkOrderSchema).query(
     handleQuery(async ({ input, ctx }) => {
       const { id, limit, page, search, sort_by, sort_order } = input;
 
       try {
+        const scope = await getAccessScope(
+          ctx.db,
+          Number(ctx.user!.sub),
+          ctx.user!.role,
+        );
+        await assertCanAccessWorkOrder(ctx.db, scope, id);
+
+        const [woRow] = await ctx.db
+          .select({ office_id: workOrderTable.office_id })
+          .from(workOrderTable)
+          .where(eq(workOrderTable.id, id))
+          .limit(1);
+
+        const restrictSitesToAssignment =
+          scope.kind === "restricted" &&
+          woRow &&
+          !scope.officeIds.includes(woRow.office_id);
+
+        const siteRowFilter = restrictSitesToAssignment
+          ? scope.workOrderSiteIds.length > 0
+            ? inArray(workOrderSiteTable.id, scope.workOrderSiteIds)
+            : eq(workOrderSiteTable.id, -1)
+          : undefined;
+
+        const woSiteWhere = siteRowFilter
+          ? and(eq(workOrderSiteTable.work_order_id, id), siteRowFilter)
+          : eq(workOrderSiteTable.work_order_id, id);
+
         // Calculate total count
         const [totalResult] = await ctx.db
           .select({ count: count() })
           .from(workOrderSiteTable)
           .leftJoin(siteTable, eq(workOrderSiteTable.site_id, siteTable.id))
-          .where(eq(workOrderSiteTable.work_order_id, id));
+          .where(woSiteWhere);
 
         const total = totalResult?.count ?? 0;
 
@@ -271,7 +330,7 @@ export const workOrderQueryRouter = router({
           })
           .from(workOrderSiteTable)
           .leftJoin(siteTable, eq(workOrderSiteTable.site_id, siteTable.id))
-          .where(eq(workOrderSiteTable.work_order_id, id))
+          .where(woSiteWhere)
           .limit(limit)
           .offset(offset)
           .orderBy(desc(workOrderSiteTable.created_at));
@@ -339,13 +398,21 @@ export const workOrderQueryRouter = router({
   ),
 
   // Get work orders by office ID
-  getWorkOrdersByOffice: publicProcedure
+  getWorkOrdersByOffice: protectedProcedure
     .input(getWorkOrdersByOfficeSchema)
     .query(
       handleQuery(async ({ input, ctx }) => {
         const { office_id } = input;
 
         try {
+          const scope = await getAccessScope(
+            ctx.db,
+            Number(ctx.user!.sub),
+            ctx.user!.role,
+          );
+          await assertCanAccessOffice(ctx.db, scope, office_id);
+
+          const scopeWhere = workOrderScopeWhere(scope);
           return await ctx.db
             .select({
               id: workOrderTable.id,
@@ -364,7 +431,12 @@ export const workOrderQueryRouter = router({
             })
             .from(workOrderTable)
             .leftJoin(clientTable, eq(workOrderTable.client_id, clientTable.id))
-            .where(eq(workOrderTable.office_id, office_id))
+            .where(
+              andScope(
+                eq(workOrderTable.office_id, office_id),
+                scopeWhere,
+              ),
+            )
             .orderBy(desc(workOrderTable.created_at));
         } catch (error) {
           throw fromDatabaseError(error, "Fetching work orders for office");
@@ -373,13 +445,21 @@ export const workOrderQueryRouter = router({
     ),
 
   // Get work orders by client ID
-  getWorkOrdersByClient: publicProcedure
+  getWorkOrdersByClient: protectedProcedure
     .input(getWorkOrdersByClientSchema)
     .query(
       handleQuery(async ({ input, ctx }) => {
         const { client_id } = input;
 
         try {
+          const scope = await getAccessScope(
+            ctx.db,
+            Number(ctx.user!.sub),
+            ctx.user!.role,
+          );
+          await assertCanAccessClient(ctx.db, scope, client_id);
+
+          const scopeWhere = workOrderScopeWhere(scope);
           return await ctx.db
             .select({
               id: workOrderTable.id,
@@ -398,7 +478,12 @@ export const workOrderQueryRouter = router({
             })
             .from(workOrderTable)
             .leftJoin(officeTable, eq(workOrderTable.office_id, officeTable.id))
-            .where(eq(workOrderTable.client_id, client_id));
+            .where(
+              andScope(
+                eq(workOrderTable.client_id, client_id),
+                scopeWhere,
+              ),
+            );
         } catch (error) {
           throw fromDatabaseError(error, "Fetching work orders for client");
         }
@@ -406,11 +491,45 @@ export const workOrderQueryRouter = router({
     ),
 
   // Get work order with full details including sites
-  getWorkOrderDetails: publicProcedure.input(getWorkOrderSchema).query(
+  getWorkOrderDetails: protectedProcedure.input(getWorkOrderSchema).query(
     handleQuery(async ({ input, ctx }) => {
       const { id } = input;
 
       try {
+        const scope = await getAccessScope(
+          ctx.db,
+          Number(ctx.user!.sub),
+          ctx.user!.role,
+        );
+        await assertCanAccessWorkOrder(ctx.db, scope, id);
+
+        const woRowForScope = (
+          await ctx.db
+            .select({ office_id: workOrderTable.office_id })
+            .from(workOrderTable)
+            .where(eq(workOrderTable.id, id))
+            .limit(1)
+        )[0];
+
+        const woSitesWhere = (() => {
+          if (
+            scope.kind === "restricted" &&
+            woRowForScope &&
+            !scope.officeIds.includes(woRowForScope.office_id)
+          ) {
+            return scope.workOrderSiteIds.length > 0
+              ? and(
+                  eq(workOrderSiteTable.work_order_id, id),
+                  inArray(workOrderSiteTable.id, scope.workOrderSiteIds),
+                )
+              : and(
+                  eq(workOrderSiteTable.work_order_id, id),
+                  eq(workOrderSiteTable.id, -1),
+                );
+          }
+          return eq(workOrderSiteTable.work_order_id, id);
+        })();
+
         const workOrders = await ctx.db
           .select({
             id: workOrderTable.id,
@@ -465,7 +584,7 @@ export const workOrderQueryRouter = router({
           })
           .from(workOrderSiteTable)
           .leftJoin(siteTable, eq(workOrderSiteTable.site_id, siteTable.id))
-          .where(eq(workOrderSiteTable.work_order_id, id))
+          .where(woSitesWhere)
           .orderBy(desc(workOrderSiteTable.created_at));
 
         const [sitesUsers, sitesSheets] = await Promise.all([

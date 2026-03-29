@@ -386,6 +386,29 @@ export const workOrderSiteTable = mysqlTable(
   ],
 );
 
+/** Operators assigned to a specific work-order–site row (field / WO-site scope). */
+export const workOrderSiteUserTable = mysqlTable(
+  "work_order_site_users",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    work_order_site_id: int("work_order_site_id")
+      .notNull()
+      .references(() => workOrderSiteTable.id, { onDelete: "cascade" }),
+    user_id: int("user_id")
+      .notNull()
+      .references(() => userTable.id, { onDelete: "cascade" }),
+    created_at: timestamp("created_at").notNull().defaultNow(),
+    updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+  },
+  (table) => [
+    uniqueIndex("wosu_wo_site_user_idx").on(
+      table.work_order_site_id,
+      table.user_id,
+    ),
+    index("wosu_user_idx").on(table.user_id),
+  ],
+);
+
 export const siteUserTable = mysqlTable("site_users", {
   id: int("id").autoincrement().primaryKey(),
   office_id: int("office_id")

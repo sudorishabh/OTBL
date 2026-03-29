@@ -45,9 +45,7 @@ export const siteMutationRouter = router({
             const operatorValues = operator_ids.map((operatorId: number) => ({
               user_id: operatorId,
               site_id: createdSite.id,
-              role: "operator" as const,
               office_id: input.office_id,
-              assigned_by: parseInt(ctx.user!.sub),
             }));
 
             await tx.insert(siteUserTable).values(operatorValues);

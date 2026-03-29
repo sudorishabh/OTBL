@@ -1,7 +1,11 @@
 import { eq, desc, and, inArray } from "drizzle-orm";
 import { schema } from "@pkg/db";
 import { router } from "../../trpc";
-import { publicProcedure } from "../../core";
+import { protectedProcedure } from "../../core";
+import {
+  assertCanAccessWorkOrderSite,
+  getAccessScope,
+} from "../../access-scope";
 import { handleQuery } from "../../helper/typed-handler";
 import { z } from "zod";
 import { fromDatabaseError } from "../../errors";
@@ -38,7 +42,7 @@ const {
 
 export const workOrderSiteQueryRouter = router({
   // Get measurement sheets for a work order site
-  getMeasurementSheets: publicProcedure
+  getMeasurementSheets: protectedProcedure
     .input(
       z.object({
         work_order_site_id: z.number().positive(),
@@ -49,6 +53,13 @@ export const workOrderSiteQueryRouter = router({
         const { work_order_site_id } = input;
 
         try {
+          const scope = await getAccessScope(
+            ctx.db,
+            Number(ctx.user!.sub),
+            ctx.user!.role,
+          );
+          await assertCanAccessWorkOrderSite(ctx.db, scope, work_order_site_id);
+
           const sheets = await ctx.db
             .select()
             .from(workOrderSiteDocsTable)
@@ -70,13 +81,20 @@ export const workOrderSiteQueryRouter = router({
     ),
 
   // Get work order site details with all information
-  getWorkOrderSiteDetails: publicProcedure
+  getWorkOrderSiteDetails: protectedProcedure
     .input(getWorkOrderSiteDetailsSchema)
     .query(
       handleQuery(async ({ input, ctx }) => {
         const { work_order_site_id } = input;
 
         try {
+          const scope = await getAccessScope(
+            ctx.db,
+            Number(ctx.user!.sub),
+            ctx.user!.role,
+          );
+          await assertCanAccessWorkOrderSite(ctx.db, scope, work_order_site_id);
+
           // Get work order site with joined data
           const woSites = await ctx.db
             .select({
@@ -169,11 +187,18 @@ export const workOrderSiteQueryRouter = router({
     ),
 
   // Get site activities for a work order site
-  getSiteActivities: publicProcedure.input(getSiteActivitiesSchema).query(
+  getSiteActivities: protectedProcedure.input(getSiteActivitiesSchema).query(
     handleQuery(async ({ input, ctx }) => {
       const { work_order_site_id } = input;
 
       try {
+        const scope = await getAccessScope(
+          ctx.db,
+          Number(ctx.user!.sub),
+          ctx.user!.role,
+        );
+        await assertCanAccessWorkOrderSite(ctx.db, scope, work_order_site_id);
+
         const activities = await ctx.db
           .select({
             id: siteActivityTable.id,
@@ -427,11 +452,18 @@ export const workOrderSiteQueryRouter = router({
   ),
 
   // Get site documents for a work order site
-  getSiteDocuments: publicProcedure.input(getSiteDocumentsSchema).query(
+  getSiteDocuments: protectedProcedure.input(getSiteDocumentsSchema).query(
     handleQuery(async ({ input, ctx }) => {
       const { work_order_site_id } = input;
 
       try {
+        const scope = await getAccessScope(
+          ctx.db,
+          Number(ctx.user!.sub),
+          ctx.user!.role,
+        );
+        await assertCanAccessWorkOrderSite(ctx.db, scope, work_order_site_id);
+
         const documents = await ctx.db
           .select()
           .from(workOrderSiteDocsTable)
@@ -447,7 +479,7 @@ export const workOrderSiteQueryRouter = router({
   ),
 
   // Get bioremediation data for a work order site
-  getBioremediationData: publicProcedure
+  getBioremediationData: protectedProcedure
     .input(
       z.object({
         work_order_site_id: z.number().positive(),
@@ -458,6 +490,13 @@ export const workOrderSiteQueryRouter = router({
         const { work_order_site_id } = input;
 
         try {
+          const scope = await getAccessScope(
+            ctx.db,
+            Number(ctx.user!.sub),
+            ctx.user!.role,
+          );
+          await assertCanAccessWorkOrderSite(ctx.db, scope, work_order_site_id);
+
           // Get contaminated soil entries
           const contaminatedSoil = await ctx.db
             .select()
@@ -497,7 +536,7 @@ export const workOrderSiteQueryRouter = router({
     ),
 
   // Get restoration data for a work order site
-  getRestorationData: publicProcedure
+  getRestorationData: protectedProcedure
     .input(
       z.object({
         work_order_site_id: z.number().positive(),
@@ -508,6 +547,13 @@ export const workOrderSiteQueryRouter = router({
         const { work_order_site_id } = input;
 
         try {
+          const scope = await getAccessScope(
+            ctx.db,
+            Number(ctx.user!.sub),
+            ctx.user!.role,
+          );
+          await assertCanAccessWorkOrderSite(ctx.db, scope, work_order_site_id);
+
           const cleaningUpSoilArea = await ctx.db
             .select()
             .from(cleaningUpSoilAreaTable)

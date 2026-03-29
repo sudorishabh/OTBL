@@ -2,6 +2,11 @@ import { and, count, desc, eq, inArray, like, or } from "drizzle-orm";
 import { schema } from "@pkg/db";
 import { router } from "../../trpc";
 import { protectedProcedure, publicProcedure } from "../../core";
+import {
+  assertCanAccessClient,
+  clientIdsVisibleToScope,
+  getAccessScope,
+} from "../../access-scope";
 import { clientSchemas } from "@pkg/schema";
 import { notFound, fromDatabaseError } from "../../errors";
 import { handleQuery } from "../../helper/typed-handler";
@@ -24,13 +29,40 @@ export const clientQueryRouter = router({
   totalClientAndContact: protectedProcedure.query(
     handleQuery(async ({ ctx }) => {
       try {
+        const scope = await getAccessScope(
+          ctx.db,
+          Number(ctx.user!.sub),
+          ctx.user!.role,
+        );
+        const clientIds = await clientIdsVisibleToScope(ctx.db, scope);
+
+        if (scope.kind === "restricted" && (!clientIds || clientIds.length === 0)) {
+          return { totalClients: 0, totalContacts: 0 };
+        }
+
+        const clientWhere =
+          scope.kind === "full"
+            ? undefined
+            : clientIds && clientIds.length > 0
+              ? inArray(clientTable.id, clientIds)
+              : eq(clientTable.id, -1);
+
         const clientsResult = await ctx.db
           .select({ count: count() })
-          .from(clientTable);
+          .from(clientTable)
+          .where(clientWhere);
+
+        const contactWhere =
+          scope.kind === "full"
+            ? undefined
+            : clientIds && clientIds.length > 0
+              ? inArray(clientContactTable.client_id, clientIds)
+              : eq(clientContactTable.client_id, -1);
 
         const contactsResult = await ctx.db
           .select({ count: count() })
-          .from(clientContactTable);
+          .from(clientContactTable)
+          .where(contactWhere);
 
         return {
           totalClients: clientsResult[0]?.count ?? 0,
@@ -43,9 +75,16 @@ export const clientQueryRouter = router({
   ),
 
   // Get all clients with pagination, search, and filters
-  getClients: publicProcedure.input(clientSchemas.getAllClientsSchema).query(
+  getClients: protectedProcedure.input(clientSchemas.getAllClientsSchema).query(
     handleQuery(async ({ input, ctx }) => {
       const { searchQuery, status } = input;
+
+      const scope = await getAccessScope(
+        ctx.db,
+        Number(ctx.user!.sub),
+        ctx.user!.role,
+      );
+      const clientIds = await clientIdsVisibleToScope(ctx.db, scope);
 
       let clientQuery = undefined;
 
@@ -66,6 +105,16 @@ export const clientQueryRouter = router({
           : searchCondition;
       }
 
+      if (scope.kind === "restricted") {
+        const scopeFilter =
+          clientIds && clientIds.length > 0
+            ? inArray(clientTable.id, clientIds)
+            : eq(clientTable.id, -1);
+        clientQuery = clientQuery
+          ? and(clientQuery, scopeFilter)
+          : scopeFilter;
+      }
+
       try {
         return await ctx.db
           .select()
@@ -78,9 +127,15 @@ export const clientQueryRouter = router({
     }),
   ),
 
-  getClient: publicProcedure.input(clientSchemas.getClientSchema).query(
+  getClient: protectedProcedure.input(clientSchemas.getClientSchema).query(
     handleQuery(async ({ input, ctx }) => {
       try {
+        const scope = await getAccessScope(
+          ctx.db,
+          Number(ctx.user!.sub),
+          ctx.user!.role,
+        );
+
         const client = await ctx.db
           .select()
           .from(clientTable)
@@ -89,6 +144,8 @@ export const clientQueryRouter = router({
         if (client.length === 0) {
           throw notFound("Client", input.clientId);
         }
+
+        await assertCanAccessClient(ctx.db, scope, input.clientId);
 
         const clientUsers = await ctx.db
           .select()

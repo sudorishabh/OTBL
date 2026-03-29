@@ -1,7 +1,11 @@
 import { eq, and } from "drizzle-orm";
 import { schema } from "@pkg/db";
 import { router } from "../../trpc";
-import { publicProcedure } from "../../core";
+import { publicProcedure, staffProcedure } from "../../core";
+import {
+  assertCanAccessWorkOrderSite,
+  getAccessScope,
+} from "../../access-scope";
 import { handleMutation } from "../../helper/typed-handler";
 import { z } from "zod";
 import { fromDatabaseError } from "../../errors";
@@ -113,6 +117,7 @@ const saveRestorationPhaseSchema = z.object({
 const {
   siteActivityTable,
   workOrderSiteTable,
+  workOrderSiteUserTable,
   workOrderSiteDocsTable,
   bioremediationContSoilTable,
   bioSampleTable,
@@ -125,6 +130,55 @@ const {
 } = schema;
 
 export const workOrderSiteMutationRouter = router({
+  /**
+   * Assign operators to a work-order site row. Replaces existing assignments for that row.
+   * Staff+ can assign; caller must be able to access the work order site (office manager / WO-site operator).
+   */
+  setWorkOrderSiteOperators: staffProcedure
+    .input(
+      z.object({
+        work_order_site_id: z.number().positive(),
+        user_ids: z.array(z.number().positive()),
+      }),
+    )
+    .mutation(
+      handleMutation(async ({ input, ctx }) => {
+        const { work_order_site_id, user_ids } = input;
+        const scope = await getAccessScope(
+          ctx.db,
+          Number(ctx.user!.sub),
+          ctx.user!.role,
+        );
+        await assertCanAccessWorkOrderSite(ctx.db, scope, work_order_site_id);
+
+        try {
+          await ctx.db.transaction(async (tx: any) => {
+            await tx
+              .delete(workOrderSiteUserTable)
+              .where(
+                eq(
+                  workOrderSiteUserTable.work_order_site_id,
+                  work_order_site_id,
+                ),
+              );
+
+            if (user_ids.length > 0) {
+              await tx.insert(workOrderSiteUserTable).values(
+                user_ids.map((user_id) => ({
+                  work_order_site_id,
+                  user_id,
+                })),
+              );
+            }
+          });
+
+          return { success: true };
+        } catch (error) {
+          throw fromDatabaseError(error, "Saving work order site operators");
+        }
+      }),
+    ),
+
   // Create a measurement sheet
   createMeasurementSheet: publicProcedure
     .input(
