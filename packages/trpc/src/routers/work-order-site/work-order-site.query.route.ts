@@ -3,6 +3,7 @@ import { schema } from "@pkg/db";
 import { router } from "../../trpc";
 import { protectedProcedure } from "../../core";
 import {
+  assertCanAccessWorkOrder,
   assertCanAccessWorkOrderSite,
   getAccessScope,
 } from "../../access-scope";
@@ -43,6 +44,63 @@ const {
 } = schema;
 
 export const workOrderSiteQueryRouter = router({
+  /** All operator uploads across every site row for this work order (for office/staff WO view). */
+  getOperatorUploadsByWorkOrder: protectedProcedure
+    .input(z.object({ work_order_id: z.number().positive() }))
+    .query(
+      handleQuery(async ({ input, ctx }) => {
+        const { work_order_id } = input;
+
+        try {
+          const scope = await getAccessScope(
+            ctx.db,
+            Number(ctx.user!.sub),
+            ctx.user!.role,
+          );
+          await assertCanAccessWorkOrder(ctx.db, scope, work_order_id);
+
+          const uploads = await ctx.db
+            .select({
+              id: workOrderSiteOperatorUploadTable.id,
+              work_order_site_id:
+                workOrderSiteOperatorUploadTable.work_order_site_id,
+              site_name: siteTable.name,
+              description: workOrderSiteOperatorUploadTable.description,
+              file_name: workOrderSiteOperatorUploadTable.file_name,
+              document_url: workOrderSiteOperatorUploadTable.document_url,
+              document_id: workOrderSiteOperatorUploadTable.document_id,
+              created_at: workOrderSiteOperatorUploadTable.created_at,
+              uploaded_by_name: userTable.name,
+            })
+            .from(workOrderSiteOperatorUploadTable)
+            .innerJoin(
+              workOrderSiteTable,
+              eq(
+                workOrderSiteOperatorUploadTable.work_order_site_id,
+                workOrderSiteTable.id,
+              ),
+            )
+            .innerJoin(siteTable, eq(workOrderSiteTable.site_id, siteTable.id))
+            .innerJoin(
+              userTable,
+              eq(
+                workOrderSiteOperatorUploadTable.uploaded_by_user_id,
+                userTable.id,
+              ),
+            )
+            .where(eq(workOrderSiteTable.work_order_id, work_order_id))
+            .orderBy(desc(workOrderSiteOperatorUploadTable.created_at));
+
+          return uploads;
+        } catch (error) {
+          throw fromDatabaseError(
+            error,
+            "Fetching operator uploads for work order",
+          );
+        }
+      }),
+    ),
+
   getOperatorUploads: protectedProcedure
     .input(
       z.object({

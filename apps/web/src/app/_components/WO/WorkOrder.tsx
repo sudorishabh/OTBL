@@ -5,10 +5,11 @@ import { trpc } from "@/lib/trpc";
 import { capitalFirstLetter } from "@pkg/utils";
 import { useRouter } from "next/navigation";
 import WorkOrderDetailsCard from "./_components/WorkOrderDetailsCard";
-import { File, Plus, Rows3 } from "lucide-react";
+import { File, FolderOpen, Plus, Rows3 } from "lucide-react";
 import ScheduleOfRatesTable from "./_components/ScheduleOfRatesTable";
 import CreateWorkOrderSiteDialog from "./_components/CreateWOSite/CreateWorkOrderSiteDialog";
 import SiteDetailDialog from "./_components/SiteDetailsDialog/SiteDetailsDialog";
+import { WorkOrderOperatorUploadsDialog } from "./_components/WorkOrderOperatorUploadsDialog";
 import useHandleParams from "@/hooks/useHandleParams";
 import CustomButton from "@/components/CustomButton";
 import LoadMoreBtn from "@/components/loading/LoadMoreBtn";
@@ -196,6 +197,14 @@ const WorkOrder = ({ workOrderId, from }: Props) => {
         }
       }}>
       <div className='mt-4 space-y-6'>
+        <div className='flex justify-end'>
+          <CustomButton
+            text='Operator site documents'
+            variant='outline'
+            Icon={FolderOpen}
+            onClick={() => setParam("dialog", "operator-uploads")}
+          />
+        </div>
         <WorkOrderDetailsCard
           workOrder={workOrder}
           stats={statsForComponent}
@@ -311,6 +320,10 @@ const WorkOrder = ({ workOrderId, from }: Props) => {
           scheduleOfRates={scheduleOfRates}
         />
         <SiteDetailDialog />
+        <WorkOrderOperatorUploadsDialog
+          workOrderId={workOrder.id}
+          workOrderCode={workOrder.code}
+        />
       </div>
     </PageWrapper>
   );
