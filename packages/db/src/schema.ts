@@ -409,6 +409,30 @@ export const workOrderSiteUserTable = mysqlTable(
   ],
 );
 
+/** Operator-uploaded site documents: metadata in DB, binary in SharePoint. */
+export const workOrderSiteOperatorUploadTable = mysqlTable(
+  "work_order_site_operator_uploads",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    work_order_site_id: int("work_order_site_id")
+      .notNull()
+      .references(() => workOrderSiteTable.id, { onDelete: "cascade" }),
+    uploaded_by_user_id: int("uploaded_by_user_id")
+      .notNull()
+      .references(() => userTable.id, { onDelete: "cascade" }),
+    description: text("description").notNull(),
+    file_name: varchar("file_name", { length: 512 }),
+    document_url: text("document_url").notNull(),
+    document_id: varchar("document_id", { length: 255 }),
+    created_at: timestamp("created_at").notNull().defaultNow(),
+    updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+  },
+  (table) => [
+    index("wosou_wo_site_idx").on(table.work_order_site_id),
+    index("wosou_user_idx").on(table.uploaded_by_user_id),
+  ],
+);
+
 export const siteUserTable = mysqlTable("site_users", {
   id: int("id").autoincrement().primaryKey(),
   office_id: int("office_id")

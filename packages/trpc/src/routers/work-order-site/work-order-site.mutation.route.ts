@@ -1,7 +1,8 @@
 import { eq, and } from "drizzle-orm";
 import { schema } from "@pkg/db";
+import { TRPCError } from "@trpc/server";
 import { router } from "../../trpc";
-import { publicProcedure, staffProcedure } from "../../core";
+import { publicProcedure, protectedProcedure, staffProcedure } from "../../core";
 import {
   assertCanAccessWorkOrderSite,
   getAccessScope,
@@ -118,6 +119,7 @@ const {
   siteActivityTable,
   workOrderSiteTable,
   workOrderSiteUserTable,
+  workOrderSiteOperatorUploadTable,
   workOrderSiteDocsTable,
   bioremediationContSoilTable,
   bioSampleTable,
@@ -176,6 +178,106 @@ export const workOrderSiteMutationRouter = router({
         } catch (error) {
           throw fromDatabaseError(error, "Saving work order site operators");
         }
+      }),
+    ),
+
+  /** Operator uploads: description + SharePoint URL/id; file bytes live in SharePoint. */
+  createOperatorUpload: protectedProcedure
+    .input(
+      z.object({
+        work_order_site_id: z.number().positive(),
+        description: z.string().min(1).max(8000),
+        document_url: z.string().min(1),
+        document_id: z.string().max(255).optional(),
+        file_name: z.string().max(512).optional(),
+      }),
+    )
+    .mutation(
+      handleMutation(async ({ input, ctx }) => {
+        const userId = Number(ctx.user!.sub);
+        const scope = await getAccessScope(
+          ctx.db,
+          userId,
+          ctx.user!.role,
+        );
+        await assertCanAccessWorkOrderSite(
+          ctx.db,
+          scope,
+          input.work_order_site_id,
+        );
+
+        try {
+          const [result] = await ctx.db
+            .insert(workOrderSiteOperatorUploadTable)
+            .values({
+              work_order_site_id: input.work_order_site_id,
+              uploaded_by_user_id: userId,
+              description: input.description,
+              document_url: input.document_url,
+              document_id: input.document_id,
+              file_name: input.file_name,
+            });
+
+          return {
+            success: true,
+            id: Number(result.insertId),
+            message: "Document uploaded successfully",
+          };
+        } catch (error) {
+          throw fromDatabaseError(error, "Creating operator upload");
+        }
+      }),
+    ),
+
+  deleteOperatorUpload: protectedProcedure
+    .input(z.object({ id: z.number().positive() }))
+    .mutation(
+      handleMutation(async ({ input, ctx }) => {
+        const userId = Number(ctx.user!.sub);
+        const scope = await getAccessScope(
+          ctx.db,
+          userId,
+          ctx.user!.role,
+        );
+
+        const rows = await ctx.db
+          .select()
+          .from(workOrderSiteOperatorUploadTable)
+          .where(eq(workOrderSiteOperatorUploadTable.id, input.id))
+          .limit(1);
+
+        const row = rows[0];
+        if (!row) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Upload not found",
+          });
+        }
+
+        await assertCanAccessWorkOrderSite(
+          ctx.db,
+          scope,
+          row.work_order_site_id,
+        );
+
+        if (row.document_id && isSharePointConfigured(ctx.appEnv)) {
+          try {
+            const config = getSharePointConfig(ctx.appEnv);
+            const service = createSharePointService(config);
+            await service.deleteFile(row.document_id);
+          } catch (spError) {
+            console.error("Failed to delete from SharePoint:", spError);
+          }
+        }
+
+        await ctx.db
+          .delete(workOrderSiteOperatorUploadTable)
+          .where(eq(workOrderSiteOperatorUploadTable.id, input.id));
+
+        return {
+          success: true,
+          message: "Document deleted successfully",
+        };
       }),
     ),
 

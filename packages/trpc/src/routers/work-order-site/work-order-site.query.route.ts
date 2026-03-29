@@ -27,8 +27,10 @@ const {
   workOrderSiteTable,
   siteTable,
   workOrderTable,
+  userTable,
   siteActivityTable,
   workOrderSiteDocsTable,
+  workOrderSiteOperatorUploadTable,
   scheduleOfRatesTable,
   bioremediationContSoilTable,
   bioSampleTable,
@@ -41,6 +43,63 @@ const {
 } = schema;
 
 export const workOrderSiteQueryRouter = router({
+  getOperatorUploads: protectedProcedure
+    .input(
+      z.object({
+        work_order_site_id: z.number().positive(),
+      }),
+    )
+    .query(
+      handleQuery(async ({ input, ctx }) => {
+        const { work_order_site_id } = input;
+
+        try {
+          const scope = await getAccessScope(
+            ctx.db,
+            Number(ctx.user!.sub),
+            ctx.user!.role,
+          );
+          await assertCanAccessWorkOrderSite(
+            ctx.db,
+            scope,
+            work_order_site_id,
+          );
+
+          const uploads = await ctx.db
+            .select({
+              id: workOrderSiteOperatorUploadTable.id,
+              work_order_site_id:
+                workOrderSiteOperatorUploadTable.work_order_site_id,
+              description: workOrderSiteOperatorUploadTable.description,
+              file_name: workOrderSiteOperatorUploadTable.file_name,
+              document_url: workOrderSiteOperatorUploadTable.document_url,
+              document_id: workOrderSiteOperatorUploadTable.document_id,
+              created_at: workOrderSiteOperatorUploadTable.created_at,
+              uploaded_by_name: userTable.name,
+            })
+            .from(workOrderSiteOperatorUploadTable)
+            .innerJoin(
+              userTable,
+              eq(
+                workOrderSiteOperatorUploadTable.uploaded_by_user_id,
+                userTable.id,
+              ),
+            )
+            .where(
+              eq(
+                workOrderSiteOperatorUploadTable.work_order_site_id,
+                work_order_site_id,
+              ),
+            )
+            .orderBy(desc(workOrderSiteOperatorUploadTable.created_at));
+
+          return uploads;
+        } catch (error) {
+          throw fromDatabaseError(error, "Fetching operator uploads");
+        }
+      }),
+    ),
+
   // Get measurement sheets for a work order site
   getMeasurementSheets: protectedProcedure
     .input(
