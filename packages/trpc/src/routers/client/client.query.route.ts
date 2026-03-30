@@ -152,10 +152,29 @@ export const clientQueryRouter = router({
           .from(clientContactTable)
           .where(eq(clientContactTable.client_id, input.clientId));
 
+        let workOrderWhere = eq(workOrderTable.client_id, input.clientId);
+        if (scope.kind === "restricted" && scope.ui === "office") {
+          if (scope.officeIds.length > 0) {
+            workOrderWhere = and(
+              workOrderWhere,
+              inArray(workOrderTable.office_id, scope.officeIds),
+            )!;
+          }
+        } else if (
+          scope.kind === "restricted" &&
+          scope.ui === "wo_site_upload" &&
+          scope.workOrderIdsFromSiteAssignment.length > 0
+        ) {
+          workOrderWhere = and(
+            workOrderWhere,
+            inArray(workOrderTable.id, scope.workOrderIdsFromSiteAssignment),
+          )!;
+        }
+
         const workOrders = await ctx.db
           .select({ id: workOrderTable.id, status: workOrderTable.status })
           .from(workOrderTable)
-          .where(eq(workOrderTable.client_id, input.clientId));
+          .where(workOrderWhere);
 
         const workOrderIds = workOrders.map((w) => w.id);
 

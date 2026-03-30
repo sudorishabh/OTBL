@@ -7,12 +7,50 @@ import {
   assertCanAccessProposal,
   getAccessScope,
   proposalIdsVisibleToScope,
+  type AccessScope,
 } from "../../access-scope";
 import { fromDatabaseError } from "../../errors";
 import { handleQuery } from "../../helper/typed-handler";
 import { proposalSchemas } from "@pkg/schema";
 
 const { proposalTable, workOrderTable } = schema;
+
+async function applyProposalScopeForClient(
+  scope: AccessScope,
+  db: Parameters<typeof proposalIdsVisibleToScope>[0],
+  baseCond: ReturnType<typeof eq>,
+) {
+  if (scope.kind !== "restricted") {
+    return { clientCond: baseCond, workOrderJoinOn: eq(workOrderTable.proposal_id, proposalTable.id) };
+  }
+  if (scope.ui === "site_only") {
+    return {
+      clientCond: and(baseCond, eq(proposalTable.id, -1))!,
+      workOrderJoinOn: eq(workOrderTable.proposal_id, proposalTable.id),
+    };
+  }
+  if (scope.ui === "office" && scope.officeIds.length > 0) {
+    return {
+      clientCond: and(
+        baseCond,
+        inArray(proposalTable.office_id, scope.officeIds),
+      )!,
+      workOrderJoinOn: and(
+        eq(workOrderTable.proposal_id, proposalTable.id),
+        inArray(workOrderTable.office_id, scope.officeIds),
+      )!,
+    };
+  }
+  const pids = (await proposalIdsVisibleToScope(db, scope)) ?? [];
+  const scopeFilter =
+    pids.length > 0
+      ? inArray(proposalTable.id, pids)
+      : eq(proposalTable.id, -1);
+  return {
+    clientCond: and(baseCond, scopeFilter)!,
+    workOrderJoinOn: eq(workOrderTable.proposal_id, proposalTable.id),
+  };
+}
 
 export const proposalQueryRouter = router({
   // Get proposals for a specific client (with optional limit)
@@ -30,16 +68,12 @@ export const proposalQueryRouter = router({
           );
           await assertCanAccessClient(ctx.db, scope, client_id);
 
-          let clientCond: any = eq(proposalTable.client_id, client_id);
-          if (scope.kind === "restricted") {
-            const pids =
-              (await proposalIdsVisibleToScope(ctx.db, scope)) ?? [];
-            const scopeFilter =
-              pids.length > 0
-                ? inArray(proposalTable.id, pids)
-                : eq(proposalTable.id, -1);
-            clientCond = and(clientCond, scopeFilter);
-          }
+          const { clientCond, workOrderJoinOn } =
+            await applyProposalScopeForClient(
+              scope,
+              ctx.db,
+              eq(proposalTable.client_id, client_id),
+            );
 
           const [totalResult] = await ctx.db
             .select({ count: count() })
@@ -51,10 +85,7 @@ export const proposalQueryRouter = router({
             .select({ proposal: proposalTable, workOrder: workOrderTable })
             .from(proposalTable)
             .where(clientCond)
-            .leftJoin(
-              workOrderTable,
-              eq(workOrderTable.proposal_id, proposalTable.id),
-            )
+            .leftJoin(workOrderTable, workOrderJoinOn)
             .orderBy(desc(proposalTable.created_at))
             .$dynamic();
 
@@ -83,17 +114,13 @@ export const proposalQueryRouter = router({
         );
         await assertCanAccessClient(ctx.db, scope, client_id);
 
-        let conditions: any = eq(proposalTable.client_id, client_id);
-
-        if (scope.kind === "restricted") {
-          const pids =
-            (await proposalIdsVisibleToScope(ctx.db, scope)) ?? [];
-          const scopeFilter =
-            pids.length > 0
-              ? inArray(proposalTable.id, pids)
-              : eq(proposalTable.id, -1);
-          conditions = and(conditions, scopeFilter);
-        }
+        const scoped = await applyProposalScopeForClient(
+          scope,
+          ctx.db,
+          eq(proposalTable.client_id, client_id),
+        );
+        let conditions: any = scoped.clientCond;
+        const { workOrderJoinOn: workOrderJoinOnPaginated } = scoped;
 
         if (searchQuery && searchQuery.trim() !== "") {
           conditions = and(
@@ -131,10 +158,7 @@ export const proposalQueryRouter = router({
           const proposals = await ctx.db
             .select({ proposal: proposalTable, workOrder: workOrderTable })
             .from(proposalTable)
-            .leftJoin(
-              workOrderTable,
-              eq(workOrderTable.proposal_id, proposalTable.id),
-            )
+            .leftJoin(workOrderTable, workOrderJoinOnPaginated)
             .where(conditions)
             .limit(limit)
             .offset(offset)
@@ -174,14 +198,18 @@ export const proposalQueryRouter = router({
           );
           await assertCanAccessProposal(ctx.db, scope, proposal_id);
 
+          const { clientCond: proposalWhere, workOrderJoinOn } =
+            await applyProposalScopeForClient(
+              scope,
+              ctx.db,
+              eq(proposalTable.id, proposal_id),
+            );
+
           const result = await ctx.db
             .select({ proposal: proposalTable, workOrder: workOrderTable })
             .from(proposalTable)
-            .where(eq(proposalTable.id, proposal_id))
-            .leftJoin(
-              workOrderTable,
-              eq(workOrderTable.proposal_id, proposalTable.id),
-            )
+            .where(proposalWhere)
+            .leftJoin(workOrderTable, workOrderJoinOn)
             .limit(1);
 
           if (!result.length) {

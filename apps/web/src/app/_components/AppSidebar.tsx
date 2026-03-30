@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useMemo } from "react";
 import {
   LayoutDashboard,
   User,
@@ -25,8 +26,20 @@ import {
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { constants } from "@pkg/utils";
 
-const sidebarLinks = [
+const { ROLES } = constants;
+
+type NavItem = {
+  title: string;
+  link: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  /** Global roles that must not see this item */
+  hideForRoles?: readonly string[];
+};
+
+const sidebarLinks: NavItem[] = [
   {
     title: "Overview",
     link: "/",
@@ -36,6 +49,7 @@ const sidebarLinks = [
     title: "User Management",
     link: "/user",
     icon: Users,
+    hideForRoles: [ROLES.MANAGER, ROLES.OPERATOR],
   },
 
   {
@@ -110,6 +124,15 @@ const SidebarMenuList = ({ item, isActive }: SidebarMenuListProps) => {
 function AppSidebar() {
   let pathname = usePathname();
   const { state } = useSidebar();
+  const { user } = useAuthContext();
+
+  const visibleNavLinks = useMemo(() => {
+    return sidebarLinks.filter((item) => {
+      if (!item.hideForRoles?.length) return true;
+      if (!user?.role) return false;
+      return !item.hideForRoles.includes(user.role);
+    });
+  }, [user?.role]);
 
   if (!pathname.startsWith("/dashboard")) {
     return null;
@@ -143,7 +166,7 @@ function AppSidebar() {
             Navigation
           </SidebarGroupLabel>
           <SidebarMenu className='mt-2'>
-            {sidebarLinks.map((item) => {
+            {visibleNavLinks.map((item) => {
               const isActive =
                 item.link === "/"
                   ? pathname === item.link

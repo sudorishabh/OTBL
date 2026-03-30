@@ -14,11 +14,8 @@ const {
   proposalTable,
 } = schema;
 
-const FULL_ACCESS_ROLES: UserRole[] = [
-  USER_ROLES.ADMIN,
-  USER_ROLES.MANAGER,
-  USER_ROLES.STAFF,
-];
+/** Unrestricted data access (no office filter). Managers/operators must be in `office_users` to see office-scoped data; they are not listed here so unassigned managers do not see all offices. */
+const FULL_ACCESS_ROLES: UserRole[] = [USER_ROLES.ADMIN, USER_ROLES.STAFF];
 
 /** How the dashboard should present: full nav, office-scoped nav, WO-site upload only, or no nav. */
 export type DashboardUi =
@@ -228,6 +225,12 @@ export async function clientIdsVisibleToScope(
       .from(workOrderTable)
       .where(inArray(workOrderTable.office_id, scope.officeIds));
     rows.forEach((r) => ids.add(r.client_id));
+
+    const proposalClients = await db
+      .select({ client_id: proposalTable.client_id })
+      .from(proposalTable)
+      .where(inArray(proposalTable.office_id, scope.officeIds));
+    proposalClients.forEach((r) => ids.add(r.client_id));
   }
   if (scope.workOrderIdsFromSiteAssignment.length > 0) {
     const rows = await db
