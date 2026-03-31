@@ -113,7 +113,7 @@ const WOSitesTable = ({ sites, onSiteClick }: Props) => {
                           key={user.user_id}
                           variant='outline'
                           className='text-[10px] py-0 px-1.5 bg-white'>
-                          {capitalFirstLetter(user.user_name.split(" ")[0])}
+                          {capitalFirstLetter(user.user_name.split(" ")[0] || "")}
                         </Badge>
                       ))}
                       {site.users.length > 2 && (
