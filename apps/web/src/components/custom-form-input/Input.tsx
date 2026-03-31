@@ -65,11 +65,11 @@ interface CommonProps {
     onClick: () => void;
   };
   inputIcon?: React.JSXElementConstructor<React.SVGProps<SVGSVGElement>>;
-  onChange?: (value: string) => void;
+  onChange?: (value: any) => void;
   disabled?: boolean;
   description?: string;
-  formatDisplay?: (value: string | undefined) => string;
-  parseValue?: (displayValue: string) => string;
+  formatDisplay?: (value: any) => string;
+  parseValue?: (displayValue: string) => any;
   isSelect?: boolean;
   selectOptions?: SelectOption[];
   isTextArea?: boolean;
@@ -117,14 +117,14 @@ const Input = <TFieldValues extends FieldValues = FieldValues>(
   const mode = props.mode ?? (props.control ? "form" : "standalone");
 
   const renderInputElement = (
-    value: string | undefined,
-    onChangeHandler: (val: string) => void,
+    value: any,
+    onChangeHandler: (val: any) => void,
   ) => {
     if (isSelect && selectOptions) {
       return (
         <Select
           key={`select-${value || "empty"}`}
-          value={formatDisplay ? formatDisplay(value) : value?.toString() || ""}
+          value={formatDisplay ? formatDisplay(value) : (value !== undefined && value !== null ? value.toString() : "")}
           onValueChange={(val) => {
             const valueToStore = parseValue ? parseValue(val) : val;
             onChangeHandler(valueToStore);
@@ -161,7 +161,7 @@ const Input = <TFieldValues extends FieldValues = FieldValues>(
           }`}
           placeholder={placeholder ?? `Enter ${Label?.toLowerCase()}`}
           disabled={disabled}
-          value={formatDisplay ? formatDisplay(value) : value || ""}
+          value={formatDisplay ? formatDisplay(value) : (value !== undefined && value !== null ? value : "")}
           onChange={(e) => {
             const display = e.target.value;
             const valueToStore = parseValue ? parseValue(display) : display;
@@ -230,7 +230,7 @@ const Input = <TFieldValues extends FieldValues = FieldValues>(
           } ${className || ""} ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
           placeholder={placeholder ?? `Enter ${Label?.toLowerCase()}`}
           disabled={disabled}
-          value={formatDisplay ? formatDisplay(value) : value || ""}
+          value={formatDisplay ? formatDisplay(value) : (value !== undefined && value !== null ? value : "")}
           onChange={(e) => {
             const display = e.target.value;
             const valueToStore = parseValue ? parseValue(display) : display;
