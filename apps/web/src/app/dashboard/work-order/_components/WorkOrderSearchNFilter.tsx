@@ -17,7 +17,7 @@ const WorkOrderSearchNFilter = () => {
     useWorkOrderManagementContext();
 
   // Fetch all offices for the filter dropdown
-  const { data: offices } = trpc.officeQuery.getAll.useQuery();
+  const { data: officeData } = trpc.officeQuery.getOffices.useQuery({});
 
   const hasActiveFilters =
     searchQuery !== "" ||
@@ -66,7 +66,7 @@ const WorkOrderSearchNFilter = () => {
           </SelectTrigger>
           <SelectContent className='text-xs'>
             <SelectItem value='all'>All Offices</SelectItem>
-            {offices?.map((office: any) => (
+            {officeData?.offices?.map((office: any) => (
               <SelectItem
                 key={office.id}
                 value={office.id.toString()}>
