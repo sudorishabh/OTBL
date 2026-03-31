@@ -10,10 +10,26 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const { data: layout, isSuccess } = trpc.authQuery.dashboardLayout.useQuery(
-    undefined,
-    { retry: false },
-  );
+  const {
+    data: layout,
+    isSuccess,
+    isError,
+    error,
+  } = trpc.authQuery.dashboardLayout.useQuery(undefined, { retry: false });
+
+  // Secondary auth check — if the tRPC backend rejects the session (expired
+  // token, invalid JWT, or middleware bypass), kick the user back to login.
+  // This is the defence-in-depth layer that protects even if Next.js middleware
+  // is bypassed (e.g. CVE-2025-29927).
+  useEffect(() => {
+    if (!isError) return;
+    const code = (error as { data?: { code?: string } })?.data?.code;
+    if (code === "UNAUTHORIZED" || code === "FORBIDDEN") {
+      const loginUrl = new URL("/login", window.location.origin);
+      loginUrl.searchParams.set("return-url", pathname);
+      router.replace(loginUrl.pathname + loginUrl.search);
+    }
+  }, [isError, error, pathname, router]);
 
   const hideSidebar =
     isSuccess &&

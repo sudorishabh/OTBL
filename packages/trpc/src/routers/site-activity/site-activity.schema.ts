@@ -23,16 +23,16 @@ export const activityPhaseEnum = z.enum([
   "completion",
 ]);
 
-// Activity Item Table Names enum
+// Activity item table names — must match MySQL tables in @pkg/db schema
 export const activityItemTableEnum = z.enum([
-  "zero_days",
-  "zero_day_samples",
-  "tph",
-  "oil_zappers",
-  "clean_up_oil_spill",
+  "clean_soil_area",
   "lifting_oil_slush",
   "excav_cont_soil",
-  "trnsprt_oil_slush",
+  "trans_cont_soil",
+  "refill_excav_soil",
+  "biorem_cont_soil",
+  "bio_samples",
+  "bio_oil_zapping",
 ]);
 
 /**

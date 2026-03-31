@@ -181,20 +181,18 @@ const PhaseForm = ({
     value: string,
   ) => {
     setFormData((prev) => {
+      // Cast is safe: all fields come from an existing ActivityData plus one string
+      // override. TypeScript widens computed-key spreads to optional, so we assert.
       const updatedActivity = {
         ...prev[activityKey],
         [field]: value,
-      };
+      } as ActivityData;
 
       // Automatic Calculation of amount if quantity is entered
       if (field === "estimated_quantity") {
         const activity = activities.find((a) => a.activity === activityKey);
         const rate = parseFloat(activity?.rate || "0");
         const qty = parseFloat(value) || 0;
-
-        console.log(
-          `Calculating amount for ${activityKey}: Qty=${qty}, Rate=${rate}`,
-        );
 
         // Update amount even if rate is 0 to clear it if needed
         updatedActivity.amount = (qty * rate).toFixed(2);

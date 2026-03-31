@@ -6,14 +6,7 @@ const trpcRewriteTarget = (
 ).replace(/\/$/, "");
 
 const nextConfig: NextConfig = {
-  /* config options here */
   output: 'standalone',
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   async rewrites() {
     return [
       {

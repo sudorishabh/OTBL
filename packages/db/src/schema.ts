@@ -10,43 +10,7 @@ import {
   uniqueIndex,
 } from "drizzle-orm/mysql-core";
 import { constants } from "@pkg/utils";
-const { ROLES, STATUS } = constants;
-
-// Centralized enum constants for consistency
-export const PROPOSAL_STATUS = {
-  APPROVED: "approved",
-  PENDING: "pending",
-  REJECTED: "rejected",
-} as const;
-
-export const WORK_ORDER_STATUS = {
-  PENDING: "pending",
-  COMPLETED: "completed",
-  CANCELLED: "cancelled",
-} as const;
-
-export const ACTIVITY_TYPE = {
-  INSITU: "insitu",
-  EXSITU: "exsitu",
-} as const;
-
-// Activity item table names for site_activity_items tracking
-export const ACTIVITY_ITEM_TABLES = {
-  ZERO_DAY: "zero_days",
-  ZERO_DAY_SAMPLE: "zero_day_samples",
-  TPH: "tph",
-  OIL_ZAPPER: "oil_zappers",
-  CLEAN_UP_OIL_SPILL: "clean_up_oil_spill",
-  LIFTING_OIL_SLUSH: "lifting_oil_slush",
-  excav_cont_soil: "excav_cont_soil",
-  TRNSPRT_OIL_SLUSH: "trnsprt_oil_slush",
-} as const;
-
-export const ACTIVITY_PHASE = {
-  WORK_ESTIMATE: "work_estimate",
-  ORDER: "order",
-  COMPLETION: "completion",
-} as const;
+const { ROLES, STATUS, PROPOSAL_STATUS, WORK_ORDER_STATUS } = constants;
 
 // User table
 export const userTable = mysqlTable(

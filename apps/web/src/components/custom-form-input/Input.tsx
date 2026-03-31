@@ -68,8 +68,8 @@ interface CommonProps {
   onChange?: (value: string) => void;
   disabled?: boolean;
   description?: string;
-  formatDisplay?: (value: any) => string;
-  parseValue?: (displayValue: string) => any;
+  formatDisplay?: (value: string | undefined) => string;
+  parseValue?: (displayValue: string) => string;
   isSelect?: boolean;
   selectOptions?: SelectOption[];
   isTextArea?: boolean;
@@ -84,6 +84,14 @@ type Props<TFieldValues extends FieldValues = FieldValues> = CommonProps &
 const Input = <TFieldValues extends FieldValues = FieldValues>(
   props: Props<TFieldValues>,
 ) => {
+  // Must be at the top level — React Hooks cannot be called conditionally.
+  // Used only in "standalone" mode; in "form" mode the value comes from the form field.
+  const standaloneDefault =
+    props.mode === "standalone"
+      ? (props as StandaloneModeProps).defaultValue ?? ""
+      : "";
+  const [internalValue, setInternalValue] = React.useState(standaloneDefault);
+
   const {
     Label,
     LabelIcon,
@@ -109,8 +117,8 @@ const Input = <TFieldValues extends FieldValues = FieldValues>(
   const mode = props.mode ?? (props.control ? "form" : "standalone");
 
   const renderInputElement = (
-    value: any,
-    onChangeHandler: (val: any) => void,
+    value: string | undefined,
+    onChangeHandler: (val: string) => void,
   ) => {
     if (isSelect && selectOptions) {
       return (
@@ -262,9 +270,6 @@ const Input = <TFieldValues extends FieldValues = FieldValues>(
 
   if (mode === "standalone") {
     const standaloneProps = props as StandaloneModeProps & CommonProps;
-    const [internalValue, setInternalValue] = React.useState(
-      standaloneProps.defaultValue || "",
-    );
     const currentValue = standaloneProps.value ?? internalValue;
 
     return renderWrapper(

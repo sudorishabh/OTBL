@@ -753,6 +753,93 @@ export const workOrderSiteMutationRouter = router({
       }),
     ),
 
+  saveBioremediationPhase: publicProcedure
+    .input(saveBioremediationPhaseSchema)
+    .mutation(
+      handleMutation(async ({ input, ctx }) => {
+        const { work_order_site_id, phase, contaminated_soil } = input;
+
+        const upsertActivity = async (
+          tx: any,
+          table: any,
+          data: SaveActivityData | undefined,
+          activityName: string,
+        ) => {
+          if (!data) return;
+
+          const sa = await tx
+            .select()
+            .from(siteActivityTable)
+            .where(
+              and(
+                eq(siteActivityTable.work_order_site_id, work_order_site_id),
+                eq(siteActivityTable.activity, activityName),
+              ),
+            );
+
+          const siteActivityId = sa[0]?.id;
+          const activityType =
+            phase === "completion" ? "completion" : "estimate_sub-wo";
+
+          const existing = await tx
+            .select()
+            .from(table)
+            .where(
+              and(
+                eq(table.work_order_site_id, work_order_site_id),
+                eq(table.type, activityType),
+              ),
+            );
+
+          if (existing.length > 0) {
+            await tx
+              .update(table)
+              .set({
+                estimated_quantity: data.estimated_quantity,
+                amount: data.amount,
+                transportation_km: data.transportation_km,
+                site_activity_id: siteActivityId,
+              })
+              .where(eq(table.id, existing[0]!.id));
+          } else {
+            await tx.insert(table).values({
+              work_order_site_id,
+              site_activity_id: siteActivityId,
+              type: activityType,
+              estimated_quantity: data.estimated_quantity,
+              amount: data.amount,
+              transportation_km: data.transportation_km,
+            });
+          }
+        };
+
+        try {
+          await ctx.db.transaction(async (tx: any) => {
+            await upsertActivity(
+              tx,
+              bioremediationContSoilTable,
+              contaminated_soil,
+              "contaminated_soil",
+            );
+
+            if (phase === "completion") {
+              await tx
+                .update(workOrderSiteTable)
+                .set({ is_completed: true })
+                .where(eq(workOrderSiteTable.id, work_order_site_id));
+            }
+          });
+
+          return {
+            success: true,
+            message: "Bioremediation phase data saved successfully",
+          };
+        } catch (error) {
+          throw fromDatabaseError(error, "Saving bioremediation phase data");
+        }
+      }),
+    ),
+
   saveRestorationPhase: publicProcedure
     .input(saveRestorationPhaseSchema)
     .mutation(

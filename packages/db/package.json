@@ -35,6 +35,7 @@
     "db:schema": "drizzle-kit introspect:mysql"
   },
   "dependencies": {
+    "@pkg/utils": "workspace:*",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.44.4",
     "mysql2": "^3.14.3"
@@ -42,7 +43,6 @@
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@pkg/utils": "workspace:*",
     "rimraf": "^3.0.0",
     "typescript": "^5.0.0",
     "drizzle-kit": "^0.31.4"

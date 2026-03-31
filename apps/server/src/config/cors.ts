@@ -1,22 +1,24 @@
 import cors from "cors";
 import appEnv from "./app-env";
 
-// Define your allowed origins here
 const allowedOrigins = [
   appEnv.WEB_CLIENT,
   appEnv.MOBILE_CLIENT,
   "https://site.otbl.co.in",
-].filter(Boolean); // Removes empty or undefined values
+  "https://otbl.co.in",
+].filter((o): o is string => Boolean(o));
 
 const corsOptions = {
-  origin: (origin: any, callback: any) => {
-    // 1. Allow requests with no origin (like Postman, curl, or React Native mobile apps)
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Block requests with no Origin header in production — no-origin requests
+    // (curl, server-side scripts) must use Bearer token auth, not cookies.
+    // In development allow no-origin so local tools still work.
     if (!origin) {
-      return callback(null, true);
+      const isDev = process.env.NODE_ENV !== "production";
+      return callback(null, isDev);
     }
 
-    // 2. Check if the origin is in our whitelist
-    if (allowedOrigins.indexOf(origin) !== -1 || allowedOrigins.includes("*")) {
+    if (allowedOrigins.includes(origin) || allowedOrigins.includes("*")) {
       callback(null, true);
     } else {
       console.warn(`Origin blocked by CORS: ${origin}`);

@@ -47,6 +47,41 @@ export const WO_ACTIVITIES = {
   BIOREMEDIATION_OIL_CONTAMINATED_SOIL: "bioremediation_oil_contaminated_soil",
 } as const;
 
+export const ACTIVITY_TYPE = {
+  INSITU: "insitu",
+  EXSITU: "exsitu",
+} as const;
+
+export const ACTIVITY_PHASE = {
+  WORK_ESTIMATE: "work_estimate",
+  ORDER: "order",
+  COMPLETION: "completion",
+} as const;
+
+export const PROPOSAL_STATUS = {
+  APPROVED: "approved",
+  PENDING: "pending",
+  REJECTED: "rejected",
+} as const;
+
+export const WORK_ORDER_STATUS = {
+  PENDING: "pending",
+  COMPLETED: "completed",
+  CANCELLED: "cancelled",
+} as const;
+
+/** MySQL table names for per-activity line items (see @pkg/db schema). */
+export const ACTIVITY_ITEM_TABLES = {
+  CLEAN_SOIL_AREA: "clean_soil_area",
+  LIFTING_OIL_SLUSH: "lifting_oil_slush",
+  EXCAV_CONT_SOIL: "excav_cont_soil",
+  TRANS_CONT_SOIL: "trans_cont_soil",
+  REFILL_EXCAV_SOIL: "refill_excav_soil",
+  BIOREM_CONT_SOIL: "biorem_cont_soil",
+  BIO_SAMPLES: "bio_samples",
+  BIO_OIL_ZAPPING: "bio_oil_zapping",
+} as const;
+
 export const WO_UNITS = {
   M_SQUARE: "m²",
   M_CUBE: "m³",
@@ -107,4 +142,9 @@ export default {
   processTypeOptions,
   unitOptions,
   allActivityOptions,
+  ACTIVITY_TYPE,
+  ACTIVITY_PHASE,
+  PROPOSAL_STATUS,
+  WORK_ORDER_STATUS,
+  ACTIVITY_ITEM_TABLES,
 };

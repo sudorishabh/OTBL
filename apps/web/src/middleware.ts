@@ -4,21 +4,18 @@ const protectedRoutes = ["/dashboard"];
 const publicRoutes = ["/login"];
 
 export default async function middleware(req: NextRequest) {
+  if (req.headers.get("x-middleware-subrequest")) {
+    return new NextResponse(null, { status: 403 });
+  }
+
   const path = req.nextUrl.pathname;
 
   const isProtectedRoute = protectedRoutes.some(
-    (route) => path === route || path.startsWith(route + "/")
+    (route) => path === route || path.startsWith(route + "/"),
   );
   const isPublicRoute = publicRoutes.some(
-    (route) => path === route || path.startsWith(route + "/")
+    (route) => path === route || path.startsWith(route + "/"),
   );
-
-  // console.log("Access Tokens:", {
-  //   accessToken: req.cookies.get("accessToken")?.value,
-  //   refreshToken: req.cookies.get("refreshToken")?.value,
-  // });
-
-  // console.log("Middleware accessed for path:", path);
 
   const accessToken = req.cookies.get("accessToken")?.value;
   const refreshToken = req.cookies.get("refreshToken")?.value;
@@ -35,10 +32,15 @@ export default async function middleware(req: NextRequest) {
   // Redirect unauthenticated users from protected routes
   if (isProtectedRoute && !accessToken && !refreshToken) {
     const loginUrl = new URL("/login", req.nextUrl);
-    loginUrl.searchParams.set(
-      "return-url",
-      req.nextUrl.pathname + req.nextUrl.search
-    );
+
+    // Only allow relative paths as return-url to prevent open redirect attacks
+    const rawReturnUrl = req.nextUrl.pathname + req.nextUrl.search;
+    const isSafeRelative =
+      rawReturnUrl.startsWith("/") && !rawReturnUrl.startsWith("//");
+    if (isSafeRelative) {
+      loginUrl.searchParams.set("return-url", rawReturnUrl);
+    }
+
     return NextResponse.redirect(loginUrl);
   }
 
