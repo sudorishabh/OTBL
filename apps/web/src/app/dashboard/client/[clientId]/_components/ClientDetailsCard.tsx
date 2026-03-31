@@ -18,7 +18,7 @@ import { capitalFirstLetter } from "@pkg/utils";
 import { trpc } from "@/lib/trpc";
 import Error from "@/components/Error";
 import ClientInfoSkeleton from "./skeleton/ClientInfoSkeleton";
-import ClientStatCard from "./client-stats/ClientStatCard";
+import ClientStats from "./client-stats/ClientStats";
 import useHandleParams from "@/hooks/useHandleParams";
 
 interface Props {
@@ -283,28 +283,10 @@ const ClientDetailsCard = ({ clientId }: Props) => {
       </Card>
 
       {/* Stats Cards */}
-      <div className='grid grid-cols-1 sm:grid-cols-4 gap-4'>
-        <ClientStatCard
-          Icon={MapPin}
-          title='Total Sites'
-          stat={stats.siteCount.toLocaleString()}
-        />
-        <ClientStatCard
-          Icon={CheckCircle2}
-          title='Completed Work Orders'
-          stat={stats.completedWorkOrders.toLocaleString()}
-        />
-        <ClientStatCard
-          Icon={IndianRupee}
-          title='Total Budget'
-          stat={formatCurrency(stats.totalBudgetAmount)}
-        />
-        <ClientStatCard
-          Icon={IndianRupee}
-          title='Total Expense'
-          stat={formatCurrency(stats.totalExpenseAmount)}
-        />
-      </div>
+      <ClientStats
+        stats={stats}
+        clientId={clientId}
+      />
 
       {/* Dialogs */}
       <ContactDialog

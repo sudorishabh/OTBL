@@ -4,16 +4,20 @@ interface Props {
   Icon: React.ElementType;
   title: string;
   stat: string | number;
+  openDialog?: boolean;
+  setOpenDialog?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const OfficeStatCard = ({
   Icon,
   stat,
   title,
+  setOpenDialog,
 }: Props) => {
   return (
     <div
-      className='rounded-xl border p-4 bg-linear-to-br from-white to-gray-50 shadow hover:shadow-md transition-shadow hover:border-emerald-400'>
+      onClick={() => setOpenDialog?.(true)}
+      className='rounded-xl border p-4 bg-linear-to-br from-white to-gray-50 shadow hover:shadow-md transition-shadow hover:border-emerald-400 cursor-pointer'>
       <div className='flex items-center justify-between'>
         <div className='text-sm flex items-center gap-1.5 text-gray-500'>
           <Icon className='size-3.5 text-gray-600' />
