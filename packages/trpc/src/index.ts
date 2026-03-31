@@ -8,7 +8,7 @@ import { userMutationRouter } from "./routers/user/user.mutation.route";
 import { userQueryRouter } from "./routers/user/user.query.route";
 import { authMutationRouter } from "./routers/auth/auth.mutation.route";
 import { authQueryRouter } from "./routers/auth/auth.query.route";
-import { clientMutationRouter } from "./routers/client/client.muatation.route";
+import { clientMutationRouter } from "./routers/client/client.mutation.route";
 import { clientQueryRouter } from "./routers/client/client.query.route";
 import { workOrderMutationRouter } from "./routers/work-order/work-mutation.mutation.route";
 import { workOrderQueryRouter } from "./routers/work-order/work-order.query.route";
@@ -92,7 +92,6 @@ export {
   protectedProcedure,
   adminProcedure,
   managerProcedure,
-  staffProcedure,
   operatorProcedure,
   createRoleProtectedProcedure,
   createMultiRoleProcedure,

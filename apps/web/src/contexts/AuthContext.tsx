@@ -41,11 +41,9 @@ export const useHasRole = (requiredRole: string): boolean => {
   if (!user) return false;
 
   const roleHierarchy: Record<string, number> = {
-    admin: 5,
-    manager: 4,
-    staff: 3,
-    operator: 2,
-    viewer: 1,
+    admin: 3,
+    manager: 2,
+    operator: 1,
   };
 
   const userLevel = roleHierarchy[user.role] || 0;
@@ -73,7 +71,3 @@ export const useIsAdmin = (): boolean => useHasRole("admin");
  */
 export const useIsManager = (): boolean => useHasRole("manager");
 
-/**
- * Hook to check if user is staff or higher
- */
-export const useIsStaff = (): boolean => useHasRole("staff");

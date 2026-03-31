@@ -36,13 +36,9 @@ const CategorizedUsers = () => {
 
   const {
     managers = [],
-    staff = [],
     operators = [],
-    viewers = [],
     totalManagers,
-    totalStaff,
     totalOperators,
-    totalViewers,
   } = categorizedUsers?.data ?? {};
 
   if (categorizedUsers.isLoading) {
@@ -50,7 +46,7 @@ const CategorizedUsers = () => {
   }
 
   const handleOpenCategoryDialog = (
-    role: "all" | "manager" | "staff" | "viewer" | "operator",
+    role: "all" | "manager" | "operator",
   ) => {
     setFilters({ role, status: "all" });
     setParams({ dialog: "categorized", role });
@@ -75,19 +71,7 @@ const CategorizedUsers = () => {
       users: operators,
       totalUsers: totalOperators,
       onViewAll: () => handleOpenCategoryDialog(ROLES.OPERATOR),
-    },
-    {
-      title: "Staff Users",
-      users: staff,
-      totalUsers: totalStaff,
-      onViewAll: () => handleOpenCategoryDialog(ROLES.STAFF),
-    },
-    {
-      title: "Viewer Users",
-      users: viewers,
-      totalUsers: totalViewers,
-      onViewAll: () => handleOpenCategoryDialog(ROLES.VIEWER),
-    },
+    }
   ];
 
   return (

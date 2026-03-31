@@ -10,6 +10,7 @@ import {
   uniqueIndex,
 } from "drizzle-orm/mysql-core";
 import { constants } from "@pkg/utils";
+
 const { ROLES, STATUS, PROPOSAL_STATUS, WORK_ORDER_STATUS } = constants;
 
 // User table
@@ -23,16 +24,10 @@ export const userTable = mysqlTable(
     contact_number: varchar("contact_number", { length: 15 }),
     role: varchar("role", {
       length: 50,
-      enum: [
-        ROLES.ADMIN,
-        ROLES.MANAGER,
-        ROLES.STAFF,
-        ROLES.VIEWER,
-        ROLES.OPERATOR,
-      ],
+      enum: [ROLES.ADMIN, ROLES.MANAGER, ROLES.OPERATOR],
     })
       .notNull()
-      .default(ROLES.STAFF),
+      .default(ROLES.OPERATOR),
     created_by: int("created_by"),
     status: varchar("status", {
       length: 50,
@@ -649,7 +644,6 @@ export const bioOilZappingTable = mysqlTable("bio_oil_zapping", {
     precision: 20,
     scale: 2,
   }),
-
   created_at: timestamp("created_at").notNull().defaultNow(),
   updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
 });

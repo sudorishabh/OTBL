@@ -50,7 +50,7 @@ const CreateOfficeDialog = () => {
   const [operatorSearch, setOperatorSearch] = useState("");
   const [managerPage, setManagerPage] = useState(1);
   const [operatorPage, setOperatorPage] = useState(1);
-  const [activeStaffTab, setActiveStaffTab] = useState<
+  const [activeUserTab, setActiveUserTab] = useState<
     "managers" | "operators"
   >("managers");
   const itemsPerPage = 50;
@@ -90,7 +90,7 @@ const CreateOfficeDialog = () => {
   const operators = operatorsData?.users || [];
   const hasMoreManagers = managersData?.pagination?.hasMore || false;
   const hasMoreOperators = operatorsData?.pagination?.hasMore || false;
-  const isLoadingStaffData = isLoadingManagers || isLoadingOperators;
+  const isLoadingUserData = isLoadingManagers || isLoadingOperators;
 
   const handleClose = useCallback(() => {
     deleteParam("dialog");
@@ -101,7 +101,7 @@ const CreateOfficeDialog = () => {
     setOperatorSearch("");
     setManagerPage(1);
     setOperatorPage(1);
-    setActiveStaffTab("managers");
+    setActiveUserTab("managers");
   }, [deleteParam, form]);
 
   const createOffice = trpc.officeMutation.createOffice.useMutation({
@@ -140,9 +140,9 @@ const CreateOfficeDialog = () => {
     <DialogWindow
       open={isOpenDialog}
       setOpen={handleClose}
-      isLoading={isLoadingStaffData}
+      isLoading={isLoadingUserData}
       title='Create New Office'
-      description='Enter office details and assign staff members'
+      description='Enter office details and assign office members'
       heightMode='full'
       size='xl'>
       <Form {...form}>
@@ -213,21 +213,21 @@ const CreateOfficeDialog = () => {
             </div>
           </div>
 
-          {/* Staff Assignment Section */}
+          {/* Member Assignment Section */}
           <div className='mt-8 space-y-6'>
             <div className='flex items-center justify-between border-b pb-4'>
               <div className='border-b pb-2'>
                 <h3 className='text-base font-semibold text-gray-800'>
-                  Staff Assignment
+                  Member Assignment
                 </h3>
               </div>
             </div>
 
             <div className='rounded-xl border bg-gray-100 shadow-xs overflow-hidden'>
               <Tabs
-                value={activeStaffTab}
+                value={activeUserTab}
                 onValueChange={(val) =>
-                  setActiveStaffTab(val as "managers" | "operators")
+                  setActiveUserTab(val as "managers" | "operators")
                 }
                 className='w-full'>
                 <div className='px-4 pt-4 border-b bg-gray-50'>
@@ -235,17 +235,17 @@ const CreateOfficeDialog = () => {
                     <Input
                       mode='standalone'
                       placeholder={
-                        activeStaffTab === "managers"
+                        activeUserTab === "managers"
                           ? "Search managers..."
                           : "Search operators..."
                       }
                       value={
-                        activeStaffTab === "managers"
+                        activeUserTab === "managers"
                           ? managerSearch
                           : operatorSearch
                       }
                       onChange={(value) => {
-                        if (activeStaffTab === "managers") {
+                        if (activeUserTab === "managers") {
                           setManagerSearch(value);
                           setManagerPage(1);
                         } else {
@@ -332,7 +332,7 @@ const CreateOfficeDialog = () => {
                           </div>
                         );
                       })}
-                      {!isLoadingStaffData && managers.length === 0 && (
+                      {!isLoadingUserData && managers.length === 0 && (
                         <div className='flex flex-col items-center justify-center py-10 text-gray-500'>
                           <div className='h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center mb-3'>
                             <UserCheck className='h-6 w-6 text-gray-400' />
@@ -414,7 +414,7 @@ const CreateOfficeDialog = () => {
                           </div>
                         );
                       })}
-                      {!isLoadingStaffData && operators.length === 0 && (
+                      {!isLoadingUserData && operators.length === 0 && (
                         <div className='flex flex-col items-center justify-center py-10 text-gray-500'>
                           <div className='h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center mb-3'>
                             <Users className='h-6 w-6 text-gray-400' />
@@ -441,7 +441,7 @@ const CreateOfficeDialog = () => {
               </Tabs>
             </div>
 
-            {/* Selected Staff Summary - Cleaner version */}
+            {/* Selected Member Summary - Cleaner version */}
             {(selectedManager || selectedOperatorUsers.length > 0) && (
               <div className='bg-gray-50 rounded-lg p-4 border border-gray-200'>
                 <p className='text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3'>

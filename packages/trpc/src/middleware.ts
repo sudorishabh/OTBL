@@ -7,10 +7,8 @@ import {
   hasAnyRole,
   isAdmin,
   isManager,
-  isStaff,
   isOperator,
   isAdminOrManager,
-  isStaffOrAbove,
   USER_ROLES,
   type UserRole,
 } from "./authorization";
@@ -26,10 +24,8 @@ export {
   hasAnyRole,
   isAdmin,
   isManager,
-  isStaff,
   isOperator,
   isAdminOrManager,
-  isStaffOrAbove,
   USER_ROLES,
   type UserRole,
 };
@@ -69,11 +65,6 @@ export const adminProcedure = publicProcedure.use(isAdmin);
  * Manager procedure - requires manager role or higher
  */
 export const managerProcedure = publicProcedure.use(isManager);
-
-/**
- * Staff procedure - requires staff role or higher
- */
-export const staffProcedure = publicProcedure.use(isStaff);
 
 /**
  * Operator procedure - requires operator role or higher

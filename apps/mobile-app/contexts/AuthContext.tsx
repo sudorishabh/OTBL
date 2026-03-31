@@ -274,11 +274,9 @@ export function useHasRole(requiredRole: string): boolean {
   if (!user) return false;
 
   const roleHierarchy: Record<string, number> = {
-    admin: 5,
-    manager: 4,
-    staff: 3,
-    operator: 2,
-    viewer: 1,
+    admin: 3,
+    manager: 2,
+    operator: 1,
   };
 
   const userLevel = roleHierarchy[user.role] || 0;

@@ -4,9 +4,7 @@ import jwt from "jsonwebtoken";
 export const USER_ROLES = {
   ADMIN: "admin",
   MANAGER: "manager",
-  STAFF: "staff",
   OPERATOR: "operator",
-  VIEWER: "viewer",
 } as const;
 
 export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES];
@@ -15,9 +13,7 @@ export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES];
 export const ROLE_HIERARCHY: Record<UserRole, number> = {
   admin: 5,
   manager: 4,
-  staff: 3,
   operator: 2,
-  viewer: 1,
 };
 
 /**

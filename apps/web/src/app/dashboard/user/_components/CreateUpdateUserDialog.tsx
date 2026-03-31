@@ -54,7 +54,6 @@ const CreateUpdateUserDialog = () => {
       email: "",
       password: "",
       contact_number: "",
-      role: "staff",
     },
   });
 
@@ -114,7 +113,7 @@ const CreateUpdateUserDialog = () => {
         email: "",
         name: "",
         password: "",
-        role: "staff",
+        role: "operator",
       });
     }, 2000);
   }, [deleteParams, form]);
@@ -126,7 +125,7 @@ const CreateUpdateUserDialog = () => {
           name: userQuery.name ?? "",
           email: userQuery.email ?? "",
           contact_number: userQuery.contact_number ?? "",
-          role: userQuery.role as "staff" | "manager" | "viewer" | "operator",
+          role: userQuery.role as "manager" | "operator",
           password: "",
         });
       } else if (isAddMode) {
@@ -135,7 +134,7 @@ const CreateUpdateUserDialog = () => {
           email: "",
           name: "",
           password: "",
-          role: "staff",
+          role: "operator",
         });
         setCreatedCredentials(null);
       }
@@ -354,8 +353,6 @@ const CreateUpdateUserDialog = () => {
               isSelect
               selectOptions={[
                 { label: "Manager", value: "manager" },
-                { label: "Staff", value: "staff" },
-                { label: "Viewer", value: "viewer" },
                 { label: "Operator", value: "operator" },
               ]}
               placeholder='Select role'

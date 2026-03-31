@@ -140,19 +140,6 @@ export const ManagerRoute = ({
   </RoleProtectedRoute>
 );
 
-/**
- * Staff or higher route protection
- */
-export const StaffRoute = ({
-  children,
-  ...props
-}: Omit<RoleProtectedRouteProps, "requiredRole">) => (
-  <RoleProtectedRoute
-    requiredRole='staff'
-    {...props}>
-    {children}
-  </RoleProtectedRoute>
-);
 
 // Default loading component
 const DefaultLoading = () => (

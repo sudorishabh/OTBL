@@ -44,7 +44,7 @@ const {
 } = schema;
 
 export const workOrderSiteQueryRouter = router({
-  /** All operator uploads across every site row for this work order (for office/staff WO view). */
+  /** All operator uploads across every site row for this work order (for office WO view). */
   getOperatorUploadsByWorkOrder: protectedProcedure
     .input(z.object({ work_order_id: z.number().positive() }))
     .query(

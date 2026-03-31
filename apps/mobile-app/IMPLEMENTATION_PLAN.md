@@ -121,7 +121,7 @@
 | Session refresh (cookie-based)                              | Token refresh via `Authorization` header  | Automatic retry with refresh token                  |
 | Middleware route protection                                 | Expo Router `_layout.tsx` redirects       | Check auth state before rendering protected screens |
 | Logout                                                      | Clear tokens from secure store + API call | Same `authMutation.logout` endpoint                 |
-| Role-based access (admin, manager, staff, operator, viewer) | Same role hierarchy in mobile context     | Reuse `useHasRole`, `useIsAdmin`, etc.              |
+| Role-based access (admin, manager, operator) | Same role hierarchy in mobile context     | Reuse `useHasRole`, `useIsAdmin`, etc.              |
 
 ### Dashboard
 

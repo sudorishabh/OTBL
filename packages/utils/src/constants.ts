@@ -1,19 +1,15 @@
 export const ROLES = {
   ADMIN: "admin",
   MANAGER: "manager",
-  STAFF: "staff",
   OPERATOR: "operator",
-  VIEWER: "viewer",
 } as const;
 
 export type Role = (typeof ROLES)[keyof typeof ROLES];
 
 export const ROLE_HIERARCHY: Record<Role, number> = {
-  admin: 5,
-  manager: 4,
-  staff: 3,
-  operator: 2,
-  viewer: 1,
+  admin: 3,
+  manager: 2,
+  operator: 1,
 };
 
 export const STATUS = {
@@ -70,7 +66,6 @@ export const WORK_ORDER_STATUS = {
   CANCELLED: "cancelled",
 } as const;
 
-/** MySQL table names for per-activity line items (see @pkg/db schema). */
 export const ACTIVITY_ITEM_TABLES = {
   CLEAN_SOIL_AREA: "clean_soil_area",
   LIFTING_OIL_SLUSH: "lifting_oil_slush",

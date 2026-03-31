@@ -122,7 +122,6 @@ export const hasAnyRole = (allowedRoles: UserRole[]) => {
  */
 export const isAdmin = hasRole(USER_ROLES.ADMIN);
 export const isManager = hasRole(USER_ROLES.MANAGER);
-export const isStaff = hasRole(USER_ROLES.STAFF);
 export const isOperator = hasRole(USER_ROLES.OPERATOR);
 
 /**
@@ -133,11 +132,3 @@ export const isAdminOrManager = hasAnyRole([
   USER_ROLES.MANAGER,
 ]);
 
-/**
- * Staff and above middleware (admin, manager, staff)
- */
-export const isStaffOrAbove = hasAnyRole([
-  USER_ROLES.ADMIN,
-  USER_ROLES.MANAGER,
-  USER_ROLES.STAFF,
-]);

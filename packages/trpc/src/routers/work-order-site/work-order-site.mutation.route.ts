@@ -2,7 +2,7 @@ import { eq, and } from "drizzle-orm";
 import { schema } from "@pkg/db";
 import { TRPCError } from "@trpc/server";
 import { router } from "../../trpc";
-import { publicProcedure, protectedProcedure, staffProcedure } from "../../core";
+import { publicProcedure, protectedProcedure, operatorProcedure } from "../../core";
 import {
   assertCanAccessWorkOrderSite,
   getAccessScope,
@@ -134,9 +134,9 @@ const {
 export const workOrderSiteMutationRouter = router({
   /**
    * Assign operators to a work-order site row. Replaces existing assignments for that row.
-   * Staff+ can assign; caller must be able to access the work order site (office manager / WO-site operator).
+   * Managers/Admins can assign; caller must be able to access the work order site (office manager / WO-site operator).
    */
-  setWorkOrderSiteOperators: staffProcedure
+  setWorkOrderSiteOperators: operatorProcedure
     .input(
       z.object({
         work_order_site_id: z.number().positive(),
@@ -166,7 +166,7 @@ export const workOrderSiteMutationRouter = router({
 
             if (user_ids.length > 0) {
               await tx.insert(workOrderSiteUserTable).values(
-                user_ids.map((user_id) => ({
+                user_ids.map((user_id ) => ({
                   work_order_site_id,
                   user_id,
                 })),

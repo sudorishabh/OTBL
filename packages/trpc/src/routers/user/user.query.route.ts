@@ -54,7 +54,7 @@ export const userQueryRouter = router({
         let userQuery = not(eq(userTable.role, ROLES.ADMIN));
 
         if (role && role !== "all") {
-          userQuery = and(userQuery, eq(userTable.role, role)) ?? userQuery;
+          userQuery = and(userQuery, eq(userTable.role, role as any)) ?? userQuery;
         }
 
         if (status && status !== "all") {
@@ -199,7 +199,7 @@ export const userQueryRouter = router({
 
   // Get user by ID
   getUserById: protectedProcedure
-    .use(hasAnyRole([ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF]))
+    .use(hasAnyRole([ROLES.ADMIN, ROLES.MANAGER, ROLES.OPERATOR]))
     .input(z.object({ id: z.number() }))
     .query(
       handleProtectedQuery(async ({ input, ctx }) => {
@@ -228,7 +228,7 @@ export const userQueryRouter = router({
   getUsersByRole: protectedProcedure
     .input(
       z.object({
-        role: z.enum([ROLES.ADMIN, ROLES.MANAGER, ROLES.STAFF, ROLES.OPERATOR]),
+        role: z.enum([ROLES.ADMIN, ROLES.MANAGER, ROLES.OPERATOR]),
         page: z.number().default(1),
         limit: z.number().default(100),
         search: z.string().optional().default(""),
@@ -360,33 +360,21 @@ export const userQueryRouter = router({
 
       const [
         managers,
-        staff,
         operators,
-        viewers,
         totalManagers,
-        totalStaff,
         totalOperators,
-        totalViewers,
       ] = await Promise.all([
         fetchEightByRole(ROLES.MANAGER),
-        fetchEightByRole(ROLES.STAFF),
         fetchEightByRole(ROLES.OPERATOR),
-        fetchEightByRole(ROLES.VIEWER),
         totalUserByRole(ROLES.MANAGER),
-        totalUserByRole(ROLES.STAFF),
         totalUserByRole(ROLES.OPERATOR),
-        totalUserByRole(ROLES.VIEWER),
       ]);
 
       return {
         managers,
-        staff,
         operators,
-        viewers,
         totalManagers: totalManagers[0]?.count,
-        totalStaff: totalStaff[0]?.count,
         totalOperators: totalOperators[0]?.count,
-        totalViewers: totalViewers[0]?.count,
       };
     }),
   ),

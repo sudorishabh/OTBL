@@ -9,7 +9,6 @@ export {
   protectedProcedure,
   adminProcedure,
   managerProcedure,
-  staffProcedure,
   operatorProcedure,
   createRoleProtectedProcedure,
   createMultiRoleProcedure,
