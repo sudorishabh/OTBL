@@ -115,7 +115,7 @@ const WorkOrderTable = ({
     });
   };
 
-  const formatCurrency = (amount: string | null) => {
+  const formatCurrency = (amount: string | null | undefined) => {
     if (!amount) return "₹0";
     const value = parseFloat(amount);
     return `₹${value.toLocaleString("en-IN")}`;

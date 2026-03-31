@@ -9,10 +9,11 @@ import PageLoading from "@/components/loading/PageLoading";
 import { useWorkOrderManagementContext } from "@/contexts/WorkOrderManagementContext";
 import WorkOrderSearchNFilter from "./_components/WorkOrderSearchNFilter";
 import { workOrderTypes } from "@pkg/schema";
+import { IWorkOrder } from "@/types/work-order.types";
 
 const WorkOrdersContent = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [allWorkOrdersList, setAllWorkOrdersList] = useState([]);
+  const [allWorkOrdersList, setAllWorkOrdersList] = useState<IWorkOrder[]>([]);
 
   const { searchQuery, filters, workOrderOrder } =
     useWorkOrderManagementContext();

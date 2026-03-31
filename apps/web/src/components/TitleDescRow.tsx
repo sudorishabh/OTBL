@@ -3,7 +3,7 @@ import React from "react";
 import CustomIcon from "./CustomIcon";
 import { Calendar, Clock, Edit, MoreVertical } from "lucide-react";
 import { format } from "date-fns";
-import { capitalFirstLetter } from "@/utils/capitalFirstLetter";
+import { capitalFirstLetter } from "@pkg/utils";
 
 interface IRowDetails {
   name: string;

@@ -10,7 +10,7 @@ export interface IWorkOrder {
   end_date: string | Date;
   handing_over_date: string | Date;
   agreement_number: string;
-  budget_amount: string | null;
+  budget_amount?: string | null;
   status: "pending" | "completed" | "cancelled";
   created_at: string | Date;
   updated_at: string | Date;

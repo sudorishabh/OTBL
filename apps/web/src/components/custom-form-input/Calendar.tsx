@@ -18,9 +18,8 @@ const Calendar = ({
   value: Date | undefined;
   onChange: (value: Date | undefined) => void;
 }) => {
-  const handleChange = (value: Date | undefined) => {
-    const dateTime = value ? new Date(value).toISOString() : undefined;
-    onChange(dateTime);
+  const handleChange = (date: Date | undefined) => {
+    onChange(date);
   };
   return (
     <Popover>

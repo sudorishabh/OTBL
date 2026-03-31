@@ -23,7 +23,9 @@ export const OfficeManagementProvider = ({
   children: React.ReactNode;
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<{
+    status: "active" | "inactive" | "all";
+  }>({
     status: "all",
   });
   const [officeNamesOrder, setOfficeNamesOrder] = useState<
