@@ -17,6 +17,7 @@ import { useSharePointUpload } from "@/hooks/useSharePointUpload";
 import { trpc, type RouterOutputs } from "@/lib/trpc";
 import { format } from "date-fns";
 import {
+  Camera,
   ExternalLink,
   FileText,
   LogOut,
@@ -25,7 +26,7 @@ import {
   X,
 } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
 type PendingItem = { file: File; description: string };
@@ -40,6 +41,7 @@ export default function WoSiteOperatorUploadPage() {
 
   const [pendingItems, setPendingItems] = useState<PendingItem[]>([]);
   const [isUploadingAll, setIsUploadingAll] = useState(false);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const utils = trpc.useUtils();
 
@@ -196,14 +198,42 @@ export default function WoSiteOperatorUploadPage() {
           Files are stored in SharePoint; add a short description for each file.
         </p>
 
-        <DeferredFilePicker
-          label='Select files'
-          selectedFile={null}
-          onFileSelect={handleFileSelect}
-          multiple={true}
-          isUploadBgWhite={true}
-          helperText='You can select multiple files'
-        />
+        <div className='flex gap-2 items-stretch'>
+          <div className='flex-1'>
+            <DeferredFilePicker
+              label='Select files'
+              selectedFile={null}
+              onFileSelect={handleFileSelect}
+              multiple={true}
+              isUploadBgWhite={true}
+              helperText='You can select multiple files'
+            />
+          </div>
+
+          {/* Hidden camera input */}
+          <input
+            ref={cameraInputRef}
+            type='file'
+            accept='image/*'
+            capture='environment'
+            className='hidden'
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleFileSelect(file);
+              // reset so the same photo can be re-captured if needed
+              e.target.value = "";
+            }}
+          />
+
+          <button
+            type='button'
+            onClick={() => cameraInputRef.current?.click()}
+            title='Take a photo'
+            className='shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-md border border-dashed border-gray-300 bg-white text-xs text-gray-500 hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50/40 transition-all'>
+            <Camera className='w-4 h-4' />
+            <span className='hidden sm:inline'>Take photo</span>
+          </button>
+        </div>
 
         {pendingItems.length > 0 && (
           <div className='mt-3 space-y-2'>
