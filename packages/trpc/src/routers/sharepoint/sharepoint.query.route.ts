@@ -1,5 +1,5 @@
 import { router } from "../../trpc";
-import { protectedProcedure } from "../../middleware";
+import { protectedProcedure, isAdmin } from "../../middleware";
 import { sharepointSchemas } from "@pkg/schema";
 import {
   getSharePointConfig,
@@ -19,7 +19,7 @@ export const sharePointQueryRouter = router({
     };
   }),
 
-  testConnection: protectedProcedure.query(async ({ ctx }) => {
+  testConnection: protectedProcedure.use(isAdmin).query(async ({ ctx }) => {
     if (!isSharePointConfigured(ctx.appEnv)) {
       return {
         success: false,

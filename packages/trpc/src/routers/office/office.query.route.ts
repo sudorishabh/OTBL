@@ -11,6 +11,7 @@ import {
 import { officeSchemas } from "@pkg/schema";
 import { fromDatabaseError } from "../../errors";
 import { handleQuery } from "../../helper/typed-handler";
+import { escapeLike } from "../../helper/escape-like";
 
 const {
   officeTable,
@@ -38,9 +39,9 @@ export const officeQueryRouter = router({
         officeQuery = and(
           officeQuery,
           or(
-            like(officeTable.name, `%${searchQuery}%`),
-            like(officeTable.address, `%${searchQuery}%`),
-            like(officeTable.email, `%${searchQuery}%`),
+            like(officeTable.name, `%${escapeLike(searchQuery)}%`),
+            like(officeTable.address, `%${escapeLike(searchQuery)}%`),
+            like(officeTable.email, `%${escapeLike(searchQuery)}%`),
           ),
         );
       }

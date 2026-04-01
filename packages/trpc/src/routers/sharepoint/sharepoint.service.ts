@@ -1,4 +1,4 @@
-﻿import {
+import {
   SharePointConfig,
   getTokenEndpoint,
   GRAPH_API_BASE_URL,
@@ -57,11 +57,6 @@ export class SharePointService {
       client_secret: this.config.clientSecret,
       scope: "https://graph.microsoft.com/.default",
       grant_type: "client_credentials",
-    });
-
-    console.log("[SharePoint] Token request params:", {
-      client_id: this.config.clientId,
-      tenant_id: this.config.tenantId,
     });
 
     const response = await fetch(tokenEndpoint, {

@@ -21,6 +21,7 @@ const {
 
 import { notFound, fromDatabaseError } from "../../errors";
 import { handleQuery } from "../../helper/typed-handler";
+import { escapeLike } from "../../helper/escape-like";
 
 const {
   workOrderTable,
@@ -74,11 +75,11 @@ export const workOrderQueryRouter = router({
         conditions = and(
           conditions,
           or(
-            like(workOrderTable.code, `%${searchQuery}%`),
-            like(workOrderTable.title, `%${searchQuery}%`),
-            like(workOrderTable.agreement_number, `%${searchQuery}%`),
-            like(clientTable.name, `%${searchQuery}%`),
-            like(officeTable.name, `%${searchQuery}%`),
+            like(workOrderTable.code, `%${escapeLike(searchQuery)}%`),
+            like(workOrderTable.title, `%${escapeLike(searchQuery)}%`),
+            like(workOrderTable.agreement_number, `%${escapeLike(searchQuery)}%`),
+            like(clientTable.name, `%${escapeLike(searchQuery)}%`),
+            like(officeTable.name, `%${escapeLike(searchQuery)}%`),
           ),
         );
       }

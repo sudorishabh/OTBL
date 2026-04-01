@@ -27,7 +27,7 @@ app.use(cookieParser());
 // Strict rate limit on auth endpoints to prevent brute-force attacks
 const authRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20,                   // max 20 requests per window per IP
+  max: 10,                   // max 10 requests per window per IP (prevents brute-force)
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: "Too many requests, please try again later." },

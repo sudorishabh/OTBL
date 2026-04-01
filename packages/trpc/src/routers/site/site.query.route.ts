@@ -10,6 +10,7 @@ import {
 import { fromDatabaseError } from "../../errors";
 import { handleQuery } from "../../helper/typed-handler";
 import { siteSchemas } from "@pkg/schema";
+import { escapeLike } from "../../helper/escape-like";
 
 const { siteTable, siteUserTable, userTable } = schema;
 
@@ -84,9 +85,9 @@ export const siteQueryRouter = router({
             eq(siteTable.office_id, office_id),
             searchQuery && searchQuery.trim() !== ""
               ? or(
-                  like(siteTable.name, `%${searchQuery}%`),
-                  like(siteTable.address, `%${searchQuery}%`),
-                  like(siteTable.city, `%${searchQuery}%`),
+                  like(siteTable.name, `%${escapeLike(searchQuery)}%`),
+                  like(siteTable.address, `%${escapeLike(searchQuery)}%`),
+                  like(siteTable.city, `%${escapeLike(searchQuery)}%`),
                 )
               : undefined,
             status && status !== "all"

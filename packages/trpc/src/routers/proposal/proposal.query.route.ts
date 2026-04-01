@@ -12,6 +12,7 @@ import {
 import { fromDatabaseError } from "../../errors";
 import { handleQuery } from "../../helper/typed-handler";
 import { proposalSchemas } from "@pkg/schema";
+import { escapeLike } from "../../helper/escape-like";
 
 const { proposalTable, workOrderTable } = schema;
 
@@ -126,8 +127,8 @@ export const proposalQueryRouter = router({
           conditions = and(
             conditions,
             or(
-              like(proposalTable.code, `%${searchQuery}%`),
-              like(proposalTable.title, `%${searchQuery}%`),
+              like(proposalTable.code, `%${escapeLike(searchQuery)}%`),
+              like(proposalTable.title, `%${escapeLike(searchQuery)}%`),
             ),
           );
         }

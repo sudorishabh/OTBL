@@ -20,9 +20,20 @@ export type TrpcAppEnv = {
     EXPIRES_IN: string;
     REFRESH_SECRET: string;
     REFRESH_EXPIRES_IN: string;
+    RESET_PASSWORD_SECRET?: string;
+    RESET_PASSWORD_EXPIRES_IN?: string;
   };
   NODE_ENV: string;
-  [key: string]: any;
+  DATABASE_URL?: string;
+  WEB_CLIENT?: string;
+  MOBILE_CLIENT?: string;
+  BASE_PATH?: string;
+  SHAREPOINT_TENANT_ID?: string;
+  SHAREPOINT_CLIENT_ID?: string;
+  SHAREPOINT_CLIENT_SECRET?: string;
+  SHAREPOINT_SITE_URL?: string;
+  SHAREPOINT_DRIVE_ID?: string;
+  PORT?: string;
 };
 
 /**

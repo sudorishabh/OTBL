@@ -10,6 +10,7 @@ import {
 import { clientSchemas } from "@pkg/schema";
 import { notFound, fromDatabaseError } from "../../errors";
 import { handleQuery } from "../../helper/typed-handler";
+import { escapeLike } from "../../helper/escape-like";
 
 const { 
   clientTable, 
@@ -94,11 +95,11 @@ export const clientQueryRouter = router({
 
       if (searchQuery && searchQuery.trim() !== "") {
         const searchCondition = or(
-          like(clientTable.name, `%${searchQuery}%`),
-          like(clientTable.email, `%${searchQuery}%`),
-          like(clientTable.gst_number, `%${searchQuery}%`),
-          like(clientTable.city, `%${searchQuery}%`),
-          like(clientTable.contact_number, `%${searchQuery}%`),
+          like(clientTable.name, `%${escapeLike(searchQuery)}%`),
+          like(clientTable.email, `%${escapeLike(searchQuery)}%`),
+          like(clientTable.gst_number, `%${escapeLike(searchQuery)}%`),
+          like(clientTable.city, `%${escapeLike(searchQuery)}%`),
+          like(clientTable.contact_number, `%${escapeLike(searchQuery)}%`),
         );
         clientQuery = clientQuery
           ? and(clientQuery, searchCondition)
@@ -315,10 +316,10 @@ export const clientQueryRouter = router({
 
         if (searchQuery && searchQuery.trim() !== "") {
           const searchCondition = or(
-            like(clientContactTable.name, `%${searchQuery}%`),
-            like(clientContactTable.email, `%${searchQuery}%`),
-            like(clientContactTable.contact_number, `%${searchQuery}%`),
-            like(clientContactTable.designation, `%${searchQuery}%`),
+            like(clientContactTable.name, `%${escapeLike(searchQuery)}%`),
+            like(clientContactTable.email, `%${escapeLike(searchQuery)}%`),
+            like(clientContactTable.contact_number, `%${escapeLike(searchQuery)}%`),
+            like(clientContactTable.designation, `%${escapeLike(searchQuery)}%`),
           );
           contactQuery = contactQuery
             ? and(contactQuery, searchCondition)

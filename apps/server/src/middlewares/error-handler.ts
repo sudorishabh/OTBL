@@ -21,8 +21,9 @@ export const errorHandler: ErrorRequestHandler = (
   }
 
   // Generic fallback for any unhandled errors
+  const isDev = process.env.NODE_ENV !== "production";
   return res.status(HTTPSTATUS.INTERNAL_SERVER_ERROR).json({
     message: "Internal Server Error",
-    error: error?.message || "Unknown error occurred",
+    ...(isDev ? { error: error?.message || "Unknown error occurred" } : {}),
   });
 };

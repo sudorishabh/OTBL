@@ -7,6 +7,7 @@ import { z } from "zod";
 import { hasAnyRole, hasRole } from "../../authorization";
 import { notFound, fromDatabaseError } from "../../errors";
 import { handleProtectedQuery } from "../../helper/typed-handler";
+import { escapeLike } from "../../helper/escape-like";
 import { userSchemas, userTypes } from "@pkg/schema";
 
 const { userTable, officeTable, officeUserTable, siteTable, siteUserTable } =
@@ -66,9 +67,9 @@ export const userQueryRouter = router({
             and(
               userQuery,
               or(
-                like(userTable.name, `%${searchQuery}%`),
-                like(userTable.email, `%${searchQuery}%`),
-                like(userTable.contact_number, `%${searchQuery}%`),
+                like(userTable.name, `%${escapeLike(searchQuery)}%`),
+                like(userTable.email, `%${escapeLike(searchQuery)}%`),
+                like(userTable.contact_number, `%${escapeLike(searchQuery)}%`),
               ),
             ) ?? userQuery;
         }
@@ -246,9 +247,9 @@ export const userQueryRouter = router({
             and(
               condition,
               or(
-                like(userTable.name, `%${search}%`),
-                like(userTable.email, `%${search}%`),
-                like(userTable.contact_number, `%${search}%`),
+                like(userTable.name, `%${escapeLike(search)}%`),
+                like(userTable.email, `%${escapeLike(search)}%`),
+                like(userTable.contact_number, `%${escapeLike(search)}%`),
               ),
             ) ?? condition;
         }
@@ -312,7 +313,6 @@ export const userQueryRouter = router({
         id: userTable.id,
         name: userTable.name,
         email: userTable.email,
-        password: userTable.password,
         role: userTable.role,
         contact_number: userTable.contact_number,
         status: userTable.status,

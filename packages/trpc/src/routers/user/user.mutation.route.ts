@@ -49,7 +49,6 @@ export const userMutationRouter = router({
           user: {
             name: input.name,
             email: input.email,
-            password: input.password,
             role: input.role,
           },
         };
@@ -84,6 +83,12 @@ export const userMutationRouter = router({
 
         // Prepare update data
         const updateData: Record<string, any> = { ...rest };
+
+        // Non-admins cannot change privileged fields — prevents self role escalation
+        if (!isAdmin) {
+          delete updateData.role;
+          delete updateData.status;
+        }
 
         // Hash password if provided
         if (password) {
