@@ -8,6 +8,8 @@ export const useHandleParams = () => {
 
   const setParam = useCallback(
     (key: string, value: string) => {
+      // Avoid redundant navigations that can cause render loops in dev.
+      if (searchParams.get(key) === value) return;
       const params = new URLSearchParams(searchParams.toString());
       params.set(key, value);
       router.push(`?${params.toString()}`);
@@ -17,6 +19,8 @@ export const useHandleParams = () => {
 
   const deleteParam = useCallback(
     (key: string) => {
+      // If the param doesn't exist, don't trigger a navigation.
+      if (!searchParams.has(key)) return;
       const params = new URLSearchParams(searchParams.toString());
       params.delete(key);
       const paramsString = params.toString();
