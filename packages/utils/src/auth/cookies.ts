@@ -22,13 +22,13 @@ const defaults = (node_env: string): CookieOptions => ({
 
 const sessionDefaults: CookieOptions = {
   httpOnly: true,
-  secure: false, // set true only with HTTPS
+  secure: true, // set true only with HTTPS
   sameSite: "lax",
 };
 
 export const getRefreshTokenCookieOptions = (
   node_env: string,
-  expiresIn: string
+  expiresIn: string,
 ): CookieOptions => {
   const expires = calculateExpirationDate(expiresIn);
   return {
@@ -41,7 +41,7 @@ export const getRefreshTokenCookieOptions = (
 
 export const getAccessTokenCookieOptions = (
   node_env: string,
-  expiresIn: string
+  expiresIn: string,
 ): CookieOptions => {
   const expires = calculateExpirationDate(expiresIn);
   return {
@@ -69,15 +69,18 @@ export const setAuthenticationCookies = ({
     .cookie(
       "accessToken",
       accessToken,
-      getAccessTokenCookieOptions(node_env, accessExpiresIn)
+      getAccessTokenCookieOptions(node_env, accessExpiresIn),
     )
     .cookie(
       "refreshToken",
       refreshToken,
-      getRefreshTokenCookieOptions(node_env, refreshExpiresIn)
+      getRefreshTokenCookieOptions(node_env, refreshExpiresIn),
     );
 
 export const clearAuthenticationCookies = (res: Response): Response =>
-  res.clearCookie("session", { path: "/" }).clearCookie("accessToken").clearCookie("refreshToken", {
-    path: "/",
-  });
+  res
+    .clearCookie("session", { path: "/" })
+    .clearCookie("accessToken")
+    .clearCookie("refreshToken", {
+      path: "/",
+    });
