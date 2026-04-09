@@ -33,9 +33,10 @@ export const createContext = ({
   }
 
   // If not in header, try to get from cookies (httpOnly cookie auth)
-  if (!user && req.cookies?.accessToken) {
+  const cookieAccessToken = req.cookies?.session || req.cookies?.accessToken;
+  if (!user && cookieAccessToken) {
     const result = verifyTokenSafe(
-      req.cookies.accessToken,
+      cookieAccessToken,
       process.env.JWT_SECRET!
     );
     if (result.success) {

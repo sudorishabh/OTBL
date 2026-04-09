@@ -20,6 +20,12 @@ const defaults = (node_env: string): CookieOptions => ({
   sameSite: node_env === "production" ? "strict" : "lax",
 });
 
+const sessionDefaults: CookieOptions = {
+  httpOnly: true,
+  secure: false, // set true only with HTTPS
+  sameSite: "lax",
+};
+
 export const getRefreshTokenCookieOptions = (
   node_env: string,
   expiresIn: string
@@ -55,6 +61,11 @@ export const setAuthenticationCookies = ({
   node_env,
 }: CookiePayloadType): Response =>
   res
+    // Prefer a single "session" cookie for auth (back-compat with accessToken).
+    .cookie("session", accessToken, {
+      ...sessionDefaults,
+      path: "/",
+    })
     .cookie(
       "accessToken",
       accessToken,
@@ -67,6 +78,6 @@ export const setAuthenticationCookies = ({
     );
 
 export const clearAuthenticationCookies = (res: Response): Response =>
-  res.clearCookie("accessToken").clearCookie("refreshToken", {
+  res.clearCookie("session", { path: "/" }).clearCookie("accessToken").clearCookie("refreshToken", {
     path: "/",
   });
