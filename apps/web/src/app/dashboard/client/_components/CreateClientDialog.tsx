@@ -74,7 +74,7 @@ const CreateClientDialog = () => {
         utils.clientQuery.getClients.invalidate();
         utils.clientQuery.getAllClientContacts.invalidate();
       },
-      onError: (error) => {
+      onError: (error: any) => {
         handleError(error, { showToast: true });
       },
     });
@@ -350,7 +350,7 @@ const CreateClientDialog = () => {
                         <div className='grid grid-cols-1 md:grid-cols-2 gap-3'>
                           {(existingClientContacts.data || [])
                             .filter(
-                              (c) =>
+                              (c: any) =>
                                 !contactSearch ||
                                 c.name
                                   .toLowerCase()
@@ -504,7 +504,7 @@ const CreateClientDialog = () => {
                     Selected Contacts ({selectedContacts.length})
                   </p>
                   <div className='flex flex-wrap gap-2'>
-                    {selectedContacts.map((contact) => (
+                    {selectedContacts.map((contact: any) => (
                       <div
                         key={contact.id}
                         className='group inline-flex items-center gap-2 bg-white border border-[#035864]/20 shadow-xs rounded-full pl-1.5 pr-3 py-1 text-sm text-gray-700 animate-in fade-in zoom-in-95 duration-200 max-w-full'>
@@ -518,7 +518,9 @@ const CreateClientDialog = () => {
                         </div>
                         <button
                           type='button'
-                          onClick={() => handleRemoveContact(contact.id)}
+                          onClick={() =>
+                            handleRemoveContact(contact.id as string)
+                          }
                           className='ml-1 text-gray-400 hover:text-red-500 transition-colors shrink-0'>
                           <X className='h-3.5 w-3.5' />
                         </button>

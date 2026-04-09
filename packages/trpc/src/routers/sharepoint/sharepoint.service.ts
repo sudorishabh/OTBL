@@ -49,7 +49,7 @@ export class SharePointService {
     const tokenEndpoint = getTokenEndpoint(this.config.tenantId);
     console.log(
       "[SharePoint] Requesting new access token from:",
-      tokenEndpoint
+      tokenEndpoint,
     );
 
     const body = new URLSearchParams({
@@ -75,7 +75,7 @@ export class SharePointService {
         error,
       });
       throw new Error(
-        `Failed to get access token (${response.status}): ${error}`
+        `Failed to get access token (${response.status}): ${error}`,
       );
     }
 
@@ -93,7 +93,7 @@ export class SharePointService {
 
   private async graphRequest<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
   ): Promise<T> {
     const token = await this.getAccessToken();
     const url = `${GRAPH_API_BASE_URL}${endpoint}`;
@@ -121,7 +121,7 @@ export class SharePointService {
         error,
       });
       throw new Error(
-        `Graph API request failed: ${response.status} - ${error}`
+        `Graph API request failed: ${response.status} - ${error}`,
       );
     }
 
@@ -137,7 +137,7 @@ export class SharePointService {
 
   async getSiteId(): Promise<string> {
     const site = await this.graphRequest<any>(
-      "/sites/teriindia.sharepoint.com:/sites/OTBL"
+      "/sites/teriindia.sharepoint.com:/sites/OTBLDOC",
     );
     return site.id;
   }
@@ -271,7 +271,7 @@ export class SharePointService {
       top?: number;
       skip?: number;
       orderBy?: string;
-    }
+    },
   ): Promise<SharePointFile[]> {
     const driveId = await this.getDriveId();
 
@@ -351,7 +351,7 @@ export class SharePointService {
     options?: {
       conflictBehavior?: "fail" | "replace" | "rename";
       onProgress?: (uploaded: number, total: number) => void;
-    }
+    },
   ): Promise<SharePointFile> {
     // Convert content to Buffer for consistent handling
     let fileBuffer: Buffer;
@@ -365,7 +365,7 @@ export class SharePointService {
 
     const fileSize = fileBuffer.length;
     console.log(
-      `[SharePoint] Uploading file: ${fileName}, size: ${(fileSize / 1024 / 1024).toFixed(2)} MB`
+      `[SharePoint] Uploading file: ${fileName}, size: ${(fileSize / 1024 / 1024).toFixed(2)} MB`,
     );
 
     // Use simple upload for small files, upload session for large files
@@ -377,7 +377,7 @@ export class SharePointService {
         fileName,
         fileBuffer,
         fileSize,
-        options
+        options,
       );
     }
   }
@@ -391,14 +391,14 @@ export class SharePointService {
     content: Buffer,
     options?: {
       conflictBehavior?: "fail" | "replace" | "rename";
-    }
+    },
   ): Promise<SharePointFile> {
     const driveId = await this.getDriveId();
     const conflictBehavior = options?.conflictBehavior || "replace";
 
     const encodedPath = encodeURIComponent(`${folderPath}/${fileName}`).replace(
       /%2F/g,
-      "/"
+      "/",
     );
 
     // Convert Buffer to Uint8Array for fetch compatibility
@@ -412,7 +412,7 @@ export class SharePointService {
           "Content-Type": "application/octet-stream",
         },
         body: bodyContent,
-      }
+      },
     );
 
     return {
@@ -434,13 +434,13 @@ export class SharePointService {
   async createUploadSession(
     folderPath: string,
     fileName: string,
-    conflictBehavior: "fail" | "replace" | "rename" = "replace"
+    conflictBehavior: "fail" | "replace" | "rename" = "replace",
   ): Promise<{ uploadUrl: string; expirationDateTime: string }> {
     const driveId = await this.getDriveId();
 
     const encodedPath = encodeURIComponent(`${folderPath}/${fileName}`).replace(
       /%2F/g,
-      "/"
+      "/",
     );
 
     console.log(`[SharePoint] Creating upload session for: ${fileName}`);
@@ -466,7 +466,7 @@ export class SharePointService {
    */
   async createSharingLink(
     fileId: string,
-    type: "view" | "edit" | "embed" = "view"
+    type: "view" | "edit" | "embed" = "view",
   ): Promise<string> {
     const driveId = await this.getDriveId();
 
@@ -479,13 +479,13 @@ export class SharePointService {
             type,
             scope: "anonymous", // Tries to create an anonymous (public) link
           }),
-        }
+        },
       );
       return response.link.webUrl;
     } catch (error) {
       console.warn(
         "[SharePoint] Failed to create anonymous link, falling back to organization link",
-        error
+        error,
       );
       // Fallback to organization link if anonymous is disabled
       const response = await this.graphRequest<any>(
@@ -496,7 +496,7 @@ export class SharePointService {
             type,
             scope: "organization",
           }),
-        }
+        },
       );
       return response.link.webUrl;
     }
@@ -514,7 +514,7 @@ export class SharePointService {
     options?: {
       conflictBehavior?: "fail" | "replace" | "rename";
       onProgress?: (uploaded: number, total: number) => void;
-    }
+    },
   ): Promise<SharePointFile> {
     const conflictBehavior = options?.conflictBehavior || "replace";
     const token = await this.getAccessToken();
@@ -523,12 +523,12 @@ export class SharePointService {
     const sessionResponse = await this.createUploadSession(
       folderPath,
       fileName,
-      conflictBehavior
+      conflictBehavior,
     );
 
     const uploadUrl = sessionResponse.uploadUrl;
     console.log(
-      `[SharePoint] Upload session created, expires: ${sessionResponse.expirationDateTime}`
+      `[SharePoint] Upload session created, expires: ${sessionResponse.expirationDateTime}`,
     );
 
     // Step 2: Upload file in chunks
@@ -544,7 +544,7 @@ export class SharePointService {
         const chunkLength = chunkEnd - chunkStart;
 
         console.log(
-          `[SharePoint] Uploading chunk: bytes ${chunkStart}-${chunkEnd - 1}/${fileSize} (${((chunkEnd / fileSize) * 100).toFixed(1)}%)`
+          `[SharePoint] Uploading chunk: bytes ${chunkStart}-${chunkEnd - 1}/${fileSize} (${((chunkEnd / fileSize) * 100).toFixed(1)}%)`,
         );
 
         // Upload chunk
@@ -562,14 +562,14 @@ export class SharePointService {
           const errorText = await chunkResponse.text();
           console.error(
             `[SharePoint] Chunk upload failed: ${chunkResponse.status}`,
-            errorText
+            errorText,
           );
 
           // Cancel the upload session on failure
           await this.cancelUploadSession(uploadUrl, token);
 
           throw new Error(
-            `Chunk upload failed: ${chunkResponse.status} - ${errorText}`
+            `Chunk upload failed: ${chunkResponse.status} - ${errorText}`,
           );
         }
 
@@ -605,7 +605,7 @@ export class SharePointService {
       } catch (cancelError) {
         console.error(
           "[SharePoint] Failed to cancel upload session:",
-          cancelError
+          cancelError,
         );
       }
       throw error;
@@ -617,7 +617,7 @@ export class SharePointService {
    */
   private async cancelUploadSession(
     uploadUrl: string,
-    token: string
+    token: string,
   ): Promise<void> {
     console.log("[SharePoint] Cancelling upload session...");
     try {
@@ -641,7 +641,7 @@ export class SharePointService {
     fileId: string,
     options?: {
       onProgress?: (downloaded: number, total: number) => void;
-    }
+    },
   ): Promise<{
     content: ArrayBuffer;
     fileName: string;
@@ -653,12 +653,12 @@ export class SharePointService {
 
     // First, get file metadata
     const metadata = await this.graphRequest<any>(
-      `/drives/${driveId}/items/${fileId}`
+      `/drives/${driveId}/items/${fileId}`,
     );
 
     const fileSize = metadata.size || 0;
     console.log(
-      `[SharePoint] Downloading file: ${metadata.name}, size: ${(fileSize / 1024 / 1024).toFixed(2)} MB`
+      `[SharePoint] Downloading file: ${metadata.name}, size: ${(fileSize / 1024 / 1024).toFixed(2)} MB`,
     );
 
     // Download the content
@@ -668,7 +668,7 @@ export class SharePointService {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      }
+      },
     );
 
     if (!response.ok) {
@@ -740,7 +740,7 @@ export class SharePointService {
 
     // Get file metadata which includes the temporary download URL
     const metadata = await this.graphRequest<any>(
-      `/drives/${driveId}/items/${fileId}`
+      `/drives/${driveId}/items/${fileId}`,
     );
 
     if (!metadata["@microsoft.graph.downloadUrl"]) {
@@ -748,7 +748,7 @@ export class SharePointService {
     }
 
     console.log(
-      `[SharePoint] Got download URL for: ${metadata.name}, size: ${(metadata.size / 1024 / 1024).toFixed(2)} MB`
+      `[SharePoint] Got download URL for: ${metadata.name}, size: ${(metadata.size / 1024 / 1024).toFixed(2)} MB`,
     );
 
     return {
@@ -768,7 +768,7 @@ export class SharePointService {
     options?: {
       chunkSize?: number;
       onProgress?: (downloaded: number, total: number) => void;
-    }
+    },
   ): Promise<{
     content: Buffer;
     fileName: string;
@@ -780,7 +780,7 @@ export class SharePointService {
 
     // Get file metadata
     const metadata = await this.graphRequest<any>(
-      `/drives/${driveId}/items/${fileId}`
+      `/drives/${driveId}/items/${fileId}`,
     );
 
     const fileSize = metadata.size;
@@ -789,7 +789,7 @@ export class SharePointService {
     let downloadedBytes = 0;
 
     console.log(
-      `[SharePoint] Downloading large file in chunks: ${metadata.name}, size: ${(fileSize / 1024 / 1024).toFixed(2)} MB`
+      `[SharePoint] Downloading large file in chunks: ${metadata.name}, size: ${(fileSize / 1024 / 1024).toFixed(2)} MB`,
     );
 
     while (downloadedBytes < fileSize) {
@@ -797,7 +797,7 @@ export class SharePointService {
       const rangeEnd = Math.min(downloadedBytes + chunkSize - 1, fileSize - 1);
 
       console.log(
-        `[SharePoint] Downloading chunk: bytes ${rangeStart}-${rangeEnd}/${fileSize} (${((rangeEnd / fileSize) * 100).toFixed(1)}%)`
+        `[SharePoint] Downloading chunk: bytes ${rangeStart}-${rangeEnd}/${fileSize} (${((rangeEnd / fileSize) * 100).toFixed(1)}%)`,
       );
 
       const response = await fetch(
@@ -807,7 +807,7 @@ export class SharePointService {
             Authorization: `Bearer ${token}`,
             Range: `bytes=${rangeStart}-${rangeEnd}`,
           },
-        }
+        },
       );
 
       if (!response.ok && response.status !== 206) {
@@ -849,7 +849,7 @@ export class SharePointService {
    */
   async createFolder(
     parentPath: string,
-    folderName: string
+    folderName: string,
   ): Promise<SharePointFolder> {
     const driveId = await this.getDriveId();
     const encodedPath = encodeURIComponent(parentPath).replace(/%2F/g, "/");
@@ -883,7 +883,7 @@ export class SharePointService {
  * Create a SharePoint service instance
  */
 export function createSharePointService(
-  config: SharePointConfig
+  config: SharePointConfig,
 ): SharePointService {
   return new SharePointService(config);
 }

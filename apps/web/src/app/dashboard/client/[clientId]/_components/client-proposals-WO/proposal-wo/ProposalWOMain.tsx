@@ -36,7 +36,7 @@ const ProposalWOMain = ({ clientId }: Props) => {
 
   const proposalId = getParam("proposal-id");
   const selectedProposal = proposals.find(
-    (p) => p.proposal.id === (proposalId ? Number(proposalId) : null),
+    (p: any) => p.proposal.id === (proposalId ? Number(proposalId) : null),
   );
   const proposalTitle = selectedProposal?.proposal.title || "";
 
@@ -79,7 +79,7 @@ const ProposalWOMain = ({ clientId }: Props) => {
               />
             </div>
           ) : proposals && proposals.length > 0 ? (
-            proposals.map(({ workOrder, proposal }, index) => (
+            proposals.map(({ workOrder, proposal }: any, index: number) => (
               <div
                 key={proposal?.id || index}
                 className='w-full rounded-xl border border-gray-200 bg-gray-100 p-4'>
@@ -137,11 +137,15 @@ const ProposalWOMain = ({ clientId }: Props) => {
       <CreateWODialog proposalTitle={proposalTitle} />
       <ProposalWODetailsDialog clientId={Number(clientId)} />
       <ProposalDetailDialog />
-      <ClientWOStatsDialog 
+      <ClientWOStatsDialog
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ongoingWOs={proposals.filter(p => p.workOrder?.status === "pending").map(p => p.workOrder) as any[]}
+        ongoingWOs={proposals
+          .filter((p: any) => p.workOrder?.status === "pending")
+          .map((p: any) => p.workOrder)}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        completedWOs={proposals.filter(p => p.workOrder?.status === "completed").map(p => p.workOrder) as any[]}
+        completedWOs={proposals
+          .filter((p: any) => p.workOrder?.status === "completed")
+          .map((p: any) => p.workOrder)}
       />
     </div>
   );

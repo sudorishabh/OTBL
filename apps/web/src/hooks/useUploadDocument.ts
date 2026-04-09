@@ -46,7 +46,7 @@ export const useUploadDocument = ({
       onUploadComplete?.("");
       onFileChange?.(null);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       const parsed = parseApiError(error);
       console.error("Delete error:", error);
       toast.error(parsed.message);
@@ -55,7 +55,7 @@ export const useUploadDocument = ({
 
   const createSessionMutation =
     trpc.sharePointMutation.createUploadSession.useMutation({
-      onError: (error) => {
+      onError: (error: any) => {
         setUploading(false);
         const parsed = parseApiError(error);
         console.error("Session creation error:", error);
@@ -76,7 +76,7 @@ export const useUploadDocument = ({
       "." + selectedFile.name.split(".").pop()?.toLowerCase();
     if (!allowedExtensions.includes(fileExtension)) {
       toast.error(
-        `Invalid file type. Allowed: ${allowedExtensions.join(", ")}`
+        `Invalid file type. Allowed: ${allowedExtensions.join(", ")}`,
       );
       return false;
     }
@@ -140,24 +140,24 @@ export const useUploadDocument = ({
           xhr.setRequestHeader("Content-Range", rangeHeader);
           // Do NOT set Content-Length manually, browser does it
 
-          xhr.upload.onprogress = (e) => {
+          xhr.upload.onprogress = (e: any) => {
             if (e.lengthComputable) {
               const percent = Math.round((e.loaded / e.total) * 90); // Go to 90%, last 10% for public link
               setProgress(percent);
             }
           };
 
-          xhr.onload = async () => {
-            if (xhr.status === 200 || xhr.status === 201) {
+          xhr.onload = async (e: any) => {
+            if (e.target.status === 200 || e.target.status === 201) {
               try {
-                const data = JSON.parse(xhr.response);
+                const data = JSON.parse(e.target.response);
 
                 // Now create public link
                 try {
                   const linkResult = await createPublicLinkMutation.mutateAsync(
                     {
                       fileId: data.id,
-                    }
+                    },
                   );
 
                   const fileData: UploadedFile = {
@@ -175,7 +175,7 @@ export const useUploadDocument = ({
                   onUploadComplete?.(path);
                   onFileChange?.(fileData);
                   toast.success(
-                    "File uploaded and public link created successfully"
+                    "File uploaded and public link created successfully",
                   );
                 } catch (linkError) {
                   console.error("Failed to create public link", linkError);
@@ -199,20 +199,30 @@ export const useUploadDocument = ({
               }
             } else {
               setUploading(false);
-              console.error("Upload failed", xhr.status, xhr.responseText);
-              toast.error(`Upload failed: Server returned ${xhr.status}`);
+              console.error(
+                "Upload failed",
+                e.target.status,
+                e.target.responseText,
+              );
+              toast.error(`Upload failed: Server returned ${e.target.status}`);
             }
           };
 
-          xhr.onerror = () => {
+          xhr.onerror = (e: any) => {
             setUploading(false);
-            console.error("XHR Error");
-            toast.error("Network error during upload");
+            console.error(
+              "XHR Error",
+              e.target.status,
+              e.target.responseText || ("No response text" as string),
+            );
+            toast.error(
+              `Network error during upload: ${e.target.status} ${e.target.responseText || ("No response text" as string)}`,
+            );
           };
 
           xhr.send(file.slice(0, file.size));
         },
-      }
+      },
     );
   }, [
     file,

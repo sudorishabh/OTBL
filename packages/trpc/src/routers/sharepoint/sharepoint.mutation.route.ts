@@ -1,7 +1,7 @@
 import { router } from "../../trpc";
-import { protectedProcedure, adminProcedure } from "../../middleware";
+import { protectedProcedure, operatorProcedure } from "../../middleware";
+import type { TRPCRouterRecord } from "@trpc/server";
 import { z } from "zod";
-import { sharepointSchemas } from "@pkg/schema";
 import {
   getSharePointConfig,
   isSharePointConfigured,
@@ -13,19 +13,59 @@ import {
   validationError,
 } from "../../errors";
 
+// Local schemas (avoid leaking @pkg/schema's nested zod types into declarations)
+const uploadFileSchema = z.object({
+  folderPath: z.string().min(1, "Folder path is required"),
+  fileName: z.string().min(1, "File name is required"),
+  content: z.string().min(1, "File content is required"), // Base64
+  conflictBehavior: z
+    .enum(["fail", "replace", "rename"])
+    .optional()
+    .default("replace"),
+});
+
+const deleteFileSchema = z.object({
+  fileId: z.string().min(1, "File ID is required"),
+});
+
+const createFolderSchema = z.object({
+  parentPath: z.string().optional().default("/"),
+  folderName: z.string().min(1, "Folder name is required"),
+});
+
+const createUploadSessionSchema = z.object({
+  folderPath: z.string().min(1, "Folder path is required"),
+  fileName: z.string().min(1, "File name is required"),
+  conflictBehavior: z
+    .enum(["fail", "replace", "rename"])
+    .optional()
+    .default("replace"),
+});
+
 /** Allowed file extensions for SharePoint uploads */
 const ALLOWED_EXTENSIONS = [
-  ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
-  ".csv", ".txt", ".png", ".jpg", ".jpeg", ".gif", ".zip",
+  ".pdf",
+  ".doc",
+  ".docx",
+  ".xls",
+  ".xlsx",
+  ".ppt",
+  ".pptx",
+  ".csv",
+  ".txt",
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".gif",
+  ".zip",
 ];
 
 /** Reject paths containing traversal sequences */
 const assertSafePath = (value: string, fieldName: string) => {
   if (value.includes("..") || value.includes("//") || /[<>:|?*]/.test(value)) {
-    throw validationError(
-      `Invalid ${fieldName}`,
-      [{ field: fieldName, message: `${fieldName} contains invalid characters` }],
-    );
+    throw validationError(`Invalid ${fieldName}`, [
+      { field: fieldName, message: `${fieldName} contains invalid characters` },
+    ]);
   }
 };
 
@@ -35,17 +75,19 @@ const getExtension = (fileName: string) => {
   return idx >= 0 ? fileName.slice(idx).toLowerCase() : "";
 };
 
-export const sharePointMutationRouter = router({
+const sharePointMutationRouterRecord = {
   uploadFile: protectedProcedure
-    .input(sharepointSchemas.uploadFileSchema)
+    .input(uploadFileSchema)
     .mutation(async ({ input, ctx }) => {
       // Security: validate file extension and path safety
       const ext = getExtension(input.fileName);
       if (!ALLOWED_EXTENSIONS.includes(ext)) {
-        throw validationError(
-          "File type not allowed",
-          [{ field: "fileName", message: `"${ext}" files are not permitted. Allowed: ${ALLOWED_EXTENSIONS.join(", ")}` }],
-        );
+        throw validationError("File type not allowed", [
+          {
+            field: "fileName",
+            message: `"${ext}" files are not permitted. Allowed: ${ALLOWED_EXTENSIONS.join(", ")}`,
+          },
+        ]);
       }
       assertSafePath(input.fileName, "fileName");
       assertSafePath(input.folderPath, "folderPath");
@@ -88,7 +130,7 @@ export const sharePointMutationRouter = router({
     }),
 
   deleteFile: protectedProcedure
-    .input(sharepointSchemas.deleteFileSchema)
+    .input(deleteFileSchema)
     .mutation(async ({ input, ctx }) => {
       if (!isSharePointConfigured(ctx.appEnv)) {
         throw createServiceUnavailableError("SharePoint", {
@@ -119,7 +161,7 @@ export const sharePointMutationRouter = router({
     }),
 
   createFolder: protectedProcedure
-    .input(sharepointSchemas.createFolderSchema)
+    .input(createFolderSchema)
     .mutation(async ({ input, ctx }) => {
       // Security: validate path safety
       assertSafePath(input.parentPath, "parentPath");
@@ -160,7 +202,7 @@ export const sharePointMutationRouter = router({
     }),
 
   createUploadSession: protectedProcedure
-    .input(sharepointSchemas.createUploadSessionSchema)
+    .input(createUploadSessionSchema)
     .mutation(async ({ input, ctx }) => {
       if (!isSharePointConfigured(ctx.appEnv)) {
         throw createServiceUnavailableError("SharePoint", {
@@ -173,13 +215,16 @@ export const sharePointMutationRouter = router({
 
       try {
         const config = getSharePointConfig(ctx.appEnv);
+        console.log("config", config);
+        1;
         const service = createSharePointService(config);
+        console.log("service", service);
         const session = await service.createUploadSession(
           input.folderPath,
           input.fileName,
           input.conflictBehavior,
         );
-
+        console.log("session", session);
         return {
           success: true,
           ...session,
@@ -196,7 +241,7 @@ export const sharePointMutationRouter = router({
       }
     }),
 
-  createPublicLink: adminProcedure
+  createPublicLink: operatorProcedure
     .input(z.object({ fileId: z.string() }))
     .mutation(async ({ input, ctx }) => {
       if (!isSharePointConfigured(ctx.appEnv)) {
@@ -228,4 +273,6 @@ export const sharePointMutationRouter = router({
         });
       }
     }),
-});
+} satisfies TRPCRouterRecord;
+
+export const sharePointMutationRouter = router(sharePointMutationRouterRecord);

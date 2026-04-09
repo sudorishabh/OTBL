@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import toast from "react-hot-toast";
-import { parseApiError } from "@pkg/trpc/errors";
 
 interface UploadedFileInfo {
   id: string;
@@ -78,10 +77,13 @@ export const useSharePointUpload = ({
       toast.success("File deleted successfully");
       onDeleteComplete?.();
     },
-    onError: (error) => {
-      const parsed = parseApiError(error);
+    onError: (error: unknown) => {
       console.error("Delete error:", error);
-      toast.error(parsed.message);
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Failed to delete the file. Please try again.";
+      toast.error(message);
     },
   });
 

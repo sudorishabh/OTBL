@@ -69,7 +69,7 @@ const CreateUpdateUserDialog = () => {
   );
 
   const registerMutation = trpc.userMutation.createUserByAdmin.useMutation({
-    onSuccess: (data, variables) => {
+    onSuccess: (data: any, variables: any) => {
       toast.success("User registered successfully");
       trpcUtils.userQuery.getAllUser.invalidate();
 
@@ -82,7 +82,7 @@ const CreateUpdateUserDialog = () => {
 
       form.reset();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.log(error.data);
       handleError(error, {
         showToast: true,
@@ -95,7 +95,7 @@ const CreateUpdateUserDialog = () => {
       toast.success("User updated successfully");
       handleCloseDialog();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       handleError(error, { showToast: true });
     },
   });
@@ -330,7 +330,7 @@ const CreateUpdateUserDialog = () => {
                 placeholder='Enter password'
                 inputIconButton={{
                   icon: showPassword ? Eye : EyeOff,
-                  onClick: () => setShowPassword((s) => !s),
+                  onClick: () => setShowPassword((s: boolean) => !s),
                 }}
               />
             )}

@@ -50,9 +50,9 @@ const CreateOfficeDialog = () => {
   const [operatorSearch, setOperatorSearch] = useState("");
   const [managerPage, setManagerPage] = useState(1);
   const [operatorPage, setOperatorPage] = useState(1);
-  const [activeUserTab, setActiveUserTab] = useState<
-    "managers" | "operators"
-  >("managers");
+  const [activeUserTab, setActiveUserTab] = useState<"managers" | "operators">(
+    "managers",
+  );
   const itemsPerPage = 50;
   const utils = trpc.useUtils();
   const { handleError } = useApiError();
@@ -110,7 +110,7 @@ const CreateOfficeDialog = () => {
       utils.officeQuery.getOffices.invalidate();
       handleClose();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       handleError(error, { showToast: true });
     },
   });
@@ -276,7 +276,7 @@ const CreateOfficeDialog = () => {
                     <TabsContent
                       value='managers'
                       className='mt-0 space-y-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-                      {managers.map((user) => {
+                      {managers.map((user: any) => {
                         const isSelected = selectedManager?.id === user.id;
                         return (
                           <div
@@ -358,7 +358,7 @@ const CreateOfficeDialog = () => {
                     <TabsContent
                       value='operators'
                       className='mt-0 space-y-2 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-                      {operators.map((user) => {
+                      {operators.map((user: any) => {
                         const isSelected = selectedOperatorUsers.some(
                           (op) => op.id === user.id,
                         );
@@ -467,7 +467,7 @@ const CreateOfficeDialog = () => {
                       </button>
                     </div>
                   )}
-                  {selectedOperatorUsers.map((op) => (
+                  {selectedOperatorUsers.map((op: any) => (
                     <div
                       key={op.id}
                       className='inline-flex items-center gap-2 bg-white border border-[#035864]/20 shadow-xs rounded-full pl-1.5 pr-3 py-1 text-sm text-gray-700 animate-in fade-in zoom-in-95 duration-200'>
@@ -479,7 +479,7 @@ const CreateOfficeDialog = () => {
                       </span>
                       <button
                         type='button'
-                        onClick={() => toggleOperator(op)}
+                        onClick={() => toggleOperator(op as SelectedUser)}
                         className='ml-1 text-gray-400 hover:text-red-500 transition-colors'>
                         <X className='h-3.5 w-3.5' />
                       </button>

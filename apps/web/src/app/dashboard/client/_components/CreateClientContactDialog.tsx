@@ -55,7 +55,7 @@ const CreateClientContactDialog = () => {
       utils.clientQuery.getAllClientContacts.invalidate();
       utils.clientQuery.getClients.invalidate();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       handleError(error, { showToast: true });
     },
   });

@@ -23,6 +23,7 @@ import NoFetchData from "@/components/NoFetchData";
 import toast from "react-hot-toast";
 import ClientPageSkeleton from "./skeleton/ClientPageSkeleton";
 import Error from "@/components/Error";
+import { useApiError } from "@/hooks/useApiError";
 
 interface Props {
   tab: string;
@@ -45,7 +46,7 @@ const ClientContactTab = ({ tab }: Props) => {
   const isClientContactTab = tab === "contacts";
   const { contactSearchQuery, contactFilters } = useClientManagementContext();
   const utils = trpc.useUtils();
-  // const { handleError } = useApiError();
+  const { handleError } = useApiError();
 
   const {
     data: contactsQueryData,
@@ -69,8 +70,8 @@ const ClientContactTab = ({ tab }: Props) => {
         utils.clientQuery.getAllClientContacts.invalidate();
         utils.clientQuery.getClients.invalidate();
       },
-      onError: (error) => {
-        toast.error(error.message);
+      onError: (error: any) => {
+        handleError(error, { showToast: true });
       },
     });
 

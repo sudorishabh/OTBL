@@ -3,7 +3,18 @@ import { trpc } from "@/lib/trpc";
 import { constants } from "@pkg/utils";
 import { BioremediationSections } from "./BioremediationSections";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FlaskConical, Building2, Trash2, ExternalLink, CheckCircle, FileText, X, Receipt, BarChart3, Rows3 } from "lucide-react";
+import {
+  FlaskConical,
+  Building2,
+  Trash2,
+  ExternalLink,
+  CheckCircle,
+  FileText,
+  X,
+  Receipt,
+  BarChart3,
+  Rows3,
+} from "lucide-react";
 import DeferredFilePicker from "@/components/DeferredFilePicker";
 import { useSharePointUpload } from "@/hooks/useSharePointUpload";
 import { Input } from "@/components/ui/input";
@@ -115,8 +126,12 @@ const PhaseForm = ({
         toast.success("Document deleted");
         utils.workOrderSiteQuery.getSiteDocuments.invalidate();
       },
-      onError: (err) => {
-        toast.error(`Failed to delete document: ${err.message}`);
+      onError: (err: any) => {
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Failed to delete the document. Please try again.";
+        toast.error(`Failed to delete document: ${message}`);
       },
     });
 
@@ -218,8 +233,12 @@ const PhaseForm = ({
         setBillFiles([]);
         resetUpload();
       },
-      onError: (err) => {
-        toast.error(`Failed to save: ${err.message}`);
+      onError: (err: any) => {
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Failed to save the data. Please try again.";
+        toast.error(`Failed to save: ${message}`);
       },
     });
 
@@ -236,8 +255,12 @@ const PhaseForm = ({
         setBillFiles([]);
         resetUpload();
       },
-      onError: (err) => {
-        toast.error(`Failed to save: ${err.message}`);
+      onError: (err: any) => {
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Failed to save the data. Please try again.";
+        toast.error(`Failed to save: ${message}`);
       },
     });
 
@@ -269,7 +292,11 @@ const PhaseForm = ({
           activity.total_completion_quantity || "0",
         );
         const prevSaved = parseFloat(
-          getActivityData(activity.activity, "completion", isBioremediation)?.estimated_quantity?.toString() || "0"
+          getActivityData(
+            activity.activity,
+            "completion",
+            isBioremediation,
+          )?.estimated_quantity?.toString() || "0",
         );
         const availableForThisSite = sorQty - (totalCompletionUsed - prevSaved);
 
@@ -603,9 +630,7 @@ const PhaseForm = ({
               {/* Upload New Bill */}
               <DeferredFilePicker
                 label='Add New Bill'
-                onFileSelect={(f) =>
-                  f && setBillFiles((prev) => [...prev, f])
-                }
+                onFileSelect={(f) => f && setBillFiles((prev) => [...prev, f])}
                 selectedFile={null}
                 isUploading={isFileUploading}
                 uploadProgress={progress}
@@ -675,25 +700,33 @@ const PhaseForm = ({
                 const sorQty = parseFloat(
                   activity.sor_estimated_quantity || "0",
                 );
-                
+
                 let completionUsed = parseFloat(
                   activity.total_completion_quantity || "0",
                 );
 
                 const prevSaved = parseFloat(
-                  getActivityData(activity.activity, "completion", isBioremediation)?.estimated_quantity?.toString() || "0"
+                  getActivityData(
+                    activity.activity,
+                    "completion",
+                    isBioremediation,
+                  )?.estimated_quantity?.toString() || "0",
                 );
 
                 const isBioremActivity =
                   isBioremediation &&
                   (activity.activity === "biorem_cont_soil" ||
                     activity.activity ===
-                      constants.WO_ACTIVITIES.BIOREMEDIATION_OIL_CONTAMINATED_SOIL);
+                      constants.WO_ACTIVITIES
+                        .BIOREMEDIATION_OIL_CONTAMINATED_SOIL);
 
                 if (isBioremActivity) {
-                  completionUsed = completionUsed - prevSaved + totalOilZappingQty;
+                  completionUsed =
+                    completionUsed - prevSaved + totalOilZappingQty;
                 } else if (phase === "completion") {
-                  const currentFormQty = parseFloat(formData[activity.activity]?.estimated_quantity || "0");
+                  const currentFormQty = parseFloat(
+                    formData[activity.activity]?.estimated_quantity || "0",
+                  );
                   completionUsed = completionUsed - prevSaved + currentFormQty;
                 }
 
@@ -703,11 +736,7 @@ const PhaseForm = ({
                     ? Math.min(100, (completionUsed / sorQty) * 100)
                     : 0;
                 const statusColor =
-                  usedPct >= 100
-                    ? "red"
-                    : usedPct >= 80
-                      ? "amber"
-                      : "emerald";
+                  usedPct >= 100 ? "red" : usedPct >= 80 ? "amber" : "emerald";
 
                 return (
                   <div
@@ -756,17 +785,13 @@ const PhaseForm = ({
                         }`}>
                         <p
                           className={`text-[9px] uppercase tracking-wider font-medium ${
-                            available < 0
-                              ? "text-red-400"
-                              : "text-emerald-500"
+                            available < 0 ? "text-red-400" : "text-emerald-500"
                           }`}>
                           Available
                         </p>
                         <p
                           className={`text-xs font-bold ${
-                            available < 0
-                              ? "text-red-600"
-                              : "text-emerald-700"
+                            available < 0 ? "text-red-600" : "text-emerald-700"
                           }`}>
                           {available.toFixed(2)}
                         </p>
@@ -1039,7 +1064,7 @@ const SiteActivities = ({
           const activityType =
             phase === "completion" ? "completion" : "estimate_sub-wo";
           return data.contaminatedSoil.find(
-            (item) => item.type === activityType,
+            (item: any) => item.type === activityType,
           );
         }
         return undefined;
@@ -1053,29 +1078,29 @@ const SiteActivities = ({
           case "clean_soil_area":
           case constants.WO_ACTIVITIES.clean_soil_area:
             return data.cleaningUpSoilArea.find(
-              (item) => item.type === activityType,
+              (item: any) => item.type === activityType,
             );
           case "lifting_oil_slush":
           case constants.WO_ACTIVITIES.LIFTING_OILY_SLUSH_OR_RECOVERY_OF_OIL:
             return data.liftingRecoveryOilSlush.find(
-              (item) => item.type === activityType,
+              (item: any) => item.type === activityType,
             );
           case "excav_cont_soil":
           case constants.WO_ACTIVITIES.EXCAVATION_OIL_CONTAMINATED_SOIL:
             return data.excavationContSoil.find(
-              (item) => item.type === activityType,
+              (item: any) => item.type === activityType,
             );
           case "trans_cont_soil":
           case "trnsprt_oil_slush":
           case constants.WO_ACTIVITIES.TRANSPORTATION_CONTAMINATED_SOIL:
             return data.transportationContSoil.find(
-              (item) => item.type === activityType,
+              (item: any) => item.type === activityType,
             );
           case "refill_excav_soil":
           case constants.WO_ACTIVITIES
             .REFILLING_EXCAVATED_OIL_CONTAMINATED_SOIL_LAND:
             return data.refillingExcavatedContSoil.find(
-              (item) => item.type === activityType,
+              (item: any) => item.type === activityType,
             );
           default:
             return undefined;

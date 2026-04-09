@@ -108,7 +108,7 @@ const OfficeSitePage = () => {
           </div>
           <div className='space-y-6'>
             <div className='grid grid-cols-1 sm:grid-cols-1 gap-4'>
-              {offices.map((office) => (
+              {offices.map((office: any) => (
                 <OfficeCard
                   key={office.id}
                   office={office}

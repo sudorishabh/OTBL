@@ -113,14 +113,14 @@ const CreateWorkOrderSiteDialog = ({ workOrder, scheduleOfRates }: Props) => {
         // If first page, we intend to replace.
         // If not first page, we intend to append.
 
-        let nextSites = [];
+        let nextSites: any[] = [];
         if (currentPage === 1) {
           nextSites = sitesData.sites;
         } else {
           // Filter duplicates for appending
-          const existingIds = new Set(prev.map((s) => s.id));
+          const existingIds = new Set(prev.map((s: any) => s.id));
           const newUniqueSites = sitesData.sites.filter(
-            (s) => !existingIds.has(s.id),
+            (s: any) => !existingIds.has(s.id),
           );
 
           if (newUniqueSites.length === 0) return prev;
@@ -131,7 +131,7 @@ const CreateWorkOrderSiteDialog = ({ workOrder, scheduleOfRates }: Props) => {
         // return prev to abort re-render.
         if (
           prev.length === nextSites.length &&
-          prev.every((p, i) => p.id === nextSites[i].id)
+          prev.every((p: any, i: number) => p.id === nextSites[i].id)
         ) {
           return prev;
         }
@@ -177,8 +177,12 @@ const CreateWorkOrderSiteDialog = ({ workOrder, scheduleOfRates }: Props) => {
         reset();
         setStep(1);
       },
-      onError: (error) => {
-        toast.error(error.message);
+      onError: (error: unknown) => {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to add the site. Please try again.";
+        toast.error(message);
       },
     });
 
@@ -233,7 +237,6 @@ const CreateWorkOrderSiteDialog = ({ workOrder, scheduleOfRates }: Props) => {
     return [];
   }, [workOrder.process_type]);
 
-  // Create a map for activity metadata (unit and SOR ID)
   const activityMetadataMap = useMemo(() => {
     const map = new Map<string, { unit: string; id: number }>();
     scheduleOfRates?.forEach((sor: any) => {

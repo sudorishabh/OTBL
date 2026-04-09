@@ -83,8 +83,12 @@ const BioSampleForm = ({
         resetUpload();
         onSuccess();
       },
-      onError: (err) => {
-        toast.error(`Failed to add sample: ${err.message}`);
+      onError: (err: any) => {
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Failed to add the sample. Please try again.";
+        toast.error(`Failed to add sample: ${message}`);
       },
     },
   );
@@ -217,8 +221,12 @@ const OilZappingForm = ({
         resetUpload();
         onSuccess();
       },
-      onError: (err) => {
-        toast.error(`Failed to add entry: ${err.message}`);
+      onError: (err: any) => {
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Failed to add the entry. Please try again.";
+        toast.error(`Failed to add entry: ${message}`);
       },
     });
 
@@ -450,8 +458,12 @@ export const BioremediationSections = ({ woSiteId }: { woSiteId: number }) => {
         toast.success("Sample deleted");
         utils.workOrderSiteQuery.getBioremediationData.invalidate();
       },
-      onError: (err) => {
-        toast.error(`Failed to delete: ${err.message}`);
+      onError: (err: any) => {
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Failed to delete the sample. Please try again.";
+        toast.error(`Failed to delete: ${message}`);
       },
     });
 
@@ -461,8 +473,12 @@ export const BioremediationSections = ({ woSiteId }: { woSiteId: number }) => {
         toast.success("Entry deleted");
         utils.workOrderSiteQuery.getBioremediationData.invalidate();
       },
-      onError: (err) => {
-        toast.error(`Failed to delete: ${err.message}`);
+      onError: (err: any) => {
+        const message =
+          err instanceof Error
+            ? err.message
+            : "Failed to delete the entry. Please try again.";
+        toast.error(`Failed to delete: ${message}`);
       },
     });
 

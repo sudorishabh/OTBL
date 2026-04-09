@@ -93,7 +93,7 @@ const CreateSiteDialog = () => {
       utils.siteQuery.getSitesByOfficeId.invalidate();
       handleClose();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       handleError(error, { showToast: true });
     },
   });
@@ -105,7 +105,7 @@ const CreateSiteDialog = () => {
       utils.siteQuery.getSitesByOfficeId.invalidate();
       handleClose();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       handleError(error, { showToast: true });
     },
   });

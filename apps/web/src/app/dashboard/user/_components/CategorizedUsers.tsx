@@ -45,9 +45,7 @@ const CategorizedUsers = () => {
     return <UserPageSkeleton />;
   }
 
-  const handleOpenCategoryDialog = (
-    role: "all" | "manager" | "operator",
-  ) => {
+  const handleOpenCategoryDialog = (role: "all" | "manager" | "operator") => {
     setFilters({ role, status: "all" });
     setParams({ dialog: "categorized", role });
   };
@@ -71,7 +69,7 @@ const CategorizedUsers = () => {
       users: operators,
       totalUsers: totalOperators,
       onViewAll: () => handleOpenCategoryDialog(ROLES.OPERATOR),
-    }
+    },
   ];
 
   return (
@@ -121,7 +119,7 @@ const CategorizedUsers = () => {
                             </TableCell>
                           </TableRow>
                         ) : (
-                          category.users.map((user) => (
+                          category.users.map((user: any) => (
                             <TableRow key={user.id}>
                               <TableCell className='text-xs font-medium py-3 flex items-center gap-2'>
                                 <StatusIndicator

@@ -87,8 +87,8 @@ const OfficeSiteTable: React.FC<Props> = ({ officeId }) => {
             sitesData &&
             sitesData
               .slice()
-              .sort((a, b) => a.id - b.id)
-              .map((site) => (
+              .sort((a: Site, b: Site) => a.id - b.id)
+              .map((site: any) => (
                 <TableRow
                   key={site.id}
                   className='hover:bg-gray-50'>
@@ -114,7 +114,7 @@ const OfficeSiteTable: React.FC<Props> = ({ officeId }) => {
                   <TableCell className='text-xs flex gap-1.5 flex-wrap w-[300px]'>
                     {site.users && site.users.length > 0 ? (
                       <>
-                        {site.users.map((user) => (
+                        {site.users.map((user: any) => (
                           <div key={user.email}>
                             <Badge className='bg-orange-800/10 text-orange-800'>
                               {capitalFirstLetter(user.name || "N/A")}

@@ -81,7 +81,7 @@ const CreateProposalDialog = ({ clientId }: Props) => {
       toast.success("Proposal added");
       handleCloseDialog();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       handleError(error, { showToast: true });
     },
   });
@@ -208,7 +208,7 @@ const CreateProposalDialog = ({ clientId }: Props) => {
   }
 
   const offices = officesData?.offices ?? [];
-  const officesOptions = offices.map((office) => ({
+  const officesOptions = offices.map((office: any) => ({
     label: office.name,
     value: office.id.toString(),
   }));

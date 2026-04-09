@@ -75,7 +75,7 @@ const UpdateClientDialog = ({ clientId }: Props) => {
         utils.clientQuery.getClients.invalidate();
         handleCloseDialog();
       },
-      onError: (error) => {
+      onError: (error: any) => {
         handleError(error, { showToast: true });
       },
     });
@@ -383,7 +383,7 @@ const UpdateClientDialog = ({ clientId }: Props) => {
                       Existing Contacts
                     </p>
                     <div className='space-y-2'>
-                      {existingContacts.map((contact) => {
+                      {existingContacts.map((contact: any) => {
                         const isMarkedForRemoval = contactsToRemove.includes(
                           contact.id,
                         );
@@ -419,7 +419,9 @@ const UpdateClientDialog = ({ clientId }: Props) => {
                               type='button'
                               variant='ghost'
                               size='sm'
-                              onClick={() => toggleRemoveExisting(contact.id)}
+                              onClick={() =>
+                                toggleRemoveExisting(contact.id as number)
+                              }
                               className={
                                 isMarkedForRemoval
                                   ? "text-gray-500 hover:text-gray-700"
@@ -445,7 +447,7 @@ const UpdateClientDialog = ({ clientId }: Props) => {
                       New Contacts to Add
                     </p>
                     <div className='flex flex-wrap gap-2'>
-                      {newContacts.map((contact) => (
+                      {newContacts.map((contact: any) => (
                         <div
                           key={contact.id}
                           className='inline-flex items-center gap-2 bg-white border border-[#035864]/20 shadow-xs rounded-full pl-1.5 pr-3 py-1 text-sm text-gray-700'>
@@ -457,7 +459,9 @@ const UpdateClientDialog = ({ clientId }: Props) => {
                           </span>
                           <button
                             type='button'
-                            onClick={() => handleRemoveNew(contact.id)}
+                            onClick={() =>
+                              handleRemoveNew(contact.id as string)
+                            }
                             className='ml-1 text-gray-400 hover:text-red-500 transition-colors'>
                             <X className='h-3.5 w-3.5' />
                           </button>

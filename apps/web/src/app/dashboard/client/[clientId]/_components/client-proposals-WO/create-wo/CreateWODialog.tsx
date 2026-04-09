@@ -15,6 +15,7 @@ import { workOrderSchemas, type workOrderTypes } from "@pkg/schema";
 import Step1BasicDetails from "./Step1BasicDetails";
 import Step2ScheduleOfRates from "./Step2ScheduleOfRates";
 import StepperCreateWO from "./StepperCreateWO";
+import { ZodError } from "zod";
 
 // Type alias for form values
 
@@ -77,9 +78,9 @@ const CreateWODialog = ({ proposalTitle }: Props) => {
       });
       toast.success("Work order created successfully!");
     },
-    onError: (error) => {
-      console.error("Error creating work order:", error);
-      handleError(error, { showToast: true });
+    onError: (error: any) => {
+      console.error("Error creating work order:", error.flatten().fieldErrors);
+      handleError(error.flatten().fieldErrors, { showToast: true });
     },
   });
 

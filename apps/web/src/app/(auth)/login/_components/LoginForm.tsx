@@ -36,7 +36,7 @@ const LoginForm = () => {
       router.push("/dashboard");
       setUser(data.user);
     },
-    onError: (error) => {
+    onError: (error: unknown) => {
       handleError(error, { showToast: true });
     },
   });
