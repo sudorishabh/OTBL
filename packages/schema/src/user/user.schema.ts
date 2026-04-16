@@ -33,8 +33,10 @@ export const createUserSchema = z.object({
   role: userRoleEnum,
 });
 
+/** Password omitted on update means “leave unchanged”. */
 export const updateUserSchema = createUserSchema.extend({
   id: positiveIntValidator,
+  password: z.union([passwordValidator, z.literal("")]).optional(),
 });
 
 export const updateUserPasswordSchema = z
