@@ -3,7 +3,6 @@ import { useState, useRef, useCallback } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { trpc } from "@/lib/trpc";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { ThemeProvider } from "next-themes";
 import {
   httpLink,
   httpBatchLink,
@@ -141,21 +140,15 @@ const Provider = ({ children }: { children: React.ReactNode }) => {
       client={trpcClient}
       queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider
-          attribute='class'
-          defaultTheme='system'
-          enableSystem
-          disableTransitionOnChange>
-          <AuthProvider>
-            <UserManagementProvider>
-              <WorkOrderManagementProvider>
-                <OfficeManagementProvider>
-                  <SidebarProvider>{children}</SidebarProvider>
-                </OfficeManagementProvider>
-              </WorkOrderManagementProvider>
-            </UserManagementProvider>
-          </AuthProvider>
-        </ThemeProvider>
+        <AuthProvider>
+          <UserManagementProvider>
+            <WorkOrderManagementProvider>
+              <OfficeManagementProvider>
+                <SidebarProvider>{children}</SidebarProvider>
+              </OfficeManagementProvider>
+            </WorkOrderManagementProvider>
+          </UserManagementProvider>
+        </AuthProvider>
       </QueryClientProvider>
     </trpc.Provider>
   );

@@ -113,8 +113,7 @@ export default function DashboardPage() {
   const officeStats = useMemo(() => {
     const offices: DashboardOfficeRow[] = officesQuery.data?.offices ?? [];
     const siteTotal = offices.reduce(
-      (sum: number, o: DashboardOfficeRow) =>
-        sum + (Number(o.siteCount) || 0),
+      (sum: number, o: DashboardOfficeRow) => sum + (Number(o.siteCount) || 0),
       0,
     );
     return { officeCount: offices.length, siteTotal };
@@ -204,11 +203,15 @@ export default function DashboardPage() {
               <CardDescription>{scopeCopy.description}</CardDescription>
             </CardHeader>
             <CardContent className='flex flex-wrap items-center gap-2'>
-              <Badge variant='secondary' className='font-normal'>
+              <Badge
+                variant='secondary'
+                className='font-normal'>
                 {scopeCopy.title}
               </Badge>
               {user?.status && (
-                <Badge variant='outline' className='font-normal capitalize'>
+                <Badge
+                  variant='outline'
+                  className='font-normal capitalize'>
                   Account: {user.status}
                 </Badge>
               )}
@@ -324,7 +327,10 @@ export default function DashboardPage() {
               {woRecentQuery.isLoading ? (
                 <div className='space-y-2'>
                   {Array.from({ length: 5 }).map((_, i) => (
-                    <Skeleton key={i} className='h-10 w-full' />
+                    <Skeleton
+                      key={i}
+                      className='h-10 w-full'
+                    />
                   ))}
                 </div>
               ) : woRecentQuery.isError ? (
@@ -446,9 +452,7 @@ function StatTile({
       <CardContent className='pt-4'>
         <div className='flex items-start justify-between gap-2'>
           <div>
-            <p className='text-xs font-medium text-muted-foreground'>
-              {label}
-            </p>
+            <p className='text-xs font-medium text-muted-foreground'>{label}</p>
             {loading ? (
               <Skeleton className='mt-2 h-8 w-16' />
             ) : (
