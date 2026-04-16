@@ -2,14 +2,14 @@
 import React, { useEffect, useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import DialogWindow from "@/components/DialogWindow";
+import DialogWindow from "@/components/shared/dialog-window";
 import { Form } from "@/components/ui/form";
-import CustomButton from "@/components/CustomButton";
+import CustomButton from "@/components/shared/btn";
 import { trpc } from "@/lib/trpc";
-import CustomForm from "@/components/custom-form-input/Form";
+import CustomForm from "@/components/shared/form";
 import toast from "react-hot-toast";
 import { useRouter, useSearchParams } from "next/navigation";
-import Input from "@/components/custom-form-input/Input";
+import Input from "@/components/shared/input";
 import {
   Building2,
   MapPin,

@@ -2,7 +2,7 @@
 import { PageWrapper } from "@/components/wrapper/page-wrapper";
 import React, { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
-import CustomButton from "@/components/CustomButton";
+import CustomButton from "@/components/shared/btn";
 import WorkOrderTable from "./_components/WorkOrderTable";
 import { trpc } from "@/lib/trpc";
 import PageLoading from "@/components/loading/PageLoading";

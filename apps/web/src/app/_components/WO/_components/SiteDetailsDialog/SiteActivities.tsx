@@ -15,7 +15,7 @@ import {
   BarChart3,
   Rows3,
 } from "lucide-react";
-import DeferredFilePicker from "@/components/DeferredFilePicker";
+import DeferredFilePicker from "@/components/shared/deferred-file-picker";
 import { useSharePointUpload } from "@/hooks/useSharePointUpload";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -28,7 +28,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import CustomButton from "@/components/CustomButton";
+import CustomButton from "@/components/shared/btn";
 
 type DocType =
   | "sub_wo"

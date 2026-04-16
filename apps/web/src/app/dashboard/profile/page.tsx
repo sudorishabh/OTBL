@@ -11,8 +11,8 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Form } from "@/components/ui/form";
-import Input from "@/components/custom-form-input/Input";
-import CustomButton from "@/components/CustomButton";
+import Input from "@/components/shared/input";
+import CustomButton from "@/components/shared/btn";
 import { Skeleton } from "@/components/ui/skeleton";
 import { trpc } from "@/lib/trpc";
 import { useApiError } from "@/hooks/useApiError";
@@ -195,7 +195,9 @@ export default function ProfilePage() {
                     Role
                   </dt>
                   <dd className='mt-1'>
-                    <Badge variant='outline' className='capitalize'>
+                    <Badge
+                      variant='outline'
+                      className='capitalize'>
                       {profile.role}
                     </Badge>
                   </dd>

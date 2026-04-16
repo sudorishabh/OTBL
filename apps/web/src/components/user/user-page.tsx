@@ -1,17 +1,17 @@
 "use client";
 import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import UserSearchNFilter from "./UserSearchNFilter";
+import UserSearchNFilter from "./User-search-filter";
 import { useHandleParams } from "@/hooks/useHandleParams";
 import ScrollToTop from "@/app/_components/ScrollToTop";
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
-import UserPageSkeleton from "./skeleton/UserPageSkeleton";
+import UserTabSkeleton from "../skeleton/user/user-tab-skeleton";
 
-const UserTable = dynamic(() => import("./UserTable"));
-const CategorizedUsers = dynamic(() => import("./CategorizedUsers"));
+const UserTable = dynamic(() => import("./user-table"));
+const CategorizedUsers = dynamic(() => import("./categorized-users"));
 const CreateUpdateUserDialog = dynamic(
-  () => import("./CreateUpdateUserDialog"),
+  () => import("./create-update-user-dialog"),
 );
 
 const UserPage = () => {
@@ -40,7 +40,7 @@ const UserPage = () => {
           </TabsList>
         </div>
 
-        <Suspense fallback={<UserPageSkeleton />}>
+        <Suspense fallback={<UserTabSkeleton />}>
           <TabsContent value='all'>
             <UserTable />
           </TabsContent>

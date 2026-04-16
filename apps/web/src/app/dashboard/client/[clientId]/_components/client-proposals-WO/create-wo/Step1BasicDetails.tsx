@@ -6,9 +6,9 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import Input from "@/components/custom-form-input/Input";
-import CustomButton from "@/components/CustomButton";
-import DeferredFilePicker from "@/components/DeferredFilePicker";
+import Input from "@/components/shared/input";
+import CustomButton from "@/components/shared/btn";
+import DeferredFilePicker from "@/components/shared/deferred-file-picker";
 import { constants } from "@pkg/utils";
 import { useFormContext } from "react-hook-form";
 

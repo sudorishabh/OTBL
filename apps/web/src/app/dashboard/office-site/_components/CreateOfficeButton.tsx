@@ -1,5 +1,5 @@
 "use client";
-import CustomButton from "@/components/CustomButton";
+import CustomButton from "@/components/shared/btn";
 import useHandleParams from "@/hooks/useHandleParams";
 import { Plus } from "lucide-react";
 import React from "react";

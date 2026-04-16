@@ -1,6 +1,6 @@
 "use client";
-import CustomButton from "@/components/CustomButton";
-import DialogWindow from "@/components/DialogWindow";
+import CustomButton from "@/components/shared/btn";
+import DialogWindow from "@/components/shared/dialog-window";
 import { trpc } from "@/lib/trpc";
 import { capitalFirstLetter } from "@pkg/utils";
 import { useHandleParams } from "@/hooks/useHandleParams";

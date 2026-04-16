@@ -2,11 +2,11 @@
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import DialogWindow from "@/components/DialogWindow";
+import DialogWindow from "@/components/shared/dialog-window";
 import { Form } from "@/components/ui/form";
-import Input from "@/components/custom-form-input/Input";
-import CustomButton from "@/components/CustomButton";
-import CustomForm from "@/components/custom-form-input/Form";
+import Input from "@/components/shared/input";
+import CustomButton from "@/components/shared/btn";
+import CustomForm from "@/components/shared/form";
 import { Button } from "@/components/ui/button";
 import {
   Plus,

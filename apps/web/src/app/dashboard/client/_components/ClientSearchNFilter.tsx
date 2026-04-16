@@ -1,5 +1,5 @@
-import CustomButton from "@/components/CustomButton";
-import Input from "@/components/custom-form-input/Input";
+import Btn from "@/components/shared/btn";
+import Input from "@/components/shared/input";
 import { useClientManagementContext } from "@/contexts/ClientManagementContext";
 import { Search, X, UserPlus } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -115,7 +115,7 @@ const ClientSearchNFilter = ({
 
         {/* Reset Button */}
         {hasActiveFilters && (
-          <CustomButton
+          <Btn
             text='Reset'
             onClick={resetFilters}
             variant='outline'
@@ -126,7 +126,7 @@ const ClientSearchNFilter = ({
 
         {/* Add Contact Button - Only for Contacts Tab */}
         {!isClientsTab && (
-          <CustomButton
+          <Btn
             text='Add Contact'
             onClick={handleAddContact}
             variant='primary'

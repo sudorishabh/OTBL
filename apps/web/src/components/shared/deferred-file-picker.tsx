@@ -2,8 +2,8 @@
 
 import React, { useRef, useCallback } from "react";
 import { Upload, X, FileText, CheckCircle, Loader2 } from "lucide-react";
-import { Button } from "./ui/button";
-import { Progress } from "./ui/progress";
+import { Button } from "../ui/button";
+import { Progress } from "../ui/progress";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 

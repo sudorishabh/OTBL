@@ -1,6 +1,6 @@
 "use client";
 
-import CustomButton from "@/components/CustomButton";
+import CustomButton from "@/components/shared/btn";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { LogOut } from "lucide-react";
 

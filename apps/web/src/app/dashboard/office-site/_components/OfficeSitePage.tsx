@@ -1,14 +1,14 @@
 "use client";
 import { Building2, Search, X } from "lucide-react";
-import NoFetchData from "@/components/NoFetchData";
+import NoFetchData from "@/components/shared/no-fetch-data";
 import { trpc } from "@/lib/trpc";
 import { useOfficeManagementContext } from "@/contexts/OfficeManagementContext";
-import Input from "@/components/custom-form-input/Input";
-import CustomButton from "@/components/CustomButton";
+import Input from "@/components/shared/input";
+import CustomButton from "@/components/shared/btn";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";
 import OfficeClientPageSkeleton from "./skeleton/OfficeClientPageSkeleton";
-import Error from "@/components/Error";
+import Error from "@/components/shared/error";
 
 const CreateOfficeDialog = dynamic(
   () => import("./office-site-dialogs/CreateOfficeDialog"),

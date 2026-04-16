@@ -1,4 +1,4 @@
-import CustomButton from "@/components/CustomButton";
+import CustomButton from "@/components/shared/btn";
 import { Input } from "@/components/ui/input";
 import {
   Select,

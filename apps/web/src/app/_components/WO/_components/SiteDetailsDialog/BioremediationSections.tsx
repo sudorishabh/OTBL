@@ -33,7 +33,7 @@ import {
   Droplet,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import DeferredFilePicker from "@/components/DeferredFilePicker";
+import DeferredFilePicker from "@/components/shared/deferred-file-picker";
 import { useSharePointUpload } from "@/hooks/useSharePointUpload";
 import { format } from "date-fns";
 

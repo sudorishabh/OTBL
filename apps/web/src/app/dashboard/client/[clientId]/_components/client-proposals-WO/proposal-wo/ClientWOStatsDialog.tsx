@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import DialogWindow from "@/components/DialogWindow";
+import DialogWindow from "@/components/shared/dialog-window";
 import useHandleParams from "@/hooks/useHandleParams";
 import { trpc } from "@/lib/trpc";
 import { Loader2, Briefcase, TrendingUp, AlertCircle } from "lucide-react";

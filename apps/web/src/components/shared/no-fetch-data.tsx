@@ -1,5 +1,5 @@
 import React from "react";
-import CustomIcon from "./CustomIcon";
+import CustomIcon from "./icon";
 
 interface Props {
   Icon: React.ElementType;

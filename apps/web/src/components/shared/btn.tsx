@@ -1,5 +1,5 @@
 import React from "react";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { cn } from "@/lib/utils";
 import {
   ArrowDownRight,
@@ -26,7 +26,7 @@ interface Props {
   loading?: boolean;
 }
 
-const CustomButton = ({
+const Btn = ({
   Icon,
   text,
   className,
@@ -110,4 +110,4 @@ const CustomButton = ({
   );
 };
 
-export default CustomButton;
+export default Btn;

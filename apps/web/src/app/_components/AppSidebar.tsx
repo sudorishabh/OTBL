@@ -76,11 +76,6 @@ const footerLinks = [
     icon: User,
   },
   {
-    title: "Settings",
-    link: "/settings",
-    icon: Settings,
-  },
-  {
     title: "Logout",
     icon: LogOut,
   },
@@ -106,7 +101,7 @@ const SidebarMenuList = ({ item, isActive }: SidebarMenuListProps) => {
           "h-7 pl-3 ",
           isActive
             ? "bg-emerald-600! text-gray-100! shadow"
-            : "text-gray-300! hover:bg-emerald-600/65 focus:bg-transparent!"
+            : "text-gray-300! hover:bg-emerald-600/65 focus:bg-transparent!",
         )}>
         <Link
           href={`/dashboard${item.link}`}

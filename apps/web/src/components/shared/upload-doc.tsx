@@ -2,8 +2,8 @@
 
 import React, { useRef } from "react";
 import { Upload, X, FileText, CheckCircle } from "lucide-react";
-import { Button } from "./ui/button";
-import { Progress } from "./ui/progress";
+import { Button } from "../ui/button";
+import { Progress } from "../ui/progress";
 import { cn } from "@/lib/utils";
 import { useUploadDocument } from "@/hooks/useUploadDocument";
 
@@ -13,7 +13,7 @@ interface UploadedFile {
   webUrl: string;
 }
 
-interface CustomUploadDocumentProps {
+interface UploadDocProps {
   onUploadComplete: (filePath: string) => void;
   onFileChange?: (file: UploadedFile | null) => void;
   onUploadingChange?: (isUploading: boolean) => void;
@@ -24,7 +24,7 @@ interface CustomUploadDocumentProps {
   className?: string;
 }
 
-const CustomUploadDocument: React.FC<CustomUploadDocumentProps> = ({
+const UploadDoc: React.FC<UploadDocProps> = ({
   onUploadComplete,
   onFileChange,
   onUploadingChange,
@@ -187,4 +187,4 @@ const CustomUploadDocument: React.FC<CustomUploadDocumentProps> = ({
   );
 };
 
-export default CustomUploadDocument;
+export default UploadDoc;

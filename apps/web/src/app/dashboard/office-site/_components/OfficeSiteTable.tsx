@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
 import { capitalFirstLetter } from "@pkg/utils";
 import ClientSitesSkeleton from "./skeleton/ClientSitesSkeleton";
-import Error from "@/components/Error";
+import Error from "@/components/shared/error";
 
 interface SiteUser {
   id: number;

@@ -1,17 +1,10 @@
 import React from "react";
-import {
-  MapPin,
-  Calendar,
-  ArrowRight,
-  PhoneIcon,
-  MailIcon,
-  FileText,
-} from "lucide-react";
+import { MapPin, Calendar, PhoneIcon, MailIcon, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { useRouter } from "next/navigation";
 import { capitalFirstLetter } from "@pkg/utils";
 import { Badge } from "@/components/ui/badge";
-import CustomButton from "@/components/CustomButton";
+import Btn from "@/components/shared/btn";
 
 interface ClientContact {
   id: number | string;
@@ -200,7 +193,7 @@ const ClientCard: React.FC<ClientCardProps> = ({
         </div>
 
         <div className='shrink-0'>
-          <CustomButton
+          <Btn
             variant='arrow'
             arrowType='right'
             className='group-hover:bg-emerald-600 border-0 transition-all duration-300 group-hover:scale-110'

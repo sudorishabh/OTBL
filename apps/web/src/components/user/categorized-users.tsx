@@ -1,7 +1,7 @@
 import React from "react";
 import { trpc } from "@/lib/trpc";
 import { capitalFirstLetter, constants } from "@pkg/utils";
-import DialogWindow from "@/components/DialogWindow";
+import DialogWindow from "@/components/shared/dialog-window";
 import useHandleParams from "@/hooks/useHandleParams";
 import { useUserManagementContext } from "@/contexts/UserManagementContext";
 import {
@@ -20,11 +20,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { capitalizeEachWord } from "@pkg/utils";
-import UserTable from "./UserTable";
-import CustomButton from "@/components/CustomButton";
-import UserSearchNFilter from "./UserSearchNFilter";
-import StatusIndicator from "../../../../components/StatusIndicator";
-import UserPageSkeleton from "./skeleton/UserPageSkeleton";
+import UserTable from "./user-table";
+import CustomButton from "@/components/shared/btn";
+import UserSearchNFilter from "./User-search-filter";
+import StatusIndicator from "../shared/status-indicator";
+import UserPageSkeleton from "../skeleton/user/user-tab-skeleton";
 
 const { ROLES } = constants;
 

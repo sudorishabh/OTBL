@@ -7,7 +7,7 @@ interface Props {
   className?: string;
 }
 
-const CustomIcon = ({ Insert, size = 24, className }: Props) => {
+const Icon = ({ Insert, size = 24, className }: Props) => {
   return (
     <Insert
       className={cn("text-teal-800", className)}
@@ -16,4 +16,4 @@ const CustomIcon = ({ Insert, size = 24, className }: Props) => {
   );
 };
 
-export default CustomIcon;
+export default Icon;

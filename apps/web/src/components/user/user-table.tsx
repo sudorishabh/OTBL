@@ -30,12 +30,12 @@ import { useUserManagementContext } from "@/contexts/UserManagementContext";
 import { trpc } from "@/lib/trpc";
 import { capitalFirstLetter, capitalizeEachWord } from "@pkg/utils";
 import useHandleParams from "@/hooks/useHandleParams";
-import NoFetchData from "@/components/NoFetchData";
-import StatusIndicator from "../../../../components/StatusIndicator";
+import NoFetchData from "@/components/shared/no-fetch-data";
+import StatusIndicator from "../shared/status-indicator";
 import { userTypes } from "@pkg/schema";
-import UserPageSkeleton from "./skeleton/UserPageSkeleton";
+import UserPageSkeleton from "../skeleton/user/user-tab-skeleton";
 import { toast } from "react-hot-toast";
-import Error from "@/components/Error";
+import Error from "@/components/shared/error";
 
 interface Pagination {
   page: number;
@@ -227,11 +227,11 @@ const UserTable = () => {
             <TableHead className='text-xs'>Contact</TableHead>
             <TableHead className='text-xs'>Role</TableHead>
             <TableHead className='text-xs flex gap-1.5 items-center'>
-              <span className='text-xs font-medium bg-cyan-800/15 px-1.5 text-gray-800 py-0.5 rounded-sm'>
+              <span className='text-xs font-medium bg-cyan-800/15 px-1.5 text-cyan-900 py-0.5 rounded-sm'>
                 Offices
               </span>
               <span>/</span>
-              <span className='text-xs font-medium bg-orange-800/15 px-1.5 text-gray-800 py-0.5 rounded-sm'>
+              <span className='text-xs font-medium bg-orange-800/15 px-1.5 text-orange-900 py-0.5 rounded-sm'>
                 Sites
               </span>
             </TableHead>
@@ -272,7 +272,7 @@ const UserTable = () => {
                         <Badge
                           key={`${uo.type}-${uo.id}`}
                           variant='outline'
-                          className={`text-xs px-1.5 ${uo.type === "office" ? "bg-cyan-800/15" : "bg-orange-800/15"}`}>
+                          className={`text-xs px-1.5 ${uo.type === "office" ? "bg-cyan-800/15 text-cyan-900" : "bg-orange-800/15 text-orange-900"}`}>
                           {capitalFirstLetter(uo.name) || "Unknown Office"}
                         </Badge>
                       ))}

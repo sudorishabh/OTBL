@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import DialogWindow from "@/components/DialogWindow";
+import DialogWindow from "@/components/shared/dialog-window";
 import { trpc } from "@/lib/trpc";
 import { capitalFirstLetter } from "@pkg/utils";
 import useHandleParams from "@/hooks/useHandleParams";

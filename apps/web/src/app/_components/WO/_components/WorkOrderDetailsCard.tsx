@@ -14,7 +14,7 @@ import {
   MapPin,
 } from "lucide-react";
 import { capitalFirstLetter, constants } from "@pkg/utils";
-import CustomButton from "@/components/CustomButton";
+import CustomButton from "@/components/shared/btn";
 import Link from "next/link";
 import WorkOrderStatCard from "./WorkOrderStatCard";
 
@@ -47,7 +47,6 @@ interface Props {
 }
 
 const WorkOrderDetailsCard = ({ workOrder, stats }: Props) => {
-
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   const getStatusColor = (status: string) => {

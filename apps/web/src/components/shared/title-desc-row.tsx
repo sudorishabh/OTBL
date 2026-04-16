@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import React from "react";
-import CustomIcon from "./CustomIcon";
+import CustomIcon from "./icon";
 import { Calendar, Clock, Edit, MoreVertical } from "lucide-react";
 import { format } from "date-fns";
 import { capitalFirstLetter } from "@pkg/utils";
@@ -36,7 +36,7 @@ interface Props {
         | "oil_zapper_activity"
         | "other"
         | null;
-    } | null
+    } | null,
   ) => void;
   isDialog: boolean;
   setIsDialog: (isDialog: boolean) => void;
@@ -63,7 +63,7 @@ const TitleDescRow = ({
     <div
       className={cn(
         "group relative bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 ease-in-out",
-        "hover:border-gray-300 focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-opacity-20"
+        "hover:border-gray-300 focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-opacity-20",
       )}
       role='listitem'
       tabIndex={0}
@@ -98,8 +98,8 @@ const TitleDescRow = ({
                     {rowDetails.activity_type === "insitu"
                       ? "In-Situ"
                       : rowDetails.activity_type === "exsitu"
-                      ? "Ex-Situ"
-                      : "General"}
+                        ? "Ex-Situ"
+                        : "General"}
                   </span>
                 </div>
               )}
@@ -109,7 +109,7 @@ const TitleDescRow = ({
                     {rowDetails.activity_sub_type
                       .split("_")
                       .map(
-                        (word) => word.charAt(0).toUpperCase() + word.slice(1)
+                        (word) => word.charAt(0).toUpperCase() + word.slice(1),
                       )
                       .join(" ")}
                   </span>
@@ -141,7 +141,7 @@ const TitleDescRow = ({
                 "bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800",
                 "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
                 "transition-all duration-200 ease-in-out",
-                "group-hover:bg-blue-100 group-hover:text-blue-800"
+                "group-hover:bg-blue-100 group-hover:text-blue-800",
               )}
               onClick={handleEditClick}
               aria-label={`Edit sdfsfsd: ${rowDetails.name}`}
@@ -158,7 +158,7 @@ const TitleDescRow = ({
               className={cn(
                 "p-2 text-gray-400 hover:text-gray-600 rounded-lg",
                 "hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2",
-                "transition-all duration-200 ease-in-out"
+                "transition-all duration-200 ease-in-out",
               )}
               aria-label='More options'
               type='button'>

@@ -16,7 +16,7 @@ import {
   ChevronRight,
   TrendingUp,
 } from "lucide-react";
-import DialogWindow from "@/components/DialogWindow";
+import DialogWindow from "@/components/shared/dialog-window";
 import useHandleParams from "@/hooks/useHandleParams";
 
 interface ScheduleOfRate {

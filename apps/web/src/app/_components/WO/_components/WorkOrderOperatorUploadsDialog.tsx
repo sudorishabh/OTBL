@@ -1,6 +1,6 @@
 "use client";
 
-import DialogWindow from "@/components/DialogWindow";
+import DialogWindow from "@/components/shared/dialog-window";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { trpc, type RouterOutputs } from "@/lib/trpc";
 import { format } from "date-fns";
@@ -99,7 +99,10 @@ export function WorkOrderOperatorUploadsDialog({
                       <span className='text-xs text-gray-400'>·</span>
                       <span className='text-xs text-gray-500'>
                         {row.created_at
-                          ? format(new Date(row.created_at), "dd MMM yyyy HH:mm")
+                          ? format(
+                              new Date(row.created_at),
+                              "dd MMM yyyy HH:mm",
+                            )
                           : ""}
                       </span>
                     </div>

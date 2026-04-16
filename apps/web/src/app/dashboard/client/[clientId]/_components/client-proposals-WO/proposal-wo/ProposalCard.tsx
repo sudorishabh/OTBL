@@ -9,7 +9,7 @@ import {
 import React from "react";
 import { format } from "date-fns";
 import { capitalFirstLetter } from "@pkg/utils";
-import CustomButton from "@/components/CustomButton";
+import CustomButton from "@/components/shared/btn";
 import { type proposalTypes } from "@pkg/schema";
 import useHandleParams from "@/hooks/useHandleParams";
 

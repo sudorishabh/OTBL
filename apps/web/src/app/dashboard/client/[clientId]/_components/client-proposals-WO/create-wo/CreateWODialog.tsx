@@ -2,10 +2,10 @@
 import React, { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import DialogWindow from "@/components/DialogWindow";
+import DialogWindow from "@/components/shared/dialog-window";
 import { Form } from "@/components/ui/form";
 import { trpc } from "@/lib/trpc";
-import CustomForm from "@/components/custom-form-input/Form";
+import CustomForm from "@/components/shared/form";
 import toast from "react-hot-toast";
 import { useHandleParams } from "@/hooks/useHandleParams";
 import { useSharePointUpload } from "@/hooks/useSharePointUpload";

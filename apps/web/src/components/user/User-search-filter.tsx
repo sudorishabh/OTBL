@@ -1,12 +1,12 @@
-import CustomButton from "@/components/CustomButton";
-import Input from "@/components/custom-form-input/Input";
+import CustomButton from "@/components/shared/btn";
+import Input from "@/components/shared/input";
 import { useUserManagementContext } from "@/contexts/UserManagementContext";
 import { useDebounce } from "@/hooks/useDebounce";
 import useHandleParams from "@/hooks/useHandleParams";
 import { Search, X } from "lucide-react";
 import React, { useState, useEffect, useRef } from "react";
 
-const UserSearchNFilter = () => {
+const UserSearchFilter = () => {
   const { searchQuery, setSearchQuery, filters, setFilters, resetFilters } =
     useUserManagementContext();
   const { getParam } = useHandleParams();
@@ -109,4 +109,4 @@ const UserSearchNFilter = () => {
   );
 };
 
-export default UserSearchNFilter;
+export default UserSearchFilter;

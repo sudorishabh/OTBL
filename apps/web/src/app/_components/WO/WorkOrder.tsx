@@ -11,12 +11,12 @@ import CreateWorkOrderSiteDialog from "./_components/CreateWOSite/CreateWorkOrde
 import SiteDetailDialog from "./_components/SiteDetailsDialog/SiteDetailsDialog";
 import { WorkOrderOperatorUploadsDialog } from "./_components/WorkOrderOperatorUploadsDialog";
 import useHandleParams from "@/hooks/useHandleParams";
-import CustomButton from "@/components/CustomButton";
+import CustomButton from "@/components/shared/btn";
 import LoadMoreBtn from "@/components/loading/LoadMoreBtn";
 import WorkOrderDetailsSkeleton from "./_components/skeleton/WorkOrderDetailsSkeleton";
 import WorkOrderSitesSkeleton from "./_components/skeleton/WorkOrderSitesSkeleton";
-import Error from "@/components/Error";
-import NoFetchData from "@/components/NoFetchData";
+import Error from "@/components/shared/error";
+import NoFetchData from "@/components/shared/no-fetch-data";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { LayoutGrid, List } from "lucide-react";
 import SitesTable from "./_components/work-order-sites/WOSitesTable";

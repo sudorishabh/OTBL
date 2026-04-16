@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 
 import { useHandleParams } from "@/hooks/useHandleParams";
-import CustomButton from "@/components/CustomButton";
+import CustomButton from "@/components/shared/btn";
 
 type WorkOrder = {
   id: number;
@@ -75,11 +75,19 @@ const getStatusConfig = (status: string) => {
 const getProcessIcon = (type: string) => {
   switch (type) {
     case "bioremediation":
-      return { icon: Beaker, label: "Bioremediation", color: "text-emerald-600" };
+      return {
+        icon: Beaker,
+        label: "Bioremediation",
+        color: "text-emerald-600",
+      };
     case "restoration":
       return { icon: Shovel, label: "Restoration", color: "text-green-600" };
     case "bioremediation_restoration":
-      return { icon: AlignEndHorizontal, label: "Bio + Restoration", color: "text-emerald-600" };
+      return {
+        icon: AlignEndHorizontal,
+        label: "Bio + Restoration",
+        color: "text-emerald-600",
+      };
     default:
       return { icon: FileCode, label: type, color: "text-gray-600" };
   }
@@ -105,8 +113,8 @@ const MiniWOCard = ({ wo }: { wo: WorkOrder }) => {
   return (
     <div
       onClick={() => router.push(`/dashboard/client/workorder/${wo.id}`)}
-      className="group relative rounded-lg border border-gray-100 bg-white p-3 cursor-pointer
-        hover:border-emerald-200 hover:shadow-md transition-all duration-200 overflow-hidden">
+      className='group relative rounded-lg border border-gray-100 bg-white p-3 cursor-pointer
+        hover:border-emerald-200 hover:shadow-md transition-all duration-200 overflow-hidden'>
       {/* Left accent */}
       <div
         className={`absolute left-0 top-0 bottom-0 w-[3px] rounded-l-lg ${
@@ -119,24 +127,24 @@ const MiniWOCard = ({ wo }: { wo: WorkOrder }) => {
       />
 
       {/* Header: code + status */}
-      <div className="flex items-center justify-between mb-2">
-        <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-mono font-medium ring-1 ring-emerald-200">
+      <div className='flex items-center justify-between mb-2'>
+        <span className='inline-flex items-center px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-mono font-medium ring-1 ring-emerald-200'>
           {wo.code}
         </span>
         <span
           className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-medium ${statusConfig.bg} ${statusConfig.text} ring-1 ${statusConfig.ring}`}>
-          <StatusIcon className="w-2.5 h-2.5" />
+          <StatusIcon className='w-2.5 h-2.5' />
           {capitalFirstLetter(wo.status)}
         </span>
       </div>
 
       {/* Title */}
-      <h4 className="text-xs font-semibold text-gray-800 leading-snug line-clamp-2 mb-2 group-hover:text-emerald-700 transition-colors">
+      <h4 className='text-xs font-semibold text-gray-800 leading-snug line-clamp-2 mb-2 group-hover:text-emerald-700 transition-colors'>
         {wo.title ? capitalFirstLetter(wo.title) : "Untitled Work Order"}
       </h4>
 
       {/* Process type */}
-      <div className="flex items-center gap-1.5 mb-2">
+      <div className='flex items-center gap-1.5 mb-2'>
         <ProcessIcon className={`w-3 h-3 ${processConfig.color}`} />
         <span className={`text-[10px] font-medium ${processConfig.color}`}>
           {processConfig.label}
@@ -144,22 +152,22 @@ const MiniWOCard = ({ wo }: { wo: WorkOrder }) => {
       </div>
 
       {/* Date row */}
-      <div className="flex items-center gap-3 text-[10px] text-gray-500">
-        <div className="flex items-center gap-1">
-          <Clock className="w-3 h-3" />
+      <div className='flex items-center gap-3 text-[10px] text-gray-500'>
+        <div className='flex items-center gap-1'>
+          <Clock className='w-3 h-3' />
           {formatDate(wo.start_date)}
         </div>
-        <span className="text-gray-300">→</span>
-        <div className="flex items-center gap-1">
-          <Calendar className="w-3 h-3" />
+        <span className='text-gray-300'>→</span>
+        <div className='flex items-center gap-1'>
+          <Calendar className='w-3 h-3' />
           {formatDate(wo.end_date)}
         </div>
       </div>
 
       {/* Hover arrow */}
-      <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-        <div className="h-6 w-6 rounded-full bg-emerald-50 flex items-center justify-center">
-          <ArrowRight className="w-3 h-3 text-emerald-600" />
+      <div className='absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity'>
+        <div className='h-6 w-6 rounded-full bg-emerald-50 flex items-center justify-center'>
+          <ArrowRight className='w-3 h-3 text-emerald-600' />
         </div>
       </div>
     </div>
@@ -180,7 +188,13 @@ const RightSidePanel = ({ proposals }: Props) => {
   const ongoingWOs = allWorkOrders.filter((wo) => wo.status === "pending");
   const completedWOs = allWorkOrders.filter((wo) => wo.status === "completed");
 
-  const tabs: { key: TabKey; label: string; count: number; icon: React.ElementType; color: string }[] = [
+  const tabs: {
+    key: TabKey;
+    label: string;
+    count: number;
+    icon: React.ElementType;
+    color: string;
+  }[] = [
     {
       key: "ongoing",
       label: "Ongoing",
@@ -200,17 +214,22 @@ const RightSidePanel = ({ proposals }: Props) => {
   const activeWOs = activeTab === "ongoing" ? ongoingWOs : completedWOs;
 
   return (
-    <div className="w-4/12 bg-gradient-to-br from-white to-gray-50 shadow-sm py-2 px-0.5 rounded-xl border flex flex-col">
+    <div className='w-4/12 bg-gradient-to-br from-white to-gray-50 shadow-sm py-2 px-0.5 rounded-xl border flex flex-col'>
       {/* ─── Header ─────────────────────────────────────────────── */}
-      <div className="px-4 py-2">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
-            <Briefcase className="h-4 w-4 text-gray-600" />
-            <h3 className="text-base font-semibold text-gray-900">
+      <div className='px-4 py-2'>
+        <div className='flex items-center justify-between mb-3'>
+          <div className='flex items-center gap-2'>
+            <Briefcase className='h-4 w-4 text-gray-600' />
+            <h3 className='text-base font-semibold text-gray-900'>
               Work Orders
             </h3>
           </div>
-          <CustomButton   type="button" variant="arrow" arrowType="upright" onClick={() => setParam("dialog", "client-wo-stats")}/>
+          <CustomButton
+            type='button'
+            variant='arrow'
+            arrowType='upright'
+            onClick={() => setParam("dialog", "client-wo-stats")}
+          />
           {/* <button 
             title="View spending stats"
             onClick={() => setParam("dialog", "client-wo-stats")}
@@ -221,7 +240,7 @@ const RightSidePanel = ({ proposals }: Props) => {
         </div>
 
         {/* ─── Tab Toggle ───────────────────────────────────────── */}
-        <div className="flex rounded-lg bg-gray-100 p-0.5">
+        <div className='flex rounded-lg bg-gray-100 p-0.5'>
           {tabs.map((tab) => {
             const isActive = activeTab === tab.key;
             const TabIcon = tab.icon;
@@ -266,28 +285,31 @@ const RightSidePanel = ({ proposals }: Props) => {
       </div>
 
       {/* ─── Content ────────────────────────────────────────────── */}
-      <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-4 pt-2">
+      <div className='flex-1 min-h-0 overflow-y-auto px-4 pb-4 pt-2'>
         {activeWOs.length > 0 ? (
-          <div className="space-y-3">
+          <div className='space-y-3'>
             {activeWOs.map((wo) => (
-              <MiniWOCard key={wo.id} wo={wo} />
+              <MiniWOCard
+                key={wo.id}
+                wo={wo}
+              />
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center text-center py-10">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-gray-100 to-gray-50 text-gray-400 mb-4 shadow-sm">
+          <div className='flex flex-col items-center justify-center text-center py-10'>
+            <div className='p-3 rounded-xl bg-gradient-to-br from-gray-100 to-gray-50 text-gray-400 mb-4 shadow-sm'>
               {activeTab === "ongoing" ? (
-                <Clock className="w-6 h-6" />
+                <Clock className='w-6 h-6' />
               ) : (
-                <CheckCircle2 className="w-6 h-6" />
+                <CheckCircle2 className='w-6 h-6' />
               )}
             </div>
-            <p className="text-sm font-medium text-gray-600 mb-1">
+            <p className='text-sm font-medium text-gray-600 mb-1'>
               {activeTab === "ongoing"
                 ? "No ongoing work orders"
                 : "No completed work orders"}
             </p>
-            <p className="text-xs text-gray-400 max-w-[180px]">
+            <p className='text-xs text-gray-400 max-w-[180px]'>
               {activeTab === "ongoing"
                 ? "All work orders are either completed or not yet created."
                 : "Work orders will appear here once they are marked as completed."}
@@ -298,19 +320,19 @@ const RightSidePanel = ({ proposals }: Props) => {
 
       {/* ─── Summary Footer ─────────────────────────────────────── */}
       {allWorkOrders.length > 0 && (
-        <div className="shrink-0 mx-4 mb-3 px-3 py-2 rounded-lg bg-gray-50 border border-gray-100">
-          <div className="flex items-center justify-between text-[10px] text-gray-500">
-            <div className="flex items-center gap-3">
-              <span className="flex items-center gap-1">
-                <span className="inline-block w-2 h-2 rounded-full bg-amber-400" />
+        <div className='shrink-0 mx-4 mb-3 px-3 py-2 rounded-lg bg-gray-50 border border-gray-100'>
+          <div className='flex items-center justify-between text-[10px] text-gray-500'>
+            <div className='flex items-center gap-3'>
+              <span className='flex items-center gap-1'>
+                <span className='inline-block w-2 h-2 rounded-full bg-amber-400' />
                 {ongoingWOs.length} Ongoing
               </span>
-              <span className="flex items-center gap-1">
-                <span className="inline-block w-2 h-2 rounded-full bg-emerald-400" />
+              <span className='flex items-center gap-1'>
+                <span className='inline-block w-2 h-2 rounded-full bg-emerald-400' />
                 {completedWOs.length} Done
               </span>
             </div>
-            <span className="font-medium text-gray-600">
+            <span className='font-medium text-gray-600'>
               {allWorkOrders.length} Total
             </span>
           </div>

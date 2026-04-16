@@ -19,10 +19,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal } from "lucide-react";
-import NoFetchData from "@/components/NoFetchData";
+import NoFetchData from "@/components/shared/no-fetch-data";
 import toast from "react-hot-toast";
 import ClientPageSkeleton from "./skeleton/ClientPageSkeleton";
-import Error from "@/components/Error";
+import Error from "@/components/shared/error";
 import { useApiError } from "@/hooks/useApiError";
 
 interface Props {

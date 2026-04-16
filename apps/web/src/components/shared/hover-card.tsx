@@ -1,7 +1,7 @@
 import React from "react";
 
-const CustomHoverCard = () => {
+const HoverCard = () => {
   return <div>CustomHoverCard</div>;
 };
 
-export default CustomHoverCard;
+export default HoverCard;

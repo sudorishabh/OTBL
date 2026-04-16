@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import DialogWindow from "@/components/DialogWindow";
+import DialogWindow from "@/components/shared/dialog-window";
 import {
   Form,
   FormControl,
@@ -12,7 +12,7 @@ import { trpc } from "@/lib/trpc";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { workOrderSchemas } from "@pkg/schema";
 import { capitalFirstLetter, constants } from "@pkg/utils";
-import Input from "@/components/custom-form-input/Input";
+import Input from "@/components/shared/input";
 import { format } from "date-fns";
 
 const { WO_PROCESS, allActivityOptions } = constants;
@@ -35,7 +35,7 @@ import { z } from "zod";
 import { Checkbox } from "@/components/ui/checkbox";
 import toast from "react-hot-toast";
 import useHandleParams from "@/hooks/useHandleParams";
-import CustomButton from "@/components/CustomButton";
+import CustomButton from "@/components/shared/btn";
 import WOSiteCreationWay from "./WOSiteCreationWay";
 
 interface Props {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import DialogWindow from "@/components/DialogWindow";
+import DialogWindow from "@/components/shared/dialog-window";
 import useHandleParams from "@/hooks/useHandleParams";
 import { trpc } from "@/lib/trpc";
 import Loading from "@/components/loading/Loading";
@@ -20,7 +20,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { capitalizeEachWord } from "@pkg/utils";
-import StatusIndicator from "@/components/StatusIndicator";
+import StatusIndicator from "@/components/shared/status-indicator";
 import { Search } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 

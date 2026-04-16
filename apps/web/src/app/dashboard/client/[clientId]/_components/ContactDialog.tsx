@@ -1,6 +1,6 @@
 import React from "react";
 import { Mail, Phone } from "lucide-react";
-import CustomDialogWindow from "@/components/DialogWindow";
+import CustomDialogWindow from "@/components/shared/dialog-window";
 import { clientTypes } from "@pkg/schema";
 
 interface Props {

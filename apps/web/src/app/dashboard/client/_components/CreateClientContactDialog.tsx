@@ -2,7 +2,7 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import DialogWindow from "@/components/DialogWindow";
+import DialogWindow from "@/components/shared/dialog-window";
 import {
   Form,
   FormControl,
@@ -19,8 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import CustomButton from "@/components/CustomButton";
-import CustomForm from "@/components/custom-form-input/Form";
+import CustomButton from "@/components/shared/btn";
+import CustomForm from "@/components/shared/form";
 import { trpc } from "@/lib/trpc";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useApiError } from "@/hooks/useApiError";

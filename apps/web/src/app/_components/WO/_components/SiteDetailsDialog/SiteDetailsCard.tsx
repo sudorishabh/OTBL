@@ -28,8 +28,8 @@ import { format } from "date-fns";
 import { useState, useCallback } from "react";
 import { useSharePointUpload } from "@/hooks/useSharePointUpload";
 import toast from "react-hot-toast";
-import DeferredFilePicker from "@/components/DeferredFilePicker";
-import CustomButton from "@/components/CustomButton";
+import DeferredFilePicker from "@/components/shared/deferred-file-picker";
+import CustomButton from "@/components/shared/btn";
 
 const InfoCard = ({
   icon: Icon,

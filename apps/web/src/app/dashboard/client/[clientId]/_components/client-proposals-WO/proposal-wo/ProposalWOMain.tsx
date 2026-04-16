@@ -1,7 +1,7 @@
-import CustomButton from "@/components/CustomButton";
+import CustomButton from "@/components/shared/btn";
 import { Check, Clock, FileText, Link2Off, Plus } from "lucide-react";
 import React from "react";
-import NoFetchData from "@/components/NoFetchData";
+import NoFetchData from "@/components/shared/no-fetch-data";
 import CreateProposalDialog from "./CreateProposalDialog";
 import { trpc } from "@/lib/trpc";
 import ProposalCard from "./ProposalCard";

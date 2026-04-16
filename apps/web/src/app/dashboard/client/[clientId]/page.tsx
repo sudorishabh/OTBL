@@ -4,7 +4,7 @@ import { PageWrapper } from "@/components/wrapper/page-wrapper";
 import { PencilLine } from "lucide-react";
 import { capitalFirstLetter } from "@pkg/utils";
 import { useRouter } from "next/navigation";
-import CustomButton from "@/components/CustomButton";
+import CustomButton from "@/components/shared/btn";
 import useHandleParams from "@/hooks/useHandleParams";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";

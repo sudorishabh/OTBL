@@ -1,6 +1,6 @@
 import React from "react";
 import { useRouter } from "next/navigation";
-import CustomButton from "@/components/CustomButton";
+import CustomButton from "@/components/shared/btn";
 import { capitalFirstLetter } from "@pkg/utils";
 import {
   Briefcase,

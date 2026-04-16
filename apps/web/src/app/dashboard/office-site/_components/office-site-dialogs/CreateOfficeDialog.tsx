@@ -1,11 +1,11 @@
-import DialogWindow from "@/components/DialogWindow";
+import DialogWindow from "@/components/shared/dialog-window";
 import React, { useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
 import { trpc } from "@/lib/trpc";
-import CustomButton from "@/components/CustomButton";
-import CustomForm from "@/components/custom-form-input/Form";
+import CustomButton from "@/components/shared/btn";
+import CustomForm from "@/components/shared/form";
 import {
   CheckCircle2,
   Mail,
@@ -19,7 +19,7 @@ import {
   X,
 } from "lucide-react";
 import toast from "react-hot-toast";
-import Input from "@/components/custom-form-input/Input";
+import Input from "@/components/shared/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useApiError } from "@/hooks/useApiError";
 import { cn } from "@/lib/utils";

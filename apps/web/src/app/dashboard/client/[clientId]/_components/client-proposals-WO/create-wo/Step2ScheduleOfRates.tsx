@@ -8,12 +8,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import CustomButton from "@/components/CustomButton";
+import CustomButton from "@/components/shared/btn";
 import { workOrderTypes } from "@pkg/schema";
 import { constants } from "@pkg/utils";
 import { Plus, Trash2 } from "lucide-react";
 import { useFormContext, useFieldArray } from "react-hook-form";
-import Input from "@/components/custom-form-input/Input";
+import Input from "@/components/shared/input";
 
 const {
   WO_ACTIVITIES,

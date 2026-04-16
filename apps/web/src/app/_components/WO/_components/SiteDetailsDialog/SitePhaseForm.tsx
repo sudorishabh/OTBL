@@ -11,8 +11,8 @@ import { z } from "zod";
 import { trpc } from "@/lib/trpc";
 import { Loader2, Plus, Trash2, Save } from "lucide-react";
 import { Form } from "@/components/ui/form";
-import CustomInput from "@/components/custom-form-input/Input";
-import CustomButton from "@/components/CustomButton";
+import CustomInput from "@/components/shared/input";
+import CustomButton from "@/components/shared/btn";
 import toast from "react-hot-toast";
 
 // Schemas mirroring the backend

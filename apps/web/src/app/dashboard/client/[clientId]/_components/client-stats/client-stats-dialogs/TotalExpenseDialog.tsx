@@ -1,4 +1,4 @@
-import DialogWindow from "@/components/DialogWindow";
+import DialogWindow from "@/components/shared/dialog-window";
 import React from "react";
 interface Props {
   open: boolean;

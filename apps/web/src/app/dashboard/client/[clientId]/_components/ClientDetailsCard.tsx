@@ -12,11 +12,11 @@ import {
   IndianRupee,
   LucideIcon,
 } from "lucide-react";
-import CustomButton from "@/components/CustomButton";
+import CustomButton from "@/components/shared/btn";
 import ContactDialog from "./ContactDialog";
 import { capitalFirstLetter } from "@pkg/utils";
 import { trpc } from "@/lib/trpc";
-import Error from "@/components/Error";
+import Error from "@/components/shared/error";
 import ClientInfoSkeleton from "./skeleton/ClientInfoSkeleton";
 import ClientStats from "./client-stats/ClientStats";
 import useHandleParams from "@/hooks/useHandleParams";

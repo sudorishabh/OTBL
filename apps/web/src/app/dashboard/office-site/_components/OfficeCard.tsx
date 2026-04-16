@@ -2,7 +2,7 @@ import { Info, Plus } from "lucide-react";
 import React from "react";
 import OfficeSiteTable from "./OfficeSiteTable";
 import { capitalizeEachWord, capitalFirstLetter } from "@pkg/utils";
-import CustomButton from "@/components/CustomButton";
+import CustomButton from "@/components/shared/btn";
 import useHandleParams from "@/hooks/useHandleParams";
 import dynamic from "next/dynamic";
 import { Suspense } from "react";

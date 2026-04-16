@@ -2,7 +2,7 @@
 import React, { useEffect, useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import DialogWindow from "@/components/DialogWindow";
+import DialogWindow from "@/components/shared/dialog-window";
 import {
   Form,
   FormControl,
@@ -10,13 +10,13 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-import CustomInput from "@/components/custom-form-input/Input";
-import CustomButton from "@/components/CustomButton";
+import CustomInput from "@/components/shared/input";
+import CustomButton from "@/components/shared/btn";
 import { trpc } from "@/lib/trpc";
-import CustomForm from "@/components/custom-form-input/Form";
+import CustomForm from "@/components/shared/form";
 import toast from "react-hot-toast";
 import { useHandleParams } from "@/hooks/useHandleParams";
-import DeferredFilePicker from "@/components/DeferredFilePicker";
+import DeferredFilePicker from "@/components/shared/deferred-file-picker";
 import { useSharePointUpload } from "@/hooks/useSharePointUpload";
 import { useApiError } from "@/hooks/useApiError";
 import { proposalSchemas, type proposalTypes } from "@pkg/schema";

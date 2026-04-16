@@ -1,11 +1,11 @@
 "use client";
-import DialogWindow from "@/components/DialogWindow";
+import DialogWindow from "@/components/shared/dialog-window";
 import React, { useEffect, useState, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
-import CustomButton from "@/components/CustomButton";
-import Input from "@/components/custom-form-input/Input";
+import CustomButton from "@/components/shared/btn";
+import Input from "@/components/shared/input";
 import { userSchemas, type userTypes } from "@pkg/schema";
 import { trpc } from "@/lib/trpc";
 import toast from "react-hot-toast";

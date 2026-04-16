@@ -2,10 +2,10 @@ import { useClientManagementContext } from "@/contexts/ClientManagementContext";
 import { trpc } from "@/lib/trpc";
 import React from "react";
 import ClientCard from "./ClientCard";
-import NoFetchData from "@/components/NoFetchData";
+import NoFetchData from "@/components/shared/no-fetch-data";
 import { Webhook } from "lucide-react";
 import ClientPageSkeleton from "./skeleton/ClientPageSkeleton";
-import Error from "@/components/Error";
+import Error from "@/components/shared/error";
 interface ClientContact {
   id: number;
   client_id: number;

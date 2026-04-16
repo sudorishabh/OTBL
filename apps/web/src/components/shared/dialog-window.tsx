@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { Maximize2, Minimize2 } from "lucide-react";
-import Loading from "./loading/Loading";
+import Loading from "../loading/Loading";
 
 type HeightMode = "auto" | "fixed" | "full";
 

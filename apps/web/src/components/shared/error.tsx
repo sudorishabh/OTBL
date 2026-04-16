@@ -2,7 +2,7 @@
 import React from "react";
 import { AlertCircle, RefreshCw, Home, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import CustomButton from "./CustomButton";
+import CustomButton from "./btn";
 
 interface ErrorProps {
   message?: string;
