@@ -32,6 +32,7 @@ const SiteDetailDialog = () => {
   const { getParam, deleteParams, setParam } = useHandleParams();
   const woSiteId = Number(getParam("wo-site-id"));
   const isOpenDialog = getParam("dialog") === "site-details";
+  const [isFullScreen, setIsFullScreen] = React.useState(false);
 
   const siteDetailsQuery =
     trpc.workOrderSiteQuery.getWorkOrderSiteDetails.useQuery(
@@ -49,7 +50,9 @@ const SiteDetailDialog = () => {
     ? `${siteDetails.work_order.code} - ${siteDetails.work_order.title}`
     : undefined;
 
-  const handleCloseDialog = () => {
+  const handleCloseDialog = (open: boolean) => {
+    if (open) return;
+    setIsFullScreen(false);
     deleteParams(["dialog", "wo-site-id", "site-dialog"]);
   };
 
@@ -69,6 +72,8 @@ const SiteDetailDialog = () => {
       title={dialogTitle}
       description={dialogDescription}
       size='xl'
+      isFullScreen={isFullScreen}
+      onToggleFullScreen={() => setIsFullScreen((v) => !v)}
       isLoading={siteDetailsQuery.isLoading}>
       <div className='space-y-5 py-3'>
         {showOperatorUploadsBtn && (
