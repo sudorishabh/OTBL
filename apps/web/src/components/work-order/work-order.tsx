@@ -55,8 +55,21 @@ const activityKey = (name: string) => {
 
 const toNumberSafe = (val: unknown) => {
   const n =
-    typeof val === "string" ? Number(val.replace(/,/g, "").trim()) : Number(val);
+    typeof val === "string"
+      ? Number(val.replace(/,/g, "").trim())
+      : Number(val);
   return Number.isFinite(n) ? n : 0;
+};
+
+const normalizeSiteStatus = (
+  input: unknown,
+): "pending" | "completed" | "cancelled" => {
+  const v = String(input ?? "")
+    .trim()
+    .toLowerCase();
+  if (v === "completed") return "completed";
+  if (v === "cancelled" || v === "canceled") return "cancelled";
+  return "pending";
 };
 
 const WorkOrder = ({ workOrderId, from }: Props) => {
@@ -126,7 +139,8 @@ const WorkOrder = ({ workOrderId, from }: Props) => {
           s.end_date && !isNaN(new Date(s.end_date).getTime())
             ? new Date(s.end_date).toISOString()
             : new Date().toISOString(),
-        status: s.status as "pending" | "completed" | "cancelled",
+        status:
+          s.is_completed === true ? "completed" : normalizeSiteStatus(s.status),
         client_id: workOrderData?.workOrder?.client_id,
         work_order_id: workOrderData?.workOrder?.id,
         activity_type: s.activity_type,

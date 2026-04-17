@@ -1,19 +1,23 @@
-"use client";
 import { PageWrapper } from "@/components/wrapper/page-wrapper";
-import React from "react";
-import CreateOfficeButton from "./_components/CreateOfficeButton";
-import OfficeSitePage from "./_components/OfficeSitePage";
+import React, { Suspense } from "react";
+import CreateOfficeButton from "../../../components/office-site/create-office-btn";
+import OfficeSitePage from "../../../components/office-site/office-site-page";
+import OfficeSitePageSkeleton from "@/components/skeleton/office-site/office-site-page-skeleton";
 
 const page = () => {
   return (
-    <React.Suspense fallback={<div>Loading office sites...</div>}>
-      <PageWrapper
-        title='Offices & Sites'
-        description='Manage your office locations and work sites'
-        button={<CreateOfficeButton />}>
+    <PageWrapper
+      title='Offices & Sites'
+      description='Manage your office locations and work sites'
+      button={
+        <Suspense fallback={null}>
+          <CreateOfficeButton />
+        </Suspense>
+      }>
+      <Suspense fallback={<OfficeSitePageSkeleton />}>
         <OfficeSitePage />
-      </PageWrapper>
-    </React.Suspense>
+      </Suspense>
+    </PageWrapper>
   );
 };
 

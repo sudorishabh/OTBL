@@ -1,5 +1,5 @@
 "use client";
-import React, { ReactNode } from "react";
+import React, { ReactNode, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   useAuthContext,
@@ -28,12 +28,23 @@ export const ProtectedRoute = ({
   const router = useRouter();
   const { isAuthenticated, isUserLoading } = useAuthContext();
 
+  useEffect(() => {
+    if (isUserLoading || isAuthenticated) return;
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      router.push(redirectTo);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isUserLoading, isAuthenticated, redirectTo, router]);
+
   if (isUserLoading) {
     return <>{loadingComponent}</>;
   }
 
   if (!isAuthenticated) {
-    router.push(redirectTo);
     return null;
   }
 
@@ -60,12 +71,23 @@ export const RoleProtectedRoute = ({
   const { isAuthenticated, isUserLoading } = useAuthContext();
   const hasRequiredRole = useHasRole(requiredRole);
 
+  useEffect(() => {
+    if (isUserLoading || isAuthenticated) return;
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      router.push(redirectTo);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isUserLoading, isAuthenticated, redirectTo, router]);
+
   if (isUserLoading) {
     return <>{loadingComponent}</>;
   }
 
   if (!isAuthenticated) {
-    router.push(redirectTo);
     return null;
   }
 
@@ -96,12 +118,23 @@ export const MultiRoleProtectedRoute = ({
   const { isAuthenticated, isUserLoading } = useAuthContext();
   const hasAllowedRole = useHasAnyRole(allowedRoles);
 
+  useEffect(() => {
+    if (isUserLoading || isAuthenticated) return;
+    let cancelled = false;
+    queueMicrotask(() => {
+      if (cancelled) return;
+      router.push(redirectTo);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isUserLoading, isAuthenticated, redirectTo, router]);
+
   if (isUserLoading) {
     return <>{loadingComponent}</>;
   }
 
   if (!isAuthenticated) {
-    router.push(redirectTo);
     return null;
   }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import AppSidebar from "@/app/_components/AppSidebar";
+import AppSidebar from "@/components/app-sidebar";
 import { SidebarInset } from "@/components/ui/sidebar";
 import { trpc } from "@/lib/trpc";
 import { usePathname, useRouter } from "next/navigation";
@@ -25,9 +25,19 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     if (!isError) return;
     const code = (error as { data?: { code?: string } })?.data?.code;
     if (code === "UNAUTHORIZED" || code === "FORBIDDEN") {
-      const loginUrl = new URL("/login", window.location.origin);
-      loginUrl.searchParams.set("return-url", pathname);
-      router.replace(loginUrl.pathname + loginUrl.search);
+      let cancelled = false;
+
+      // Defer navigation to avoid dev Fast Refresh/router init races.
+      queueMicrotask(() => {
+        if (cancelled) return;
+        const loginUrl = new URL("/login", window.location.origin);
+        loginUrl.searchParams.set("return-url", pathname);
+        router.replace(loginUrl.pathname + loginUrl.search);
+      });
+
+      return () => {
+        cancelled = true;
+      };
     }
   }, [isError, error, pathname, router]);
 
@@ -42,14 +52,28 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
     if (layout.mode === "wo_site_upload" && layout.defaultWorkOrderSiteId) {
       const target = `/dashboard/wo-site/${layout.defaultWorkOrderSiteId}`;
       if (!pathname.startsWith("/dashboard/wo-site")) {
-        router.replace(target);
+        let cancelled = false;
+        queueMicrotask(() => {
+          if (cancelled) return;
+          router.replace(target);
+        });
+        return () => {
+          cancelled = true;
+        };
       }
       return;
     }
 
     if (layout.mode === "site_only") {
       if (!pathname.startsWith("/dashboard/site-assigned")) {
-        router.replace("/dashboard/site-assigned");
+        let cancelled = false;
+        queueMicrotask(() => {
+          if (cancelled) return;
+          router.replace("/dashboard/site-assigned");
+        });
+        return () => {
+          cancelled = true;
+        };
       }
     }
   }, [isSuccess, layout, pathname, router]);

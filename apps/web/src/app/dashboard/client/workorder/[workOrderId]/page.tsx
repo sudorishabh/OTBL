@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import PageLoading from "@/components/loading/PageLoading";
 import { Suspense } from "react";
 
-const WorkOrder = dynamic(() => import("@/app/_components/WO/WorkOrder"));
+const WorkOrder = dynamic(() => import("@/components/work-order/work-order"));
 
 type PageProps = {
   params: Promise<{ workOrderId: string }>;

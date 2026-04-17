@@ -3,7 +3,7 @@ import React from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UserSearchNFilter from "./User-search-filter";
 import { useHandleParams } from "@/hooks/useHandleParams";
-import ScrollToTop from "@/app/_components/ScrollToTop";
+import ScrollToTop from "@/components/scroll-to-top";
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import UserTabSkeleton from "../skeleton/user/user-tab-skeleton";

@@ -1,5 +1,5 @@
-"use client"
-import WorkOrder from "@/app/_components/WO/WorkOrder";
+"use client";
+import WorkOrder from "@/components/work-order/work-order";
 import useHandleParams from "@/hooks/useHandleParams";
 import React, { useEffect } from "react";
 

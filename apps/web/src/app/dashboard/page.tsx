@@ -449,7 +449,7 @@ function StatTile({
 }) {
   return (
     <Card className='shadow-sm'>
-      <CardContent className='pt-4'>
+      <CardContent>
         <div className='flex items-start justify-between gap-2'>
           <div>
             <p className='text-xs font-medium text-muted-foreground'>{label}</p>
