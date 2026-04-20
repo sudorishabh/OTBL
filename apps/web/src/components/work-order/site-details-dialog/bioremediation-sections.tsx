@@ -202,6 +202,30 @@ const OilZappingForm = ({
   const [estimatedQuantity, setEstimatedQuantity] = useState("");
   const [file, setFile] = useState<File | null>(null);
 
+  const bioremediationDataQuery =
+    trpc.workOrderSiteQuery.getBioremediationData.useQuery(
+      { work_order_site_id: woSiteId },
+      { enabled: !!woSiteId },
+    );
+
+  const estimateLimit = React.useMemo(() => {
+    const estimateEntry = bioremediationDataQuery.data?.contaminatedSoil?.find(
+      (i: any) => i.type === "estimate_sub-wo",
+    );
+    return parseFloat(estimateEntry?.estimated_quantity || "0") || 0;
+  }, [bioremediationDataQuery.data?.contaminatedSoil]);
+
+  const currentTotal = React.useMemo(() => {
+    const oil = bioremediationDataQuery.data?.oilZapping || [];
+    return oil.reduce(
+      (sum: number, entry: any) =>
+        sum + (parseFloat(entry.estimated_quantity || "0") || 0),
+      0,
+    );
+  }, [bioremediationDataQuery.data?.oilZapping]);
+
+  const remaining = Math.max(0, estimateLimit - currentTotal);
+
   const {
     uploadFile,
     isUploading,
@@ -236,13 +260,35 @@ const OilZappingForm = ({
       return;
     }
 
+    const enteredQty = parseFloat(estimatedQuantity || "0") || 0;
+    if (!Number.isFinite(enteredQty) || enteredQty <= 0) {
+      toast.error("Please enter a valid quantity");
+      return;
+    }
+
+    if (estimateLimit <= 0) {
+      toast.error("Please save the Contaminated Soil estimate quantity first.");
+      return;
+    }
+
+    if (remaining <= 0) {
+      toast.error("Oil zapping limit already reached for this site.");
+      return;
+    }
+
     try {
       const result = await uploadFile(file);
       if (result) {
+        const cappedQty = Math.min(enteredQty, remaining);
+        if (cappedQty < enteredQty) {
+          toast(
+            `Quantity capped to remaining: ${cappedQty.toFixed(2)} (limit ${estimateLimit.toFixed(2)})`,
+          );
+        }
         createMutation.mutate({
           work_order_site_id: woSiteId,
           document_url: result.webUrl,
-          estimated_quantity: estimatedQuantity || undefined,
+          estimated_quantity: cappedQty.toFixed(2),
         });
       }
     } catch (error) {
@@ -267,7 +313,7 @@ const OilZappingForm = ({
         </div>
         <div>
           <label className='text-[10px] text-slate-600 font-medium mb-1 block'>
-            Estimated Quantity (Optional)
+            Quantity
           </label>
           <Input
             value={estimatedQuantity}
@@ -275,6 +321,22 @@ const OilZappingForm = ({
             placeholder='0.00'
             className='h-9'
           />
+          {estimateLimit > 0 && (
+            <p className='mt-1 text-[10px] text-slate-500'>
+              Limit:{" "}
+              <span className='font-semibold tabular-nums'>
+                {estimateLimit.toFixed(2)}
+              </span>
+              {" · "}Used:{" "}
+              <span className='font-semibold tabular-nums'>
+                {currentTotal.toFixed(2)}
+              </span>
+              {" · "}Remaining:{" "}
+              <span className='font-semibold tabular-nums'>
+                {remaining.toFixed(2)}
+              </span>
+            </p>
+          )}
         </div>
 
         <div className='flex justify-end pt-2'>

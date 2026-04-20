@@ -70,7 +70,12 @@ const createBioSampleSchema = z.object({
 const createOilZappingSchema = z.object({
   work_order_site_id: z.number().positive(),
   document_url: z.string().min(1, "Document URL is required"),
-  estimated_quantity: z.string().optional(),
+  estimated_quantity: z
+    .string()
+    .min(1, "Quantity is required")
+    .refine((v) => Number.isFinite(parseFloat(v)) && parseFloat(v) > 0, {
+      message: "Quantity must be a positive number",
+    }),
 });
 
 const deleteRecordSchema = z.object({
@@ -641,10 +646,44 @@ export const workOrderSiteMutationRouter = router({
   createOilZapping: publicProcedure.input(createOilZappingSchema).mutation(
     handleMutation(async ({ input, ctx }) => {
       try {
+        // Enforce: total oil zapping qty for a site cannot exceed contaminated-soil estimate qty.
+        const estimateRows = await ctx.db
+          .select({ estimated_quantity: bioremediationContSoilTable.estimated_quantity })
+          .from(bioremediationContSoilTable)
+          .where(
+            and(
+              eq(bioremediationContSoilTable.work_order_site_id, input.work_order_site_id),
+              eq(bioremediationContSoilTable.type, "estimate_sub-wo" as any),
+            ),
+          );
+
+        const estimateLimit = parseFloat(estimateRows[0]?.estimated_quantity || "0") || 0;
+        if (estimateLimit <= 0) {
+          throw new Error("Please save the Contaminated Soil estimate quantity first.");
+        }
+
+        const existingOil = await ctx.db
+          .select({ estimated_quantity: bioOilZappingTable.estimated_quantity })
+          .from(bioOilZappingTable)
+          .where(eq(bioOilZappingTable.work_order_site_id, input.work_order_site_id));
+
+        const currentTotal = existingOil.reduce(
+          (sum: number, r: any) => sum + (parseFloat(r.estimated_quantity || "0") || 0),
+          0,
+        );
+
+        const remaining = estimateLimit - currentTotal;
+        if (remaining <= 0) {
+          throw new Error("Oil zapping limit already reached for this site.");
+        }
+
+        const requested = parseFloat(input.estimated_quantity || "0") || 0;
+        const capped = Math.min(requested, remaining);
+
         const [result] = await ctx.db.insert(bioOilZappingTable).values({
           work_order_site_id: input.work_order_site_id,
           document_url: input.document_url,
-          estimated_quantity: input.estimated_quantity,
+          estimated_quantity: capped.toFixed(2),
         });
         return {
           success: true,
@@ -720,7 +759,13 @@ export const workOrderSiteMutationRouter = router({
         data: z.array(
           z.object({
             document_url: z.string(),
-            estimated_quantity: z.string().optional(),
+            estimated_quantity: z
+              .string()
+              .min(1, "Quantity is required")
+              .refine(
+                (v) => Number.isFinite(parseFloat(v)) && parseFloat(v) > 0,
+                { message: "Quantity must be a positive number" },
+              ),
           }),
         ),
       }),
@@ -730,6 +775,26 @@ export const workOrderSiteMutationRouter = router({
         const { work_order_site_id, data } = input;
         try {
           await ctx.db.transaction(async (tx: any) => {
+            const estimateRows = await tx
+              .select({
+                estimated_quantity: bioremediationContSoilTable.estimated_quantity,
+              })
+              .from(bioremediationContSoilTable)
+              .where(
+                and(
+                  eq(bioremediationContSoilTable.work_order_site_id, work_order_site_id),
+                  eq(bioremediationContSoilTable.type, "estimate_sub-wo" as any),
+                ),
+              );
+
+            const estimateLimit =
+              parseFloat(estimateRows[0]?.estimated_quantity || "0") || 0;
+            if (estimateLimit <= 0) {
+              throw new Error(
+                "Please save the Contaminated Soil estimate quantity first.",
+              );
+            }
+
             await tx
               .delete(bioOilZappingTable)
               .where(
@@ -737,13 +802,27 @@ export const workOrderSiteMutationRouter = router({
               );
 
             if (data.length > 0) {
-              await tx.insert(bioOilZappingTable).values(
-                data.map((item) => ({
+              let remaining = estimateLimit;
+              const rowsToInsert: any[] = [];
+
+              for (const item of data) {
+                if (remaining <= 0) break;
+                const requested = parseFloat(item.estimated_quantity || "0") || 0;
+                const capped = Math.min(requested, remaining);
+                if (capped <= 0) continue;
+                remaining -= capped;
+                rowsToInsert.push({
                   work_order_site_id,
                   document_url: item.document_url,
-                  estimated_quantity: item.estimated_quantity,
-                })),
-              );
+                  estimated_quantity: capped.toFixed(2),
+                });
+              }
+
+              if (rowsToInsert.length === 0) {
+                throw new Error("Oil zapping limit already reached for this site.");
+              }
+
+              await tx.insert(bioOilZappingTable).values(rowsToInsert);
             }
           });
           return { success: true, message: "Oil Zapping saved" };
