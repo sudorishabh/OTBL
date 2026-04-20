@@ -89,7 +89,9 @@ const activityKey = (name: string) => {
 
 const toNumberSafe = (val: unknown) => {
   const n =
-    typeof val === "string" ? Number(val.replace(/,/g, "").trim()) : Number(val);
+    typeof val === "string"
+      ? Number(val.replace(/,/g, "").trim())
+      : Number(val);
   return Number.isFinite(n) ? n : 0;
 };
 

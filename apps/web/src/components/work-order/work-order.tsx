@@ -2,7 +2,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { PageWrapper } from "@/components/wrapper/page-wrapper";
 import { trpc } from "@/lib/trpc";
-import { capitalFirstLetter } from "@pkg/utils";
+import { capitalFirstLetter, getEffectiveWorkOrderStatus } from "@pkg/utils";
 import { useRouter } from "next/navigation";
 import WorkOrderDetailsCard from "./work-order-details-card";
 import { File, Plus, Rows3 } from "lucide-react";
@@ -34,32 +34,6 @@ interface Pagination {
   totalPages: number;
   hasMore: boolean;
 }
-
-const SOR_ACTIVITY_TO_COMPLETION_ACTIVITY: Record<string, string> = {
-  clean_soil_area: "clean_soil_area",
-  lifting_oily_slush_or_recovery_of_oil: "lifting_oil_slush",
-  excavation_oil_contaminated_soil: "excav_cont_soil",
-  transportation_contaminated_soil: "trans_cont_soil",
-  refilling_excavated_oil_contaminated_soil_land: "refill_excav_soil",
-  bioremediation_oil_contaminated_soil: "biorem_cont_soil",
-};
-
-const activityKey = (name: string) => {
-  const v = (name || "").trim().toLowerCase();
-  // Normalize to snake_case-ish for stable matching between SOR and completions
-  return v
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "")
-    .replace(/_+/g, "_");
-};
-
-const toNumberSafe = (val: unknown) => {
-  const n =
-    typeof val === "string"
-      ? Number(val.replace(/,/g, "").trim())
-      : Number(val);
-  return Number.isFinite(n) ? n : 0;
-};
 
 const normalizeSiteStatus = (
   input: unknown,
@@ -169,38 +143,20 @@ const WorkOrder = ({ workOrderId, from }: Props) => {
   const stats = workOrderData?.stats ?? ({} as any);
   const scheduleOfRates = workOrderData?.scheduleOfRates ?? [];
 
-  const isSORFullyUsed = useMemo(() => {
-    if (!scheduleOfRates || scheduleOfRates.length === 0) return false;
-
-    const usedQtyByActivity: Record<string, number> = (sites || []).reduce(
-      (acc: Record<string, number>, s: any) => {
-        for (const c of s.completions || []) {
-          const key = activityKey(c.activity_name);
-          acc[key] = (acc[key] || 0) + toNumberSafe(c.estimated_quantity);
-        }
-        return acc;
-      },
-      {},
-    );
-
-    return scheduleOfRates.every((item: any) => {
-      const completionActivity =
-        SOR_ACTIVITY_TO_COMPLETION_ACTIVITY[item.activity] ?? item.activity;
-      const usedQty = usedQtyByActivity[activityKey(completionActivity)] ?? 0;
-      const sorQty = toNumberSafe(item.estimated_quantity);
-
-      if (sorQty <= 0) return true;
-      return usedQty + 1e-6 >= sorQty;
-    });
-  }, [scheduleOfRates, sites]);
-
   const derivedWorkOrder = useMemo(() => {
     if (!workOrder) return undefined;
-    if (workOrder.status === "cancelled") return workOrder;
-    return isSORFullyUsed
-      ? { ...workOrder, status: "completed" as const }
-      : { ...workOrder, status: "pending" as const };
-  }, [workOrder, isSORFullyUsed]);
+    const effective = getEffectiveWorkOrderStatus(
+      workOrder.status,
+      scheduleOfRates,
+      sites as {
+        completions?: {
+          activity_name: string;
+          estimated_quantity?: unknown;
+        }[];
+      }[],
+    );
+    return { ...workOrder, status: effective };
+  }, [workOrder, scheduleOfRates, sites]);
 
   const isWorkOrderCompleted = derivedWorkOrder?.status === "completed";
 

@@ -4,6 +4,17 @@ import { capitalFirstLetter } from "./capitalFirstLetter";
 import { capitalizeEachWord } from "./capitalizeEachWord";
 import formatCurrency from "./formatCurrency";
 export {
+  computeSorFullyConsumed,
+  getEffectiveWorkOrderStatus,
+  effectiveWorkOrderStatusFromDbOnly,
+  activityKey,
+  toNumberSafe,
+  SOR_ACTIVITY_TO_COMPLETION_ACTIVITY,
+  type EffectiveWorkOrderStatus,
+  type ScheduleOfRateRow,
+  type SiteWithCompletions,
+} from "./work-order-sor-status";
+export {
   constants,
   dateTimeUtils,
   capitalFirstLetter,

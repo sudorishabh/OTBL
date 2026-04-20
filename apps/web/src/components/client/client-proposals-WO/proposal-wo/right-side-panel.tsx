@@ -66,7 +66,9 @@ const activityKey = (name: string) => {
 
 const toNumberSafe = (val: unknown) => {
   const n =
-    typeof val === "string" ? Number(val.replace(/,/g, "").trim()) : Number(val);
+    typeof val === "string"
+      ? Number(val.replace(/,/g, "").trim())
+      : Number(val);
   return Number.isFinite(n) ? n : 0;
 };
 
@@ -217,7 +219,8 @@ const ResolvedMiniWOCard = ({
 
     const scheduleOfRates = details.scheduleOfRates || [];
     const sites = details.sites || [];
-    if (scheduleOfRates.length === 0) return details.workOrder.status || wo.status;
+    if (scheduleOfRates.length === 0)
+      return details.workOrder.status || wo.status;
 
     const usedQtyByActivity: Record<string, number> = (sites || []).reduce(
       (acc: Record<string, number>, s: any) => {
@@ -271,7 +274,9 @@ const RightSidePanel = ({ proposals }: Props) => {
   );
 
   const handleResolvedStatus = (id: number, status: string) => {
-    setResolvedStatusById((prev) => (prev[id] === status ? prev : { ...prev, [id]: status }));
+    setResolvedStatusById((prev) =>
+      prev[id] === status ? prev : { ...prev, [id]: status },
+    );
   };
 
   const tabs: {

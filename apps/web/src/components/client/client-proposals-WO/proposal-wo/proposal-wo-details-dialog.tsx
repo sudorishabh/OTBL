@@ -52,7 +52,9 @@ const activityKey = (name: string) => {
 
 const toNumberSafe = (val: unknown) => {
   const n =
-    typeof val === "string" ? Number(val.replace(/,/g, "").trim()) : Number(val);
+    typeof val === "string"
+      ? Number(val.replace(/,/g, "").trim())
+      : Number(val);
   return Number.isFinite(n) ? n : 0;
 };
 
@@ -212,7 +214,8 @@ const ResolvedWorkOrderSide = ({
           {processConfig && ProcessIcon && (
             <div className='flex items-center gap-1.5 mb-2.5'>
               <ProcessIcon className={`w-3.5 h-3.5 ${processConfig.color}`} />
-              <span className={`text-[11px] font-medium ${processConfig.color}`}>
+              <span
+                className={`text-[11px] font-medium ${processConfig.color}`}>
                 {processConfig.label}
               </span>
             </div>

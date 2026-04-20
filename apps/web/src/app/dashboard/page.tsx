@@ -39,6 +39,7 @@ import {
 import Link from "next/link";
 import { useMemo, type ComponentType } from "react";
 import { cn } from "@/lib/utils";
+import { capitalFirstLetter } from "@pkg/utils";
 
 type DashboardOfficeRow =
   RouterOutputs["officeQuery"]["getOffices"]["offices"][number];
@@ -381,10 +382,9 @@ export default function DashboardPage() {
                             <Badge
                               variant='secondary'
                               className={cn(
-                                "capitalize",
                                 workOrderStatusBadgeClass(wo.status),
                               )}>
-                              {wo.status}
+                              {capitalFirstLetter(wo.status)}
                             </Badge>
                           </TableCell>
                         </TableRow>

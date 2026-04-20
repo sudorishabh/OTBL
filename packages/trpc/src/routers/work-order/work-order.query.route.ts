@@ -22,6 +22,8 @@ const {
 import { notFound, fromDatabaseError } from "../../errors";
 import { handleQuery } from "../../helper/typed-handler";
 import { escapeLike } from "../../helper/escape-like";
+import { batchEffectiveWorkOrderStatuses } from "./batch-effective-work-order-status";
+import { effectiveWorkOrderStatusFromDbOnly } from "@pkg/utils";
 
 const {
   workOrderTable,
@@ -77,7 +79,10 @@ export const workOrderQueryRouter = router({
           or(
             like(workOrderTable.code, `%${escapeLike(searchQuery)}%`),
             like(workOrderTable.title, `%${escapeLike(searchQuery)}%`),
-            like(workOrderTable.agreement_number, `%${escapeLike(searchQuery)}%`),
+            like(
+              workOrderTable.agreement_number,
+              `%${escapeLike(searchQuery)}%`,
+            ),
             like(clientTable.name, `%${escapeLike(searchQuery)}%`),
             like(officeTable.name, `%${escapeLike(searchQuery)}%`),
           ),
@@ -148,8 +153,25 @@ export const workOrderQueryRouter = router({
         const totalPages = Math.ceil(total / limit);
         const hasMore = offset + workOrders.length < total;
 
+        const effectiveMap = await batchEffectiveWorkOrderStatuses(
+          ctx.db,
+          scope,
+          workOrders.map((wo) => ({
+            id: wo.id,
+            office_id: wo.office_id,
+            status: wo.status,
+          })),
+        );
+
+        const workOrdersWithEffectiveStatus = workOrders.map((wo) => ({
+          ...wo,
+          status:
+            effectiveMap.get(Number(wo.id)) ??
+            effectiveWorkOrderStatusFromDbOnly(String(wo.status)),
+        }));
+
         return {
-          workOrders,
+          workOrders: workOrdersWithEffectiveStatus,
           pagination: {
             page,
             limit,
@@ -433,10 +455,7 @@ export const workOrderQueryRouter = router({
             .from(workOrderTable)
             .leftJoin(clientTable, eq(workOrderTable.client_id, clientTable.id))
             .where(
-              andScope(
-                eq(workOrderTable.office_id, office_id),
-                scopeWhere,
-              ),
+              andScope(eq(workOrderTable.office_id, office_id), scopeWhere),
             )
             .orderBy(desc(workOrderTable.created_at));
         } catch (error) {
@@ -480,10 +499,7 @@ export const workOrderQueryRouter = router({
             .from(workOrderTable)
             .leftJoin(officeTable, eq(workOrderTable.office_id, officeTable.id))
             .where(
-              andScope(
-                eq(workOrderTable.client_id, client_id),
-                scopeWhere,
-              ),
+              andScope(eq(workOrderTable.client_id, client_id), scopeWhere),
             );
         } catch (error) {
           throw fromDatabaseError(error, "Fetching work orders for client");

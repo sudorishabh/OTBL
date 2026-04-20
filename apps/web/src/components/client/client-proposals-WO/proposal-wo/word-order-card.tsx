@@ -49,7 +49,9 @@ const activityKey = (name: string) => {
 
 const toNumberSafe = (val: unknown) => {
   const n =
-    typeof val === "string" ? Number(val.replace(/,/g, "").trim()) : Number(val);
+    typeof val === "string"
+      ? Number(val.replace(/,/g, "").trim())
+      : Number(val);
   return Number.isFinite(n) ? n : 0;
 };
 
@@ -159,7 +161,8 @@ const WordOrderCard = ({ workOrder, proposalId, proposalTitle }: Props) => {
     return workOrder.status;
   }, [workOrder, woDetails]);
 
-  const statusConfig = workOrder && resolvedStatus ? getStatusConfig(resolvedStatus) : null;
+  const statusConfig =
+    workOrder && resolvedStatus ? getStatusConfig(resolvedStatus) : null;
   const processConfig = workOrder
     ? getProcessTypeConfig(workOrder.process_type)
     : null;
