@@ -59,14 +59,22 @@ export const workOrderQueryRouter = router({
 
       let conditions: any = undefined;
 
-      if (status && status !== "all") {
+      const statusFilter =
+        status && status !== "all"
+          ? (status as "pending" | "completed" | "cancelled")
+          : undefined;
+      const useEffectiveStatusFilter =
+        statusFilter === "pending" || statusFilter === "completed";
+
+      if (statusFilter === "pending") {
+        conditions = and(conditions, eq(workOrderTable.status, "pending"));
+      } else if (statusFilter === "completed") {
         conditions = and(
           conditions,
-          eq(
-            workOrderTable.status,
-            status as "pending" | "completed" | "cancelled",
-          ),
+          inArray(workOrderTable.status, ["pending", "completed"]),
         );
+      } else if (statusFilter) {
+        conditions = and(conditions, eq(workOrderTable.status, statusFilter));
       }
 
       if (office_id) {
@@ -101,6 +109,72 @@ export const workOrderQueryRouter = router({
               : asc(workOrderTable.created_at);
 
       try {
+        if (useEffectiveStatusFilter) {
+          const candidates = await ctx.db
+            .select({
+              id: workOrderTable.id,
+              code: workOrderTable.code,
+              title: workOrderTable.title,
+              client_id: workOrderTable.client_id,
+              client_name: clientTable.name,
+              office_id: workOrderTable.office_id,
+              office_name: officeTable.name,
+              start_date: workOrderTable.start_date,
+              end_date: workOrderTable.end_date,
+              handing_over_date: workOrderTable.handing_over_date,
+              agreement_number: workOrderTable.agreement_number,
+              status: workOrderTable.status,
+              created_at: workOrderTable.created_at,
+              updated_at: workOrderTable.updated_at,
+            })
+            .from(workOrderTable)
+            .leftJoin(clientTable, eq(workOrderTable.client_id, clientTable.id))
+            .leftJoin(officeTable, eq(workOrderTable.office_id, officeTable.id))
+            .where(conditions)
+            .orderBy(orderBy);
+
+          const effectiveMap = await batchEffectiveWorkOrderStatuses(
+            ctx.db,
+            scope,
+            candidates.map((wo) => ({
+              id: Number(wo.id),
+              office_id: wo.office_id ?? null,
+              status: String(wo.status ?? ""),
+            })),
+          );
+
+          const filtered = candidates.filter((wo) => {
+            const effective =
+              effectiveMap.get(Number(wo.id)) ??
+              effectiveWorkOrderStatusFromDbOnly(String(wo.status));
+            return effective === statusFilter;
+          });
+
+          const total = filtered.length;
+          const offset = (page - 1) * limit;
+          const pageSlice = filtered.slice(offset, offset + limit);
+          const workOrdersWithEffectiveStatus = pageSlice.map((wo) => ({
+            ...wo,
+            status:
+              effectiveMap.get(Number(wo.id)) ??
+              effectiveWorkOrderStatusFromDbOnly(String(wo.status)),
+          }));
+
+          const totalPages = Math.ceil(total / limit) || 0;
+          const hasMore = offset + pageSlice.length < total;
+
+          return {
+            workOrders: workOrdersWithEffectiveStatus,
+            pagination: {
+              page,
+              limit,
+              total,
+              hasMore,
+              totalPages,
+            },
+          };
+        }
+
         const [totalResult] = await ctx.db
           .select({ count: count() })
           .from(workOrderTable)
@@ -157,9 +231,9 @@ export const workOrderQueryRouter = router({
           ctx.db,
           scope,
           workOrders.map((wo) => ({
-            id: wo.id,
-            office_id: wo.office_id,
-            status: wo.status,
+            id: Number(wo.id),
+            office_id: wo.office_id ?? null,
+            status: String(wo.status ?? ""),
           })),
         );
 

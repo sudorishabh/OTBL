@@ -24,34 +24,37 @@ const ClientStats = ({ stats, clientId }: Props) => {
   const [isTotalBudgetDialog, setIsTotalBudgetDialog] = useState(false);
   const [isTotalExpenseDialog, setIsTotalExpenseDialog] = useState(false);
 
+  const fmt = (n: number | undefined) =>
+    (Number.isFinite(Number(n)) ? Number(n) : 0).toLocaleString();
+
   return (
     <>
       <div className='grid grid-cols-1 sm:grid-cols-4 gap-4'>
         <ClientStatCard
           Icon={MapPin}
           title='Total Sites'
-          stat={stats ? Number(stats.siteCount).toLocaleString() : 0}
+          stat={stats ? fmt(stats.siteCount) : "0"}
           openDialog={isTotalSiteDialog}
           setOpenDialog={setIsTotalSiteDialog}
         />
         <ClientStatCard
           Icon={CheckCircle2}
           title='Completed Work Orders'
-          stat={stats ? Number(stats.completedWorkOrders).toLocaleString() : 0}
+          stat={stats ? fmt(stats.completedWorkOrders) : "0"}
           openDialog={isCompletedWODialog}
           setOpenDialog={setIsCompletedWODialog}
         />
         <ClientStatCard
           Icon={IndianRupee}
           title='Total Budget'
-          stat={stats ? Number(stats.totalBudgetAmount).toLocaleString() : 0}
+          stat={stats ? fmt(stats.totalBudgetAmount) : "0"}
           openDialog={isTotalBudgetDialog}
           setOpenDialog={setIsTotalBudgetDialog}
         />
         <ClientStatCard
           Icon={IndianRupee}
           title='Total Expense'
-          stat={stats ? Number(stats.totalExpenseAmount).toLocaleString() : 0}
+          stat={stats ? fmt(stats.totalExpenseAmount) : "0"}
           openDialog={isTotalExpenseDialog}
           setOpenDialog={setIsTotalExpenseDialog}
         />

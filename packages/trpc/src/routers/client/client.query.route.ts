@@ -11,6 +11,8 @@ import { clientSchemas } from "@pkg/schema";
 import { notFound, fromDatabaseError } from "../../errors";
 import { handleQuery } from "../../helper/typed-handler";
 import { escapeLike } from "../../helper/escape-like";
+import { batchEffectiveWorkOrderStatuses } from "../work-order/batch-effective-work-order-status";
+import { effectiveWorkOrderStatusFromDbOnly } from "@pkg/utils";
 
 const { 
   clientTable, 
@@ -173,14 +175,33 @@ export const clientQueryRouter = router({
         }
 
         const workOrders = await ctx.db
-          .select({ id: workOrderTable.id, status: workOrderTable.status })
+          .select({
+            id: workOrderTable.id,
+            office_id: workOrderTable.office_id,
+            status: workOrderTable.status,
+          })
           .from(workOrderTable)
           .where(workOrderWhere);
 
         const workOrderIds = workOrders.map((w) => w.id);
 
+        const effectiveByWo = await batchEffectiveWorkOrderStatuses(
+          ctx.db,
+          scope,
+          workOrders.map((wo) => ({
+            id: Number(wo.id),
+            office_id: wo.office_id ?? null,
+            status: String(wo.status ?? ""),
+          })),
+        );
+        const completedWorkOrders = workOrders.filter((wo) => {
+          const effective =
+            effectiveByWo.get(Number(wo.id)) ??
+            effectiveWorkOrderStatusFromDbOnly(String(wo.status));
+          return effective === "completed";
+        }).length;
+
         let siteCount = 0;
-        let completedWorkOrders = 0;
         let totalBudgetAmount = 0;
         let totalExpenseAmount = 0;
 
@@ -191,11 +212,6 @@ export const clientQueryRouter = router({
             .where(inArray(workOrderSiteTable.work_order_id, workOrderIds));
 
           siteCount = woSites.length;
-
-          // Count completed work orders
-          completedWorkOrders = workOrders.filter(
-            (wo) => wo.status === "completed",
-          ).length;
 
           const sors = await ctx.db
             .select({ total_cost: scheduleOfRatesTable.total_cost })
