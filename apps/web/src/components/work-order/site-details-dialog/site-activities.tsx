@@ -225,6 +225,9 @@ const PhaseForm = ({
       onSuccess: () => {
         toast.success("All phase activities saved successfully.");
         utils.workOrderSiteQuery.getRestorationData.invalidate();
+        utils.workOrderSiteQuery.getSiteActivities.invalidate({
+          work_order_site_id: woSiteId,
+        });
         utils.workOrderSiteQuery.getSiteDocuments.invalidate();
         setFile(null);
         setSubWoFile(null);
@@ -247,6 +250,9 @@ const PhaseForm = ({
       onSuccess: () => {
         toast.success("Bioremediation data saved.");
         utils.workOrderSiteQuery.getBioremediationData.invalidate();
+        utils.workOrderSiteQuery.getSiteActivities.invalidate({
+          work_order_site_id: woSiteId,
+        });
         utils.workOrderSiteQuery.getSiteDocuments.invalidate();
         setFile(null);
         setSubWoFile(null);
@@ -675,145 +681,126 @@ const PhaseForm = ({
         )}
       </div>
 
-      {/* === SOR Availability Section === */}
+      {/* === SOR Availability (compact table) === */}
       {activities.some((a) => a.sor_estimated_quantity) && (
-        <div className='rounded-xl border border-slate-200 bg-white overflow-hidden'>
-          <div className='px-4 py-3 bg-gradient-to-r from-slate-50 to-blue-50/30 border-b border-slate-200 flex items-center justify-between'>
-            <div className='flex items-center gap-2'>
-              <div className='w-6 h-6 rounded-md bg-blue-100 flex items-center justify-center'>
-                <BarChart3 className='size-3.5 text-blue-600' />
-              </div>
-              <div>
-                <span className='text-[11px] font-semibold text-slate-700'>
-                  SOR Availability
-                </span>
-                <p className='text-[9px] text-slate-400'>
-                  Based on completion data
-                </p>
-              </div>
-            </div>
+        <div className='rounded-lg border border-slate-200 bg-white overflow-hidden'>
+          <div className='px-3 py-1.5 border-b border-slate-100 flex items-center gap-1.5 bg-slate-50/80'>
+            <BarChart3 className='size-3.5 text-blue-600 shrink-0' />
+            <span className='text-[11px] font-semibold text-slate-600'>
+              SOR availability
+            </span>
+            <span className='text-[10px] text-slate-400 truncate'>
+              (from completion totals)
+            </span>
           </div>
-          <div className='p-3 space-y-2'>
-            {activities
-              .filter((a) => a.sor_estimated_quantity)
-              .map((activity) => {
-                const sorQty = parseFloat(
-                  activity.sor_estimated_quantity || "0",
-                );
+          <div
+            className={
+              activities.filter((a) => a.sor_estimated_quantity).length > 5
+                ? "max-h-40 overflow-y-auto"
+                : undefined
+            }>
+            <Table className='w-full text-[11px]'>
+              <TableHeader>
+                <TableRow className='border-slate-100 hover:bg-transparent'>
+                  <TableHead className='h-8 px-2 py-0 text-left font-semibold text-slate-500 uppercase tracking-wide'>
+                    Activity
+                  </TableHead>
+                  <TableHead className='h-8 px-2 py-0 text-right font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap'>
+                    SOR
+                  </TableHead>
+                  <TableHead className='h-8 px-2 py-0 text-right font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap'>
+                    Used
+                  </TableHead>
+                  <TableHead className='h-8 px-2 py-0 text-right font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap'>
+                    Avail.
+                  </TableHead>
+                  <TableHead className='h-8 px-2 py-0 text-left font-semibold text-slate-500 uppercase tracking-wide w-[88px]'>
+                    %
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody className='[&_tr]:border-slate-100'>
+                {activities
+                  .filter((a) => a.sor_estimated_quantity)
+                  .map((activity) => {
+                    const sorQty = parseFloat(
+                      activity.sor_estimated_quantity || "0",
+                    );
 
-                let completionUsed = parseFloat(
-                  activity.total_completion_quantity || "0",
-                );
+                    let completionUsed = parseFloat(
+                      activity.total_completion_quantity || "0",
+                    );
 
-                const prevSaved = parseFloat(
-                  getActivityData(
-                    activity.activity,
-                    "completion",
-                    isBioremediation,
-                  )?.estimated_quantity?.toString() || "0",
-                );
+                    const prevSaved = parseFloat(
+                      getActivityData(
+                        activity.activity,
+                        "completion",
+                        isBioremediation,
+                      )?.estimated_quantity?.toString() || "0",
+                    );
 
-                const isBioremActivity =
-                  isBioremediation &&
-                  (activity.activity === "biorem_cont_soil" ||
-                    activity.activity ===
-                      constants.WO_ACTIVITIES
-                        .BIOREMEDIATION_OIL_CONTAMINATED_SOIL);
+                    if (phase === "completion") {
+                      const currentFormQty = parseFloat(
+                        formData[activity.activity]?.estimated_quantity || "0",
+                      );
+                      completionUsed =
+                        completionUsed - prevSaved + currentFormQty;
+                    }
 
-                if (isBioremActivity) {
-                  completionUsed =
-                    completionUsed - prevSaved + totalOilZappingQty;
-                } else if (phase === "completion") {
-                  const currentFormQty = parseFloat(
-                    formData[activity.activity]?.estimated_quantity || "0",
-                  );
-                  completionUsed = completionUsed - prevSaved + currentFormQty;
-                }
+                    const available = sorQty - completionUsed;
+                    const usedPct =
+                      sorQty > 0
+                        ? Math.min(100, (completionUsed / sorQty) * 100)
+                        : 0;
+                    const barColor =
+                      usedPct >= 100
+                        ? "bg-red-500"
+                        : usedPct >= 80
+                          ? "bg-amber-500"
+                          : "bg-emerald-500";
 
-                const available = sorQty - completionUsed;
-                const usedPct =
-                  sorQty > 0
-                    ? Math.min(100, (completionUsed / sorQty) * 100)
-                    : 0;
-                const statusColor =
-                  usedPct >= 100 ? "red" : usedPct >= 80 ? "amber" : "emerald";
-
-                return (
-                  <div
-                    key={activity.id}
-                    className='rounded-lg border border-slate-100 bg-slate-50/50 p-3 hover:border-slate-200 transition-colors'>
-                    <div className='flex items-center justify-between mb-2'>
-                      <span className='text-xs font-semibold text-slate-700'>
-                        {formatName(activity.activity)}
-                      </span>
-                      <span
-                        className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                          statusColor === "red"
-                            ? "bg-red-100 text-red-700"
-                            : statusColor === "amber"
-                              ? "bg-amber-100 text-amber-700"
-                              : "bg-emerald-100 text-emerald-700"
-                        }`}>
-                        {usedPct.toFixed(0)}% used
-                      </span>
-                    </div>
-                    <div className='grid grid-cols-3 gap-2 mb-2'>
-                      <div className='bg-white rounded-md px-2.5 py-1.5 border border-slate-100'>
-                        <p className='text-[9px] text-slate-400 uppercase tracking-wider font-medium'>
-                          SOR Qty
-                        </p>
-                        <p className='text-xs font-bold text-slate-700'>
+                    return (
+                      <TableRow key={activity.id} className='hover:bg-slate-50/50'>
+                        <TableCell className='px-2 py-1.5 max-w-[140px] truncate font-medium text-slate-700'>
+                          {formatName(activity.activity)}
+                        </TableCell>
+                        <TableCell className='px-2 py-1.5 text-right tabular-nums text-slate-600 whitespace-nowrap'>
                           {sorQty.toFixed(2)}{" "}
-                          <span className='font-normal text-[9px] text-slate-400'>
+                          <span className='text-slate-400 font-normal'>
                             {activity.unit || "Nos"}
                           </span>
-                        </p>
-                      </div>
-                      <div className='bg-white rounded-md px-2.5 py-1.5 border border-slate-100'>
-                        <p className='text-[9px] text-amber-500 uppercase tracking-wider font-medium'>
-                          Completed
-                        </p>
-                        <p className='text-xs font-bold text-amber-600'>
+                        </TableCell>
+                        <TableCell className='px-2 py-1.5 text-right tabular-nums text-amber-700'>
                           {completionUsed.toFixed(2)}
-                        </p>
-                      </div>
-                      <div
-                        className={`rounded-md px-2.5 py-1.5 border ${
-                          available < 0
-                            ? "bg-red-50 border-red-100"
-                            : "bg-emerald-50 border-emerald-100"
-                        }`}>
-                        <p
-                          className={`text-[9px] uppercase tracking-wider font-medium ${
-                            available < 0 ? "text-red-400" : "text-emerald-500"
-                          }`}>
-                          Available
-                        </p>
-                        <p
-                          className={`text-xs font-bold ${
-                            available < 0 ? "text-red-600" : "text-emerald-700"
+                        </TableCell>
+                        <TableCell
+                          className={`px-2 py-1.5 text-right tabular-nums font-semibold ${
+                            available < 0
+                              ? "text-red-600"
+                              : "text-emerald-700"
                           }`}>
                           {available.toFixed(2)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className='h-1.5 bg-slate-100 rounded-full overflow-hidden'>
-                      <div
-                        className={`h-full rounded-full transition-all duration-500 ${
-                          usedPct >= 100
-                            ? "bg-red-600"
-                            : usedPct >= 80
-                              ? "bg-amber-500"
-                              : "bg-emerald-500"
-                        }`}
-                        style={{
-                          width: `${Math.min(100, usedPct)}%`,
-                        }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+                        </TableCell>
+                        <TableCell className='px-2 py-1.5'>
+                          <div className='flex items-center gap-1.5 min-w-0'>
+                            <div className='h-1 flex-1 min-w-[36px] bg-slate-100 rounded-full overflow-hidden'>
+                              <div
+                                className={`h-full rounded-full transition-all ${barColor}`}
+                                style={{
+                                  width: `${Math.min(100, usedPct)}%`,
+                                }}
+                              />
+                            </div>
+                            <span className='text-[10px] tabular-nums text-slate-500 w-8 text-right shrink-0'>
+                              {usedPct.toFixed(0)}%
+                            </span>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+              </TableBody>
+            </Table>
           </div>
         </div>
       )}
@@ -1031,8 +1018,6 @@ const SiteActivities = ({
       { work_order_site_id: woSiteId },
       { enabled: !!woSiteId },
     );
-
-  console.log(siteActivitiesQuery.data);
 
   const restorationDataQuery =
     trpc.workOrderSiteQuery.getRestorationData.useQuery(
