@@ -81,7 +81,7 @@ const ProposalWOMain = ({ clientId }: Props) => {
             proposals.map(({ workOrder, proposal }: any, index: number) => (
               <div
                 key={proposal?.id || index}
-                className='w-full mt-0.5'>
+                className='w-full mt-1'>
                 <div className='grid grid-cols-1 md:grid-cols-[1fr_72px_1fr] items-stretch gap-y-6 md:gap-y-0 md:gap-x-2'>
                   <ProposalCard proposal={proposal} />
                   <div className='relative flex items-center justify-center'>

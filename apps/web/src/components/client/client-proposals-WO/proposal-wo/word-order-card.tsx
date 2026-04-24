@@ -170,7 +170,7 @@ const WordOrderCard = ({ workOrder, proposalId, proposalTitle }: Props) => {
 
   return (
     <>
-      <div className='w-full min-w-0 rounded-lg bg-white border border-gray-200/70 drop-shadow hover:drop-shadow-md transition-shadow p-4 flex flex-col min-h-52'>
+      <div className='w-full min-w-0 rounded-lg border hover:shadow-sm transition-shadow p-4 flex flex-col min-h-52 bg-gray-100/50 cursor-pointer hover:border-green-400'>
         {workOrder ? (
           <div
             className='group cursor-pointer flex flex-col h-full'
@@ -181,7 +181,7 @@ const WordOrderCard = ({ workOrder, proposalId, proposalTitle }: Props) => {
             <div className='flex items-start justify-between mb-2'>
               <div className='flex flex-wrap items-center gap-2'>
                 <div className='inline-flex items-center px-2 py-0.5 rounded-sm bg-emerald-50 text-emerald-700 text-[11px] font-mono ring-1 ring-emerald-200'>
-                  WO: {workOrder.code}
+                  {workOrder.code}
                 </div>
                 {/* Status Badge */}
                 {statusConfig && StatusIcon && (
@@ -192,12 +192,26 @@ const WordOrderCard = ({ workOrder, proposalId, proposalTitle }: Props) => {
                   </div>
                 )}
               </div>
-              <CustomButton
-                text='View'
-                arrowType='right'
-                variant='arrow'
-                className='group-hover:text-white group-hover:bg-emerald-600 transition-colors'
-              />
+              <div className='flex items-center gap-2'>
+                {workOrder?.document_key && (
+                  <button
+                    type='button'
+                    className='h-8 w-8 rounded-full bg-white border  flex items-center justify-center  transition-colors hover:bg-emerald-50 cursor-pointer'
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      window.open(workOrder.document_key, "_blank");
+                    }}>
+                    <FileText className='h-4 w-4 text-emerald-700 ' />
+                  </button>
+                )}
+                <CustomButton
+                  text='View'
+                  arrowType='right'
+                  variant='arrow'
+                  className='group-hover:text-white group-hover:bg-emerald-600 transition-colors'
+                />
+              </div>
             </div>
 
             {/* Title */}
@@ -258,21 +272,6 @@ const WordOrderCard = ({ workOrder, proposalId, proposalTitle }: Props) => {
             <p className='text-xs text-gray-600 leading-relaxed line-clamp-2 mb-2 flex-1'>
               {workOrder?.description || "No description provided."}
             </p>
-
-            {/* Document Button */}
-            {workOrder?.document_key && (
-              <div
-                className='mt-auto pt-2 border-t border-gray-100'
-                onClick={(e) => e.stopPropagation()}>
-                <CustomButton
-                  Icon={FileText}
-                  text='View Document'
-                  onClick={() => window.open(workOrder.document_key, "_blank")}
-                  variant='outline'
-                  className='w-full text-xs hover:bg-emerald-50 hover:border-emerald-200 hover:text-emerald-700 transition-colors'
-                />
-              </div>
-            )}
           </div>
         ) : (
           <div className='flex flex-col items-center justify-center text-center h-full'>

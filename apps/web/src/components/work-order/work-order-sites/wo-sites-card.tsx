@@ -11,6 +11,7 @@ import {
   FileText,
   ExternalLink,
 } from "lucide-react";
+import Btn from "@/components/shared/btn";
 interface Site {
   id: number;
   wo_site_id: string;
@@ -48,62 +49,52 @@ const WOSitesCard = ({ sites, handleSiteDetails }: Props) => {
           onClick={() => {
             handleSiteDetails(site.wo_site_id);
           }}
-          className='group relative border rounded-xl p-5 hover:shadow-xl transition-all  duration-300 cursor-pointer hover:border-blue-400 bg-gray-100/50 flex flex-col justify-between overflow-hidden'>
-          {/* Status Indicator Bar */}
-          <div className={`absolute left-0 top-0 bottom-0 w-1`} />
-
+          className='group relative border rounded-xl p-4 hover:shadow-sm transition-all  duration-300 cursor-pointer hover:border-green-400 bg-gray-100/50 flex flex-col justify-start overflow-hidden'>
           <div className='flex items-start justify-between mb-4'>
             <div className='space-y-1'>
-              <h3 className='font-semibold text-lg text-gray-900 group-hover:text-emerald-700 transition-colors line-clamp-1'>
+              <h3 className='font-semibold text-sm text-gray-600 group-hover:text-emerald-700 transition-colors line-clamp-1'>
                 {capitalFirstLetter(site.name)}
               </h3>
               <div className='flex items-center gap-1.5 text-xs text-gray-400 font-medium'>
                 <Clock className='w-3 h-3' />
                 <span>
-                  Created:{" "}
                   {format(new Date(site.created_at), "MMM dd, yyyy • hh:mm a")}
                 </span>
               </div>
             </div>
-            <span
-              className={`px-3 py-1 rounded-full text-[10px] uppercase tracking-wider font-bold shrink-0 ml-2 shadow-sm ${
-                site.status === "completed"
-                  ? "bg-green-50 text-green-700 border border-green-200"
-                  : site.status === "cancelled"
-                    ? "bg-red-50 text-red-700 border border-red-200"
-                    : "bg-yellow-50 text-yellow-700 border border-yellow-200"
-              }`}>
-              {site.status}
-            </span>
+            <Btn
+              text='View'
+              arrowType='upright'
+              variant='arrow'
+              className='group-hover:text-white group-hover:bg-emerald-600 transition-colors'
+            />
           </div>
 
-          <div className='space-y-3 text-sm text-gray-600 mb-5'>
-            <div className='flex items-start gap-3 p-2 rounded-lg bg-gray-50/50 group-hover:bg-blue-50/30 transition-colors'>
-              <MapPin className='w-4 h-4 text-emerald-500 shrink-0 mt-0.5' />
-              <p className='line-clamp-2 leading-relaxed'>
+          <div className='space-y-2 text-sm text-gray-600 mb-5'>
+            <div className='flex items-start rounded-lg bg-gray-50/50 group-hover:bg-blue-50/30 transition-colors'>
+              <p className='text-xs line-clamp-2 leading-relaxed'>
                 {site.address}, {site.city}, {site.state}
               </p>
             </div>
 
             <div className='grid grid-cols-2 gap-3'>
-              <div className='flex items-center gap-2'>
-                <Calendar className='w-4 h-4 text-orange-500 shrink-0' />
+              <div className='flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-200/70'>
+                {/* <Calendar className='w-4 h-4 text-orange-500 shrink-0' /> */}
                 <div className='flex flex-col'>
                   <span className='text-[10px] text-gray-400 uppercase font-semibold'>
                     Start
                   </span>
-                  <span className='font-medium text-gray-700'>
+                  <span className='font-medium text-xs text-gray-700'>
                     {format(site.start_date, "dd/MM/yy")}
                   </span>
                 </div>
               </div>
-              <div className='flex items-center gap-2'>
-                <Calendar className='w-4 h-4 text-red-500 shrink-0' />
+              <div className='flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-200/70'>
                 <div className='flex flex-col'>
                   <span className='text-[10px] text-gray-400 uppercase font-semibold'>
                     End
                   </span>
-                  <span className='font-medium text-gray-700'>
+                  <span className='font-medium text-xs text-gray-700'>
                     {format(site.end_date, "dd/MM/yy")}
                   </span>
                 </div>
@@ -165,13 +156,6 @@ const WOSitesCard = ({ sites, handleSiteDetails }: Props) => {
                 </div>
               </div>
             )}
-          </div>
-
-          <div className='pt-4 border-t border-gray-100 flex items-center justify-between group-hover:border-blue-100 transition-colors'>
-            <span className='text-xs text-emerald-700 font-bold tracking-tight'>
-              VIEW DETAILS
-            </span>
-            <ArrowRight className='w-4 h-4 text-emerald-700 transform group-hover:translate-x-1 transition-transform' />
           </div>
         </div>
       ))}

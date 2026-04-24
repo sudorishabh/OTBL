@@ -1,9 +1,6 @@
 import {
-  ArrowUpRight,
   FileText,
   CalendarDays,
-  CheckCircle2,
-  XCircle,
   Clock,
 } from "lucide-react";
 import React from "react";
@@ -19,7 +16,6 @@ interface Props {
 
 const ProposalCard = ({ proposal }: Props) => {
   const { setParams } = useHandleParams();
-  // const isApproved = proposal?.status === "approved";
 
   return (
     <div
@@ -29,38 +25,33 @@ const ProposalCard = ({ proposal }: Props) => {
           "proposal-id": proposal?.id.toString(),
         })
       }
-      className='w-full min-w-0 rounded-lg bg-white border border-gray-200/70 drop-shadow hover:drop-shadow-md transition-shadow p-4 flex flex-col min-h-52'>
+      className='w-full min-w-0 rounded-lg border hover:shadow-sm transition-shadow p-4 flex flex-col min-h-52 bg-gray-100/50 cursor-pointer hover:border-green-400 group'>
       {/* Header Section */}
       <div className='flex items-start justify-between mb-2'>
         <div className='flex items-center gap-2'>
           <div className='inline-flex items-center px-2 py-0.5 rounded-sm bg-sky-50 text-sky-700 text-[11px] font-mono ring-1 ring-sky-200'>
-            Proposal: {proposal?.code}
-          </div>
-          {/* Status Badge */}
-          <div
-            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${
-              proposal.status === "approved"
-                ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
-                : proposal.status === "pending"
-                  ? "bg-amber-50 text-amber-700 ring-1 ring-amber-200"
-                  : proposal.status === "rejected"
-                    ? "bg-red-50 text-red-700 ring-1 ring-red-200"
-                    : "bg-gray-50 text-gray-700 ring-1 ring-gray-200"
-            }`}>
-            {proposal.status === "approved" ? (
-              <CheckCircle2 className='w-3 h-3' />
-            ) : proposal.status === "pending" ? (
-              <Clock className='w-3 h-3' />
-            ) : proposal.status === "rejected" ? (
-              <XCircle className='w-3 h-3' />
-            ) : (
-              <XCircle className='w-3 h-3' />
-            )}
-            {capitalFirstLetter(proposal?.status)}
+            {proposal?.code}
           </div>
         </div>
-        <div className='h-8 w-8 rounded-full bg-white border group-hover:border-0 flex items-center justify-center group-hover:bg-emerald-600 transition-colors'>
-          <ArrowUpRight className='h-4 w-4 text-emerald-700 group-hover:text-white' />
+        <div className='flex items-center gap-2'>
+          {proposal?.document_key && (
+            <button
+              type='button'
+              className='h-8 w-8 rounded-full bg-white border  flex items-center justify-center  transition-colors hover:bg-emerald-50 cursor-pointer'
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                window.open(proposal.document_key, "_blank");
+              }}>
+              <FileText className='h-4 w-4 text-emerald-700 ' />
+            </button>
+          )}
+          <CustomButton
+            text='View'
+            arrowType='upright'
+            variant='arrow'
+            className='group-hover:text-white group-hover:bg-emerald-600 transition-colors'
+          />
         </div>
       </div>
 
@@ -88,36 +79,27 @@ const ProposalCard = ({ proposal }: Props) => {
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Created Date */}
-      <div className='flex items-center gap-1.5 text-[11px] text-gray-500 mb-2'>
-        <Clock className='w-3.5 h-3.5' />
-        Created:
-        {proposal?.created_at
-          ? format(new Date(proposal.created_at), "dd MMM yyyy")
-          : "—"}
+        {/* Created Date */}
+        <div className='flex items-center gap-2 rounded-md border border-gray-100 bg-linear-to-r from-blue-50/50 to-transparent px-2.5 py-2'>
+          <Clock className='w-4 h-4 text-emerald-600 shrink-0' />
+          <div className='min-w-0'>
+            <div className='text-[10px] uppercase tracking-wider text-gray-500'>
+              Created
+            </div>
+            <div className='text-xs font-medium text-gray-800 truncate'>
+              {proposal?.created_at
+                ? format(new Date(proposal.created_at), "dd MMM yyyy")
+                : "—"}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Description */}
       <p className='text-xs text-gray-600 leading-relaxed line-clamp-2 mb-3 flex-1'>
         {proposal?.description || "No description provided."}
       </p>
-
-      {/* View Document Button */}
-      {proposal?.document_key && (
-        <div
-          className='mt-auto pt-2 border-t border-gray-100'
-          onClick={(e) => e.stopPropagation()}>
-          <CustomButton
-            Icon={FileText}
-            text='View Document'
-            onClick={() => window.open(proposal.document_key, "_blank")}
-            variant='outline'
-            className='w-full text-xs hover:bg-sky-50 hover:border-sky-200 hover:text-sky-700 transition-colors'
-          />
-        </div>
-      )}
     </div>
   );
 };

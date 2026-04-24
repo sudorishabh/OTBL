@@ -81,7 +81,7 @@ const WorkOrderDetailsCard = ({ workOrder, stats }: Props) => {
     "N/A";
 
   return (
-    <>
+    <div className='flex flex-col gap-4'>
       <Card className='relative shadow-sm gap-1 border-[0.1px] bg-linear-to-br border-emerald-400 from-white to-gray-50'>
         <CardHeader className='pb-3'>
           <div className='flex items-start justify-between'>
@@ -272,7 +272,7 @@ const WorkOrderDetailsCard = ({ workOrder, stats }: Props) => {
           stat={`${Number(stats.budgetUtilization).toFixed(1)}%`}
         />
       </div>
-    </>
+    </div>
   );
 };
 

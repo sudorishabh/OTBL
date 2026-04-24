@@ -51,7 +51,7 @@ const Btn = ({
       break;
     case "outline":
       variantStyle =
-        "bg-white text-gray-800 shadow-none hover:bg-gray-50 cursor-pointer border border-gray-200 shadow-sm transition-all duration-200  h-8 text-[0.813rem]";
+        "bg-white text-gray-800 shadow-none hover:bg-gray-50 cursor-pointer border border-gray-300/70 shadow-s transition-all duration-200  h-8 text-[0.813rem]";
       break;
   }
 

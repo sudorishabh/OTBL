@@ -18,6 +18,7 @@ import {
 
 import { useHandleParams } from "@/hooks/useHandleParams";
 import CustomButton from "@/components/shared/btn";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { trpc } from "@/lib/trpc";
 
 type WorkOrder = {
@@ -146,8 +147,8 @@ const MiniWOCard = ({ wo }: { wo: WorkOrder }) => {
           router.push(`/dashboard/client/workorder/${wo.id}`);
         }
       }}
-      className='group relative cursor-pointer shadow overflow-hidden rounded-xl border border-gray-200/70 bg-white p-3.5 transition-all duration-200
-        hover:-translate-y-px hover:border-emerald-200 hover:shadow-md
+      className='group relative cursor-pointer border hover:shadow-sm  bg-gray-100/50 hover:border-green-400 overflow-hidden rounded-lg p-3.5 transition-all duration-200
+        hover:-translate-y-px 
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 focus-visible:ring-offset-2'>
       {/* Header: code + status */}
       <div className='flex items-start justify-between gap-2 mb-2.5'>
@@ -329,33 +330,34 @@ const RightSidePanel = ({ proposals }: Props) => {
         </div>
 
         {/* ─── Tab Toggle ───────────────────────────────────────── */}
-        <div className='flex rounded-lg bg-gray-100 p-0.5'>
-          {tabs.map((tab) => {
-            const isActive = activeTab === tab.key;
-            return (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${
-                  isActive
-                    ? "bg-white text-gray-800 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
-                }`}>
-                {tab.label}
-                <span
-                  className={`inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-semibold ${
-                    isActive
-                      ? tab.color === "amber"
-                        ? "bg-amber-100 text-amber-700"
-                        : "bg-emerald-100 text-emerald-700"
-                      : "bg-gray-200 text-gray-600"
-                  }`}>
-                  {tab.count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+        <Tabs
+          value={activeTab}
+          onValueChange={(v) => setActiveTab(v as TabKey)}
+          className='w-full'>
+          <TabsList className='w-full flex rounded-lg bg-gray-100 p-0.5 h-auto'>
+            {tabs.map((tab) => {
+              const isActive = activeTab === tab.key;
+              return (
+                <TabsTrigger
+                  key={tab.key}
+                  value={tab.key}
+                  className='flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-gray-800 data-[state=active]:shadow-sm text-gray-500 hover:text-gray-700'>
+                  {tab.label}
+                  <span
+                    className={`inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-semibold ${
+                      isActive
+                        ? tab.color === "amber"
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-emerald-100 text-emerald-700"
+                        : "bg-gray-200 text-gray-600"
+                    }`}>
+                    {tab.count}
+                  </span>
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+        </Tabs>
       </div>
 
       {/* ─── Content ────────────────────────────────────────────── */}

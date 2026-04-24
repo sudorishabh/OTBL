@@ -234,7 +234,7 @@ const WorkOrder = ({ workOrderId, from }: Props) => {
           router.push(`/dashboard/client/${workOrderData.workOrder.client_id}`);
         }
       }}>
-      <div className='mt-4 space-y-6'>
+      <div className='mt-4 space-y-4'>
         <WorkOrderDetailsCard
           workOrder={derivedWorkOrder}
           stats={statsForComponent}
