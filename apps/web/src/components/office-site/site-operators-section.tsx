@@ -42,15 +42,16 @@ const SiteOperatorsSection: React.FC<Props> = ({ siteId, siteUsers }) => {
     onError: (e: unknown) => handleError(e, { showToast: true }),
   });
 
-  const { data: operatorsData, isLoading } = trpc.userQuery.getUsersByRole.useQuery(
-    {
-      role: ROLES.OPERATOR,
-      page,
-      limit: itemsPerPage,
-      search,
-    },
-    { enabled: open },
-  );
+  const { data: operatorsData, isLoading } =
+    trpc.userQuery.getUsersByRole.useQuery(
+      {
+        role: ROLES.OPERATOR,
+        page,
+        limit: itemsPerPage,
+        search,
+      },
+      { enabled: open },
+    );
 
   useEffect(() => {
     setPage(1);
@@ -82,7 +83,7 @@ const SiteOperatorsSection: React.FC<Props> = ({ siteId, siteUsers }) => {
   );
 
   return (
-    <div className='mt-3 border-t pt-3'>
+    <div className='mt-3'>
       <button
         type='button'
         onClick={() => setOpen((v) => !v)}

@@ -98,20 +98,18 @@ const getProcessTypeConfig = (type: string) => {
   switch (type) {
     case "bioremediation":
       return {
-        icon: Beaker,
         label: "Bioremediation",
         color: "text-emerald-600",
       };
     case "restoration":
-      return { icon: Shovel, label: "Restoration", color: "text-green-600" };
+      return { label: "Restoration", color: "text-green-600" };
     case "bioremediation_restoration":
       return {
-        icon: AlignEndHorizontal,
         label: "Bio + Restoration",
         color: "text-emerald-600",
       };
     default:
-      return { icon: FileCode, label: type, color: "text-gray-600" };
+      return { label: type, color: "text-gray-600" };
   }
 };
 
@@ -173,11 +171,10 @@ const ResolvedWorkOrderSide = ({
   const processConfig = workOrder
     ? getProcessTypeConfig(workOrder.process_type)
     : null;
-  const ProcessIcon = processConfig?.icon;
 
   return (
     <div
-      className={`pl-3 rounded-lg transition-colors duration-200 -m-1 p-1 ${
+      className={`pl-3 rounded transition-colors duration-200 -m-1 p-1 ${
         workOrder ? "cursor-pointer hover:bg-emerald-50/50" : ""
       }`}
       onClick={() => {
@@ -210,21 +207,15 @@ const ResolvedWorkOrderSide = ({
               : "Untitled Work Order"}
           </h4>
 
-          {/* Process type */}
-          {processConfig && ProcessIcon && (
-            <div className='flex items-center gap-1.5 mb-2.5'>
-              <ProcessIcon className={`w-3.5 h-3.5 ${processConfig.color}`} />
-              <span
-                className={`text-[11px] font-medium ${processConfig.color}`}>
-                {processConfig.label}
-              </span>
-            </div>
-          )}
+          {processConfig ? (
+            <span className={`text-[11px] font-medium ${processConfig.color}`}>
+              {processConfig.label}
+            </span>
+          ) : null}
 
           {/* Date chips */}
           <div className='grid grid-cols-3 gap-1.5 mb-2.5'>
-            <div className='flex items-center gap-1 rounded-md border border-gray-100 bg-linear-to-r from-blue-50/40 to-transparent px-2 py-1.5'>
-              <Clock className='w-3 h-3 text-blue-500 shrink-0' />
+            <div className='flex items-center gap-1 rounded-md bg-white border border-gray-200/70 px-2 py-1.5'>
               <div className='min-w-0'>
                 <div className='text-[8px] uppercase tracking-wider text-gray-400'>
                   Start
@@ -234,8 +225,7 @@ const ResolvedWorkOrderSide = ({
                 </div>
               </div>
             </div>
-            <div className='flex items-center gap-1 rounded-md border border-gray-100 bg-linear-to-r from-orange-50/40 to-transparent px-2 py-1.5'>
-              <Calendar className='w-3 h-3 text-orange-500 shrink-0' />
+            <div className='flex items-center gap-1 rounded-md bg-white border border-gray-200/70 px-2 py-1.5'>
               <div className='min-w-0'>
                 <div className='text-[8px] uppercase tracking-wider text-gray-400'>
                   End
@@ -245,8 +235,7 @@ const ResolvedWorkOrderSide = ({
                 </div>
               </div>
             </div>
-            <div className='flex items-center gap-1 rounded-md border border-gray-100 bg-linear-to-r from-emerald-50/40 to-transparent px-2 py-1.5'>
-              <CalendarCheck className='w-3 h-3 text-emerald-500 shrink-0' />
+            <div className='flex items-center gap-1 rounded-md bg-white border border-gray-200/70 px-2 py-1.5'>
               <div className='min-w-0'>
                 <div className='text-[8px] uppercase tracking-wider text-gray-400'>
                   Handover
@@ -263,7 +252,7 @@ const ResolvedWorkOrderSide = ({
             {workOrder.agreement_number && (
               <div className='flex items-center gap-1 text-[11px] text-gray-400'>
                 <FileCode className='w-3 h-3' />
-                Agr: {workOrder.agreement_number}
+                AGR: {workOrder.agreement_number}
               </div>
             )}
             {workOrder.document_key && (
@@ -473,19 +462,13 @@ const ProposalWODetailsDialog = ({ clientId }: Props) => {
               return (
                 <div
                   key={proposal.id}
-                  className={`group rounded-xl border bg-white shadow-sm hover:shadow-md
+                  className={`group rounded-md border bg-gray-100/50 shadow-sm hover:shadow-md
                     transition-all duration-300
-                    ${workOrder ? "border-l-[3px] border-l-emerald-300" : "border-l-[3px] border-l-gray-200"}
-                    ${isFetching && !isLoading ? "opacity-60" : "opacity-100"}`}
-                  style={{
-                    animationDelay: `${index * 60}ms`,
-                    animation: "fadeInUp 0.4s ease-out both",
-                  }}>
+                    ${isFetching && !isLoading ? "opacity-60" : "opacity-100"}`}>
                   <div className='p-5'>
                     <div className='grid grid-cols-[1fr_48px_1fr] items-stretch gap-0'>
-                      {/* ─── Proposal Side ───────────────────────── */}
                       <div
-                        className='pr-3 cursor-pointer rounded-lg hover:bg-sky-50/50 transition-colors duration-200 -m-1 p-1'
+                        className='pr-3 cursor-pointer rounded hover:bg-sky-50/50 transition-colors duration-200 -m-1 p-1'
                         onClick={() => {
                           deleteParams(["dialog", "window"]);
                           setTimeout(() => {
@@ -496,28 +479,19 @@ const ProposalWODetailsDialog = ({ clientId }: Props) => {
                           }, 100);
                         }}
                         title='View proposal details'>
-                        {/* Header badges */}
-                        <div className='flex items-center gap-2 mb-2.5'>
-                          <span className='inline-flex items-center px-2 py-0.5 rounded-md bg-sky-50 text-sky-700 text-[11px] font-mono font-medium ring-1 ring-sky-200'>
-                            <Hash className='w-3 h-3 mr-1 opacity-60' />
-                            {proposal.code}
-                          </span>
-                          <span
-                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${proposalStatus.bg} ${proposalStatus.text} ring-1 ${proposalStatus.ring}`}>
-                            <ProposalStatusIcon className='w-3 h-3' />
-                            {capitalFirstLetter(proposal.status)}
-                          </span>
-                        </div>
+                        <span className='inline-flex mb-2.5 items-center px-2 py-0.5 rounded bg-sky-50 text-sky-700 text-[11px] font-mono font-medium ring-1 ring-sky-200'>
+                          <Hash className='w-3 h-3 mr-1 opacity-60' />
+                          {proposal.code}
+                        </span>
 
                         {/* Title */}
-                        <h4 className='text-sm font-semibold text-gray-900 leading-snug line-clamp-2 mb-3'>
+                        <h4 className='text-sm font-semibold text-gray-900 leading-snug line-clamp-2 mb-2'>
                           {capitalFirstLetter(proposal.title)}
                         </h4>
 
                         {/* Info chips */}
-                        <div className='grid grid-cols-1 gap-2 mb-3'>
-                          <div className='flex items-center gap-2 rounded-lg border border-gray-100 bg-linear-to-r from-blue-50/60 to-transparent px-2.5 py-2'>
-                            <CalendarDays className='w-3.5 h-3.5 text-blue-600 shrink-0' />
+                        <div className='grid grid-cols-2 gap-2 mb-3'>
+                          <div className='flex items-center gap-2 rounded-lg border bg-white border-gray-200/70 px-2.5 py-2'>
                             <div className='min-w-0'>
                               <div className='text-[9px] uppercase tracking-wider text-gray-400 font-medium'>
                                 Submitted
@@ -527,14 +501,20 @@ const ProposalWODetailsDialog = ({ clientId }: Props) => {
                               </div>
                             </div>
                           </div>
+                          <div className='flex items-center gap-2 rounded-lg border bg-white border-gray-200/70 px-2.5 py-2'>
+                            <div className='min-w-0'>
+                              <div className='text-[9px] uppercase tracking-wider text-gray-400 font-medium'>
+                                Created
+                              </div>
+                              <div className='text-xs font-medium text-gray-800 truncate'>
+                                {formatDate(proposal.created_at)}
+                              </div>
+                            </div>
+                          </div>
                         </div>
 
                         {/* Meta row */}
                         <div className='flex items-center gap-3'>
-                          <div className='flex items-center gap-1 text-[11px] text-gray-400'>
-                            <Clock className='w-3 h-3' />
-                            {formatDate(proposal.created_at)}
-                          </div>
                           {proposal.document_key && (
                             <button
                               onClick={(e) => {

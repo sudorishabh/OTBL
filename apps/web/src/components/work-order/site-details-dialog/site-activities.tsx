@@ -544,9 +544,8 @@ const PhaseForm = ({
   return (
     <div className='space-y-5'>
       {/* === Documents Section === */}
-      <div className='rounded-xl border border-slate-200 bg-white p-4'>
-        <div className='flex items-center gap-2 mb-3'>
-          <FileText className='size-4 text-slate-500' />
+      <div className='rounded-xl border border-slate-200 bg-gray-100/50 p-4'>
+        <div className='mb-3'>
           <h4 className='text-[11px] font-semibold text-slate-600 uppercase tracking-wider'>
             Required Documents
           </h4>
@@ -683,9 +682,8 @@ const PhaseForm = ({
 
       {/* === SOR Availability (compact table) === */}
       {activities.some((a) => a.sor_estimated_quantity) && (
-        <div className='rounded-lg border border-slate-200 bg-white overflow-hidden'>
-          <div className='px-3 py-1.5 border-b border-slate-100 flex items-center gap-1.5 bg-slate-50/80'>
-            <BarChart3 className='size-3.5 text-blue-600 shrink-0' />
+        <div className='rounded-lg border bg-gray-100/50 overflow-hidden'>
+          <div className='px-3 py-1.5 border-b flex items-center gap-1.5 bg-slate-50/80'>
             <span className='text-[11px] font-semibold text-slate-600'>
               SOR availability
             </span>
@@ -760,7 +758,9 @@ const PhaseForm = ({
                           : "bg-emerald-500";
 
                     return (
-                      <TableRow key={activity.id} className='hover:bg-slate-50/50'>
+                      <TableRow
+                        key={activity.id}
+                        className='hover:bg-slate-50/50'>
                         <TableCell className='px-2 py-1.5 max-w-[140px] truncate font-medium text-slate-700'>
                           {formatName(activity.activity)}
                         </TableCell>
@@ -775,9 +775,7 @@ const PhaseForm = ({
                         </TableCell>
                         <TableCell
                           className={`px-2 py-1.5 text-right tabular-nums font-semibold ${
-                            available < 0
-                              ? "text-red-600"
-                              : "text-emerald-700"
+                            available < 0 ? "text-red-600" : "text-emerald-700"
                           }`}>
                           {available.toFixed(2)}
                         </TableCell>
@@ -811,18 +809,10 @@ const PhaseForm = ({
           (a) => a.activity === "trans_cont_soil",
         );
         return (
-          <div className='rounded-xl border border-slate-200 overflow-hidden bg-white shadow-sm'>
-            <div className='px-4 py-3 bg-gradient-to-r from-slate-50 to-slate-50/50 border-b border-slate-200 flex items-center gap-2'>
-              <div className='w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center'>
-                <Rows3 className='size-3.5 text-slate-500' />
-              </div>
-              <span className='text-[11px] font-semibold text-slate-700'>
-                Activity Data
-              </span>
-            </div>
+          <div className='rounded-xl border bg-gray-100/50 overflow-hidden'>
             <Table className='w-full text-xs'>
               <TableHeader>
-                <TableRow className='bg-slate-50/80 border-b border-slate-200 hover:bg-slate-50/80'>
+                <TableRow className='border-b'>
                   <TableHead className='px-4 py-3 text-left w-[30%] text-slate-500 font-semibold h-auto text-[10px] uppercase tracking-wider'>
                     Activity Name
                   </TableHead>
@@ -846,7 +836,7 @@ const PhaseForm = ({
                   )}
                 </TableRow>
               </TableHeader>
-              <TableBody className='divide-y divide-slate-100'>
+              <TableBody className='divide-y'>
                 {activities.map((activity) => {
                   const currentData = formData[activity.activity] || {
                     estimated_quantity: "",
@@ -1098,9 +1088,9 @@ const SiteActivities = ({
   return (
     <div className='space-y-5'>
       {/* Main Phase Card */}
-      <div className='rounded-xl bg-white border border-slate-200 shadow-sm overflow-hidden'>
+      <div className='rounded-xl bg-white overflow-hidden'>
         {/* Header */}
-        <div className='px-5 py-4 bg-gradient-to-r from-slate-50 via-slate-50/80 to-transparent border-b border-slate-200'>
+        <div className='py-4 border-b border-slate-200'>
           <div className='flex items-center justify-between'>
             <div className='flex items-center gap-3'>
               <div
@@ -1133,7 +1123,7 @@ const SiteActivities = ({
         <Tabs
           defaultValue='estimate_sub-wo'
           className='w-full'>
-          <div className='px-5 pt-3'>
+          <div className=' pt-3'>
             <TabsList className='grid w-full max-w-xs grid-cols-2 bg-slate-100 p-1 rounded-lg h-9'>
               {PHASES.map((phase) => (
                 <TabsTrigger
@@ -1150,7 +1140,7 @@ const SiteActivities = ({
             <TabsContent
               key={phase}
               value={phase}
-              className='p-5 pt-4'>
+              className='py-5 pt-4'>
               {siteActivitiesQuery.data &&
               siteActivitiesQuery.data.length > 0 ? (
                 <PhaseForm

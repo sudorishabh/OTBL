@@ -102,20 +102,18 @@ const getProcessIcon = (type: string) => {
   switch (type) {
     case "bioremediation":
       return {
-        icon: Beaker,
         label: "Bioremediation",
         color: "text-emerald-600",
       };
     case "restoration":
-      return { icon: Shovel, label: "Restoration", color: "text-green-600" };
+      return { label: "Restoration", color: "text-green-600" };
     case "bioremediation_restoration":
       return {
-        icon: AlignEndHorizontal,
         label: "Bio + Restoration",
         color: "text-emerald-600",
       };
     default:
-      return { icon: FileCode, label: type, color: "text-gray-600" };
+      return { label: type, color: "text-gray-600" };
   }
 };
 
@@ -134,7 +132,6 @@ const MiniWOCard = ({ wo }: { wo: WorkOrder }) => {
   const statusConfig = getStatusConfig(wo.status);
   const StatusIcon = statusConfig.icon;
   const processConfig = getProcessIcon(wo.process_type);
-  const ProcessIcon = processConfig.icon;
 
   return (
     <div
@@ -153,7 +150,7 @@ const MiniWOCard = ({ wo }: { wo: WorkOrder }) => {
       {/* Header: code + status */}
       <div className='flex items-start justify-between gap-2 mb-2.5'>
         <div className='min-w-0'>
-          <span className='inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-mono font-semibold text-emerald-700 ring-1 ring-emerald-200'>
+          <span className='inline-flex items-center rounded bg-emerald-50 px-2 py-0.5 text-[10px] font-mono font-semibold text-emerald-700 ring-1 ring-emerald-200'>
             {wo.code}
           </span>
         </div>
@@ -171,8 +168,7 @@ const MiniWOCard = ({ wo }: { wo: WorkOrder }) => {
 
       {/* Meta row */}
       <div className='flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px]'>
-        <div className='inline-flex items-center gap-1.5 rounded-md bg-gray-50 px-2 py-1 ring-1 ring-gray-100'>
-          <ProcessIcon className={`w-3.5 h-3.5 ${processConfig.color}`} />
+        <div className='inline-flex items-center gap-1.5 rounded-md bg-gray-50 py-1 ring-1 ring-gray-100'>
           <span className={`font-medium ${processConfig.color}`}>
             {processConfig.label}
           </span>

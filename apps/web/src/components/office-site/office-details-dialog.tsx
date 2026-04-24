@@ -19,13 +19,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { capitalizeEachWord } from "@pkg/utils";
+import { capitalFirstLetter, capitalizeEachWord } from "@pkg/utils";
 import StatusIndicator from "@/components/shared/status-indicator";
 import { Search, UserMinus } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 import SiteOperatorsSection from "./site-operators-section";
 import toast from "react-hot-toast";
 import { useApiError } from "@/hooks/useApiError";
+import { format } from "date-fns";
 
 const ITEMS_PER_PAGE = 50;
 
@@ -128,7 +129,7 @@ const OfficeDetailsDialog = () => {
       heightMode='full'>
       <div className='space-y-4'>
         {/* Search Bar */}
-        <div className='relative'>
+        <div className='relative pt-1'>
           <Search className='absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400' />
           <input
             type='text'
@@ -162,34 +163,40 @@ const OfficeDetailsDialog = () => {
               {allSites.map((site) => (
                 <Card
                   key={site.id}
-                  className='hover:shadow-md transition-shadow'>
-                  <CardHeader className='pb-3'>
+                  className=' py-4 gap-4 rounded-sm'>
+                  <CardHeader className='px-4 gap-0'>
                     <div className='flex items-start justify-between'>
                       <div>
                         <CardTitle className='text-base flex items-center gap-2'>
-                          <StatusIndicator
-                            status={
-                              site.status === "active" ? "active" : "inactive"
-                            }
-                            size='sm'
-                          />
-                          {capitalizeEachWord(site.name)}
+                          {capitalizeEachWord(site.name)}{" "}
+                          {site.status === "active" ? (
+                            <span className='bg-green-100 text-green-800 px-2 rounded-full text-xs'>
+                              Active
+                            </span>
+                          ) : (
+                            <span className='bg-red-100 text-red-800 px-2 rounded-full text-xs'>
+                              Inactive
+                            </span>
+                          )}
                         </CardTitle>
-                        <CardDescription className='text-xs mt-1'>
-                          {site.address}, {site.city}, {site.state} -{" "}
-                          {site.pincode}
+                        <CardDescription className='text-xs'>
+                          {capitalFirstLetter(site.address)},{" "}
+                          {capitalizeEachWord(site.city)},{" "}
+                          {capitalizeEachWord(site.state)} - {site.pincode}
                         </CardDescription>
                       </div>
-                      <div className='text-xs text-muted-foreground'>
-                        {new Date(site.created_at).toLocaleDateString()}
+                      <div className='flex items-center gap-2'>
+                        <div className='text-xs text-muted-foreground'>
+                          {format(new Date(site.created_at), "dd MMM yyyy")}
+                        </div>
                       </div>
                     </div>
                   </CardHeader>
 
-                  <CardContent className='space-y-2'>
+                  <CardContent className='px-4'>
                     {site.users && site.users.length > 0 ? (
                       <div className='border rounded-lg bg-white overflow-x-auto'>
-                        <Table>
+                        <Table className='bg-gray-100/50'>
                           <TableHeader>
                             <TableRow>
                               <TableHead className='text-xs h-8'>
@@ -256,9 +263,9 @@ const OfficeDetailsDialog = () => {
                         </Table>
                       </div>
                     ) : (
-                      <p className='text-xs text-muted-foreground py-1'>
+                      <span className='text-xs text-gray-500 py-1 bg-red-50 rounded px-2'>
                         No operators assigned to this site yet.
-                      </p>
+                      </span>
                     )}
                     <SiteOperatorsSection
                       siteId={site.id}
