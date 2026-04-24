@@ -390,10 +390,10 @@ const CombinedList = ({
   onDeleteOil: (id: number) => void;
 }) => {
   return (
-    <div className='border rounded-lg overflow-hidden bg-white/50 border-slate-200 mt-4'>
+    <div className='border rounded-lg overflow-hidden bg-gray-100/50 border-slate-200 mt-4'>
       <Table className='w-full text-xs'>
-        <TableHeader className='bg-gray-200/50'>
-          <TableRow className='border-b border-slate-200 hover:bg-transparent'>
+        <TableHeader className='bg-slate-50/80'>
+          <TableRow className='border-b hover:bg-transparent'>
             <TableHead className='w-[140px] font-semibold text-slate-600 pl-4'>
               Type
             </TableHead>
@@ -412,7 +412,7 @@ const CombinedList = ({
             <TableHead className='w-[50px]'></TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody className='bg-white/40'>
+        <TableBody className='divide-y'>
           {items.length === 0 ? (
             <TableRow>
               <TableCell
@@ -425,7 +425,7 @@ const CombinedList = ({
             items.map((item) => (
               <TableRow
                 key={`${item.type}-${item.id}`}
-                className='group hover:bg-slate-50/50 transition-colors border-slate-100'>
+                className='group hover:bg-slate-50/50 transition-colors'>
                 <TableCell className='pl-4 py-3 font-medium'>
                   <div className='flex items-center gap-2'>
                     <div
@@ -604,92 +604,92 @@ export const BioremediationSections = ({ woSiteId }: { woSiteId: number }) => {
   });
 
   return (
-    <div className='space-y-6 mt-6'>
-      <div className='rounded-xl p-5 border bg-gray-100/60 border-slate-200'>
-        <div className='flex flex-col sm:flex-row items-center justify-between mb-6 gap-4'>
-          <h3 className='text-sm font-semibold uppercase tracking-wide flex items-center gap-2 text-slate-700'>
-            <FlaskConical className='w-4 h-4 text-emerald-600' />
+    <div className='space-y-6 pt-6 border-t border-slate-200'>
+      <div className='flex flex-col sm:flex-row items-center justify-between mb-6 gap-4'>
+        <div>
+          <h3 className='text-sm font-semibold tracking-wide text-slate-700'>
             Bioremediation Activities
           </h3>
-          <div className='flex items-center gap-3 w-full sm:w-auto overflow-x-auto'>
-            {/* Filter Select */}
-            <Select
-              value={filterType}
-              onValueChange={(val: "all" | "bio" | "oil") =>
-                setFilterType(val)
-              }>
-              <SelectTrigger className='h-8 w-[140px] text-xs bg-white'>
-                <SelectValue placeholder='Filter Activities' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='all'>All Activities</SelectItem>
-                <SelectItem value='bio'>Bio Samples Only</SelectItem>
-                <SelectItem value='oil'>Oil Zapping Only</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Bio Sample Dialog */}
-            <Dialog
-              open={bioDialogOpen}
-              onOpenChange={setBioDialogOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  size='sm'
-                  variant='outline'
-                  className='border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 transition-colors whitespace-nowrap h-8 text-xs'>
-                  <Plus className='w-3.5 h-3.5 mr-2' />
-                  Add Bio Sampling
-                </Button>
-              </DialogTrigger>
-              <DialogContent className='sm:max-w-md'>
-                <DialogHeader>
-                  <DialogTitle className='flex items-center gap-2 text-emerald-700'>
-                    <FlaskConical className='w-5 h-5' />
-                    Add Bio Sample
-                  </DialogTitle>
-                </DialogHeader>
-                <BioSampleForm
-                  woSiteId={woSiteId}
-                  onSuccess={() => setBioDialogOpen(false)}
-                />
-              </DialogContent>
-            </Dialog>
-
-            {/* Oil Zapping Dialog */}
-            <Dialog
-              open={oilDialogOpen}
-              onOpenChange={setOilDialogOpen}>
-              <DialogTrigger asChild>
-                <Button
-                  size='sm'
-                  variant='outline'
-                  className='border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800 transition-colors whitespace-nowrap h-8 text-xs'>
-                  <Plus className='w-3.5 h-3.5 mr-2' />
-                  Add Oil Zapping
-                </Button>
-              </DialogTrigger>
-              <DialogContent className='sm:max-w-md'>
-                <DialogHeader>
-                  <DialogTitle className='flex items-center gap-2 text-blue-700'>
-                    <Droplet className='w-5 h-5' />
-                    Add Oil Zapping Entry
-                  </DialogTitle>
-                </DialogHeader>
-                <OilZappingForm
-                  woSiteId={woSiteId}
-                  onSuccess={() => setOilDialogOpen(false)}
-                />
-              </DialogContent>
-            </Dialog>
-          </div>
+          <p className='text-xs text-slate-500'>
+            Enter bio samples and oil zapping activities for this site.
+          </p>
         </div>
+        <div className='flex items-center gap-3 w-full sm:w-auto overflow-x-auto'>
+          {/* Filter Select */}
+          <Select
+            value={filterType}
+            onValueChange={(val: "all" | "bio" | "oil") => setFilterType(val)}>
+            <SelectTrigger className='h-8 w-[140px] text-xs bg-white'>
+              <SelectValue placeholder='Filter Activities' />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='all'>All Activities</SelectItem>
+              <SelectItem value='bio'>Bio Samples Only</SelectItem>
+              <SelectItem value='oil'>Oil Zapping Only</SelectItem>
+            </SelectContent>
+          </Select>
 
-        <CombinedList
-          items={filteredItems}
-          onDeleteBio={handleDeleteBioSample}
-          onDeleteOil={handleDeleteOilZapping}
-        />
+          {/* Bio Sample Dialog */}
+          <Dialog
+            open={bioDialogOpen}
+            onOpenChange={setBioDialogOpen}>
+            <DialogTrigger asChild>
+              <Button
+                size='sm'
+                variant='outline'
+                className='border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 transition-colors whitespace-nowrap h-8 text-xs'>
+                <Plus className='w-3.5 h-3.5 mr-2' />
+                Add Bio Sampling
+              </Button>
+            </DialogTrigger>
+            <DialogContent className='sm:max-w-md'>
+              <DialogHeader>
+                <DialogTitle className='flex items-center gap-2 text-emerald-700'>
+                  <FlaskConical className='w-5 h-5' />
+                  Add Bio Sample
+                </DialogTitle>
+              </DialogHeader>
+              <BioSampleForm
+                woSiteId={woSiteId}
+                onSuccess={() => setBioDialogOpen(false)}
+              />
+            </DialogContent>
+          </Dialog>
+
+          {/* Oil Zapping Dialog */}
+          <Dialog
+            open={oilDialogOpen}
+            onOpenChange={setOilDialogOpen}>
+            <DialogTrigger asChild>
+              <Button
+                size='sm'
+                variant='outline'
+                className='border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 hover:text-blue-800 transition-colors whitespace-nowrap h-8 text-xs'>
+                <Plus className='w-3.5 h-3.5 mr-2' />
+                Add Oil Zapping
+              </Button>
+            </DialogTrigger>
+            <DialogContent className='sm:max-w-md'>
+              <DialogHeader>
+                <DialogTitle className='flex items-center gap-2 text-blue-700'>
+                  <Droplet className='w-5 h-5' />
+                  Add Oil Zapping Entry
+                </DialogTitle>
+              </DialogHeader>
+              <OilZappingForm
+                woSiteId={woSiteId}
+                onSuccess={() => setOilDialogOpen(false)}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
+
+      <CombinedList
+        items={filteredItems}
+        onDeleteBio={handleDeleteBioSample}
+        onDeleteOil={handleDeleteOilZapping}
+      />
     </div>
   );
 };

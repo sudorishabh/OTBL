@@ -6,9 +6,11 @@ import { capitalFirstLetter } from "@pkg/utils";
 import useHandleParams from "@/hooks/useHandleParams";
 import SiteDetailsCard from "./site-details-card";
 import SiteActivities from "./site-activities";
+import SiteExpensesSection from "./site-expenses-section";
 import CustomButton from "@/components/shared/btn";
 import { FolderOpen } from "lucide-react";
 import { SiteOperatorUploadsDialog } from "./site-operator-uploads-dialog";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface SiteDetailDialogProps {
   siteData: {
@@ -87,10 +89,37 @@ const SiteDetailDialog = () => {
           </div>
         )}
         <SiteDetailsCard siteDetails={siteDetails} />
-        <SiteActivities
-          woSiteId={woSiteId}
-          processType={siteDetails?.process_type}
-        />
+
+        <Tabs defaultValue='activities'>
+          <TabsList className='w-full grid grid-cols-2 h-9'>
+            <TabsTrigger value='activities' className='text-xs'>
+              Activities
+            </TabsTrigger>
+            <TabsTrigger value='expenses' className='text-xs'>
+              Expenses &amp; P&amp;L
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value='activities' className='mt-4'>
+            <SiteActivities
+              woSiteId={woSiteId}
+              processType={siteDetails?.process_type}
+            />
+          </TabsContent>
+
+          <TabsContent value='expenses' className='mt-4'>
+            {woSiteId > 0 && siteDetails?.work_order?.office_id ? (
+              <SiteExpensesSection
+                woSiteId={woSiteId}
+                officeId={siteDetails.work_order.office_id}
+              />
+            ) : (
+              <div className='text-center py-8 text-gray-400 text-sm'>
+                Loading site details...
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
       </div>
 
       {isOpenDialog && woSiteId > 0 && (

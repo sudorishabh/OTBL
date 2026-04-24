@@ -647,3 +647,72 @@ export const bioOilZappingTable = mysqlTable("bio_oil_zapping", {
   created_at: timestamp("created_at").notNull().defaultNow(),
   updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
 });
+
+// Contractor master table — scoped to an office
+export const contractorTable = mysqlTable(
+  "contractors",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    office_id: int("office_id")
+      .notNull()
+      .references(() => officeTable.id, { onDelete: "cascade" }),
+    name: varchar("name", { length: 255 }).notNull(),
+    contact_number: varchar("contact_number", { length: 15 }),
+    email: varchar("email", { length: 320 }),
+    address: varchar("address", { length: 500 }),
+    gst_number: varchar("gst_number", { length: 15 }),
+    pan_number: varchar("pan_number", { length: 10 }),
+    status: varchar("status", {
+      length: 50,
+      enum: [STATUS.ACTIVE, STATUS.INACTIVE],
+    })
+      .notNull()
+      .default(STATUS.ACTIVE),
+    created_at: timestamp("created_at").notNull().defaultNow(),
+    updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+  },
+  (table) => [
+    index("contractor_office_idx").on(table.office_id),
+    index("contractor_name_idx").on(table.name),
+  ],
+);
+
+// Expense records per work-order site
+export const workOrderSiteExpenseTable = mysqlTable(
+  "work_order_site_expenses",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    work_order_site_id: int("work_order_site_id")
+      .notNull()
+      .references(() => workOrderSiteTable.id, { onDelete: "cascade" }),
+    expense_type: varchar("expense_type", {
+      length: 50,
+      enum: [
+        "contractor_payment",
+        "labour",
+        "material",
+        "equipment",
+        "miscellaneous",
+      ],
+    }).notNull(),
+    contractor_id: int("contractor_id").references(() => contractorTable.id, {
+      onDelete: "set null",
+    }),
+    description: varchar("description", { length: 500 }).notNull(),
+    amount: decimal("amount", { precision: 20, scale: 2 }).notNull(),
+    expense_date: timestamp("expense_date").notNull(),
+    invoice_number: varchar("invoice_number", { length: 100 }),
+    notes: text("notes"),
+    created_by: int("created_by").references(() => userTable.id, {
+      onDelete: "set null",
+    }),
+    created_at: timestamp("created_at").notNull().defaultNow(),
+    updated_at: timestamp("updated_at").notNull().defaultNow().onUpdateNow(),
+  },
+  (table) => [
+    index("expense_wo_site_idx").on(table.work_order_site_id),
+    index("expense_contractor_idx").on(table.contractor_id),
+    index("expense_type_idx").on(table.expense_type),
+    index("expense_date_idx").on(table.expense_date),
+  ],
+);

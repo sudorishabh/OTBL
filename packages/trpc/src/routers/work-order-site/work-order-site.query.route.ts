@@ -241,6 +241,7 @@ export const workOrderSiteQueryRouter = router({
               wo_code: workOrderTable.code,
               wo_title: workOrderTable.title,
               wo_process_type: workOrderTable.process_type,
+              wo_office_id: workOrderTable.office_id,
             })
             .from(workOrderSiteTable)
             .leftJoin(siteTable, eq(workOrderSiteTable.site_id, siteTable.id))
@@ -294,6 +295,7 @@ export const workOrderSiteQueryRouter = router({
               code: woSite.wo_code,
               title: woSite.wo_title,
               process_type: woSite.wo_process_type,
+              office_id: woSite.wo_office_id,
             },
             activities,
           };

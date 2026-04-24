@@ -18,6 +18,10 @@ import { workOrderSiteMutationRouter } from "./routers/work-order-site/work-orde
 // import { siteActivityQueryRouter } from "./routers/site-activity/site-activity.query.route";
 import { proposalMutationRouter } from "./routers/proposal/proposal.mutation.route";
 import { proposalQueryRouter } from "./routers/proposal/proposal.query.route";
+import { contractorQueryRouter } from "./routers/contractor/contractor.query.route";
+import { contractorMutationRouter } from "./routers/contractor/contractor.mutation.route";
+import { expenseQueryRouter } from "./routers/expense/expense.query.route";
+import { expenseMutationRouter } from "./routers/expense/expense.mutation.route";
 // import { technologyQueryRouter } from "./routers/technology/technology.query.route";
 import { sharePointQueryRouter } from "./routers/sharepoint/sharepoint.query.route";
 import { sharePointMutationRouter } from "./routers/sharepoint/sharepoint.mutation.route";
@@ -64,6 +68,14 @@ export const appRouter = router({
 
   proposalMutation: proposalMutationRouter,
   proposalQuery: proposalQueryRouter,
+
+  // Contractor management
+  contractorQuery: contractorQueryRouter,
+  contractorMutation: contractorMutationRouter,
+
+  // Expense management
+  expenseQuery: expenseQueryRouter,
+  expenseMutation: expenseMutationRouter,
 
   // Technology management
   // technologyQuery: technologyQueryRouter,
