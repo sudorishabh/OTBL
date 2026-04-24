@@ -44,8 +44,7 @@ const ProposalWOMain = ({ clientId }: Props) => {
     <div className='flex gap-5'>
       <div className='w-8/12 bg-white shadow-sm py-2 px-0.5 rounded-xl border'>
         <div className='flex items-center justify-between py-2 px-4'>
-          <h3 className='text-base font-semibold text-gray-900 flex items-center gap-2'>
-            <Clock className='h-4 w-4 text-amber-600' />
+          <h3 className='text-base ml-2 font-semibold text-gray-900 flex items-center gap-2'>
             Proposal - Work Orders
             {total > 0 && (
               <span className='text-xs font-normal text-gray-400'>

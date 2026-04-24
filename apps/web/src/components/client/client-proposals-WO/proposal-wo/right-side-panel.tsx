@@ -14,7 +14,6 @@ import {
   Shovel,
   AlignEndHorizontal,
   ArrowRight,
-  Loader2,
 } from "lucide-react";
 
 import { useHandleParams } from "@/hooks/useHandleParams";
@@ -138,62 +137,67 @@ const MiniWOCard = ({ wo }: { wo: WorkOrder }) => {
 
   return (
     <div
+      role='button'
+      tabIndex={0}
       onClick={() => router.push(`/dashboard/client/workorder/${wo.id}`)}
-      className='group relative rounded-lg border border-gray-100 bg-white p-3 cursor-pointer
-        hover:border-emerald-200 hover:shadow-md transition-all duration-200 overflow-hidden'>
-      {/* Left accent */}
-      <div
-        className={`absolute left-0 top-0 bottom-0 w-[3px] rounded-l-lg ${
-          wo.status === "completed"
-            ? "bg-emerald-400"
-            : wo.status === "cancelled"
-              ? "bg-red-400"
-              : "bg-amber-400"
-        }`}
-      />
-
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          router.push(`/dashboard/client/workorder/${wo.id}`);
+        }
+      }}
+      className='group relative cursor-pointer shadow overflow-hidden rounded-xl border border-gray-200/70 bg-white p-3.5 transition-all duration-200
+        hover:-translate-y-px hover:border-emerald-200 hover:shadow-md
+        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 focus-visible:ring-offset-2'>
       {/* Header: code + status */}
-      <div className='flex items-center justify-between mb-2'>
-        <span className='inline-flex items-center px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 text-[10px] font-mono font-medium ring-1 ring-emerald-200'>
-          {wo.code}
-        </span>
+      <div className='flex items-start justify-between gap-2 mb-2.5'>
+        <div className='min-w-0'>
+          <span className='inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-mono font-semibold text-emerald-700 ring-1 ring-emerald-200'>
+            {wo.code}
+          </span>
+        </div>
         <span
-          className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-medium ${statusConfig.bg} ${statusConfig.text} ring-1 ${statusConfig.ring}`}>
-          <StatusIcon className='w-2.5 h-2.5' />
+          className={`shrink-0 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold ${statusConfig.bg} ${statusConfig.text} ring-1 ${statusConfig.ring}`}>
+          <StatusIcon className='w-3 h-3' />
           {capitalFirstLetter(wo.status)}
         </span>
       </div>
 
       {/* Title */}
-      <h4 className='text-xs font-semibold text-gray-800 leading-snug line-clamp-2 mb-2 group-hover:text-emerald-700 transition-colors'>
+      <h4 className='text-[13px] font-semibold text-gray-900 leading-snug line-clamp-2 mb-2 group-hover:text-emerald-700 transition-colors'>
         {wo.title ? capitalFirstLetter(wo.title) : "Untitled Work Order"}
       </h4>
 
-      {/* Process type */}
-      <div className='flex items-center gap-1.5 mb-2'>
-        <ProcessIcon className={`w-3 h-3 ${processConfig.color}`} />
-        <span className={`text-[10px] font-medium ${processConfig.color}`}>
-          {processConfig.label}
-        </span>
-      </div>
-
-      {/* Date row */}
-      <div className='flex items-center gap-3 text-[10px] text-gray-500'>
-        <div className='flex items-center gap-1'>
-          <Clock className='w-3 h-3' />
-          {formatDate(wo.start_date)}
+      {/* Meta row */}
+      <div className='flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px]'>
+        <div className='inline-flex items-center gap-1.5 rounded-md bg-gray-50 px-2 py-1 ring-1 ring-gray-100'>
+          <ProcessIcon className={`w-3.5 h-3.5 ${processConfig.color}`} />
+          <span className={`font-medium ${processConfig.color}`}>
+            {processConfig.label}
+          </span>
         </div>
-        <span className='text-gray-300'>→</span>
-        <div className='flex items-center gap-1'>
-          <Calendar className='w-3 h-3' />
-          {formatDate(wo.end_date)}
+
+        <div className='flex items-center gap-2 text-gray-500'>
+          <div className='flex items-center gap-1'>
+            <Clock className='w-3.5 h-3.5' />
+            <span className='font-medium text-gray-600'>
+              {formatDate(wo.start_date)}
+            </span>
+          </div>
+          <span className='text-gray-300'>→</span>
+          <div className='flex items-center gap-1'>
+            <Calendar className='w-3.5 h-3.5' />
+            <span className='font-medium text-gray-600'>
+              {formatDate(wo.end_date)}
+            </span>
+          </div>
         </div>
       </div>
 
       {/* Hover arrow */}
-      <div className='absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity'>
-        <div className='h-6 w-6 rounded-full bg-emerald-50 flex items-center justify-center'>
-          <ArrowRight className='w-3 h-3 text-emerald-600' />
+      <div className='absolute right-2.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity'>
+        <div className='flex h-7 w-7 items-center justify-center rounded-full bg-emerald-50 ring-1 ring-emerald-100'>
+          <ArrowRight className='w-3.5 h-3.5 text-emerald-700' />
         </div>
       </div>
     </div>
@@ -290,7 +294,7 @@ const RightSidePanel = ({ proposals }: Props) => {
       key: "ongoing",
       label: "Ongoing",
       count: ongoingWOs.length,
-      icon: Loader2,
+      icon: Clock,
       color: "amber",
     },
     {
@@ -309,8 +313,7 @@ const RightSidePanel = ({ proposals }: Props) => {
       {/* ─── Header ─────────────────────────────────────────────── */}
       <div className='px-4 py-2'>
         <div className='flex items-center justify-between mb-3'>
-          <div className='flex items-center gap-2'>
-            <Briefcase className='h-4 w-4 text-gray-600' />
+          <div className='flex ml-2 items-center gap-2'>
             <h3 className='text-base font-semibold text-gray-900'>
               Work Orders
             </h3>
@@ -351,12 +354,7 @@ const RightSidePanel = ({ proposals }: Props) => {
                         ? "text-amber-500"
                         : "text-emerald-500"
                       : ""
-                  } ${tab.key === "ongoing" && isActive ? "animate-spin" : ""}`}
-                  style={
-                    tab.key === "ongoing" && isActive
-                      ? { animationDuration: "3s" }
-                      : undefined
-                  }
+                  }`}
                 />
                 {tab.label}
                 <span
