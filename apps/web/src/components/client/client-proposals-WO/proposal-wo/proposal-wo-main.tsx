@@ -6,7 +6,7 @@ import CreateProposalDialog from "./create-proposal-dialog";
 import { trpc } from "@/lib/trpc";
 import ProposalCard from "./proposal-card";
 import { useHandleParams } from "@/hooks/useHandleParams";
-import WordOrderCard from "./word-order-card";
+import WordOrderCard from "./work-order-card";
 import { type proposalTypes } from "@pkg/schema";
 import CreateWODialog from "../create-wo/create-wo-dialog";
 import ClientProposalSkeleton from "@/components/skeleton/client/client-proposal-skeleton";

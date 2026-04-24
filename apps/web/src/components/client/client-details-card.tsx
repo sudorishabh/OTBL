@@ -277,6 +277,7 @@ const ClientDetailsCard = ({ clientId }: Props) => {
         open={dialogState.contacts}
         onClose={() => closeDialog("contacts")}
         users={clientUsers}
+        clientId={clientId}
       />
     </>
   );

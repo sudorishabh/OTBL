@@ -9,7 +9,6 @@ type PageProps = {
 export default async function ClientPage({ params }: PageProps) {
   const { clientId } = await Promise.resolve(params);
 
-  // return <ClientPageSkeleton />;
   return (
     <Suspense fallback={<ClientPageSkeleton />}>
       <ClientContent clientId={clientId} />

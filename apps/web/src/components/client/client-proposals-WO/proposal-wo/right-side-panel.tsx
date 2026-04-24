@@ -180,14 +180,13 @@ const MiniWOCard = ({ wo }: { wo: WorkOrder }) => {
 
         <div className='flex items-center gap-2 text-gray-500'>
           <div className='flex items-center gap-1'>
-            <Clock className='w-3.5 h-3.5' />
+            <Calendar className='w-3.5 h-3.5 text-gray-400' />
             <span className='font-medium text-gray-600'>
               {formatDate(wo.start_date)}
             </span>
           </div>
-          <span className='text-gray-300'>→</span>
+          <span className='text-gray-500'>→</span>
           <div className='flex items-center gap-1'>
-            <Calendar className='w-3.5 h-3.5' />
             <span className='font-medium text-gray-600'>
               {formatDate(wo.end_date)}
             </span>
@@ -334,14 +333,14 @@ const RightSidePanel = ({ proposals }: Props) => {
           value={activeTab}
           onValueChange={(v) => setActiveTab(v as TabKey)}
           className='w-full'>
-          <TabsList className='w-full flex rounded-lg bg-gray-100 p-0.5 h-auto'>
+          <TabsList className='w-full flex rounded-lg bg-gray-100 p-1 h-auto'>
             {tabs.map((tab) => {
               const isActive = activeTab === tab.key;
               return (
                 <TabsTrigger
                   key={tab.key}
                   value={tab.key}
-                  className='flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-gray-800 data-[state=active]:shadow-sm text-gray-500 hover:text-gray-700'>
+                  className='flex-1 flex items-center justify-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-gray-800 data-[state=active]:shadow-sm text-gray-500 hover:text-gray-700'>
                   {tab.label}
                   <span
                     className={`inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-semibold ${

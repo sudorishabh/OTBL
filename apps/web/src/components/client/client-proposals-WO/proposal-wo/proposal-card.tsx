@@ -1,8 +1,4 @@
-import {
-  FileText,
-  CalendarDays,
-  Clock,
-} from "lucide-react";
+import { File } from "lucide-react";
 import React from "react";
 import { format } from "date-fns";
 import { capitalFirstLetter } from "@pkg/utils";
@@ -43,7 +39,7 @@ const ProposalCard = ({ proposal }: Props) => {
                 e.stopPropagation();
                 window.open(proposal.document_key, "_blank");
               }}>
-              <FileText className='h-4 w-4 text-emerald-700 ' />
+              <File className='h-4 w-4 text-emerald-700 ' />
             </button>
           )}
           <CustomButton
@@ -63,8 +59,7 @@ const ProposalCard = ({ proposal }: Props) => {
       {/* Info Grid */}
       <div className='grid grid-cols-2 gap-2 mb-3'>
         {/* Submission Date */}
-        <div className='flex items-center gap-2 rounded-md border border-gray-100 bg-linear-to-r from-blue-50/50 to-transparent px-2.5 py-2'>
-          <CalendarDays className='w-4 h-4 text-emerald-600 shrink-0' />
+        <div className='flex items-center gap-2 rounded-md bg-white border border-gray-200/70 px-2.5 py-2'>
           <div className='min-w-0'>
             <div className='text-[10px] uppercase tracking-wider text-gray-500'>
               Submitted
@@ -81,8 +76,7 @@ const ProposalCard = ({ proposal }: Props) => {
         </div>
 
         {/* Created Date */}
-        <div className='flex items-center gap-2 rounded-md border border-gray-100 bg-linear-to-r from-blue-50/50 to-transparent px-2.5 py-2'>
-          <Clock className='w-4 h-4 text-emerald-600 shrink-0' />
+        <div className='flex items-center gap-2 rounded-md bg-white border border-gray-200/70 px-2.5 py-2'>
           <div className='min-w-0'>
             <div className='text-[10px] uppercase tracking-wider text-gray-500'>
               Created

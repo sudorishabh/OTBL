@@ -18,6 +18,7 @@ import {
   Sparkles,
   AlignEndHorizontal,
   Shovel,
+  File,
 } from "lucide-react";
 import useHandleParams from "@/hooks/useHandleParams";
 import { type workOrderTypes } from "@pkg/schema";
@@ -84,20 +85,18 @@ const getProcessTypeConfig = (type: string) => {
   switch (type) {
     case "bioremediation":
       return {
-        icon: Beaker,
         label: "Bioremediation",
         color: "text-emerald-600",
       };
     case "restoration":
-      return { icon: Shovel, label: "Restoration", color: "text-green-600" };
+      return { label: "Restoration", color: "text-green-600" };
     case "bioremediation_restoration":
       return {
-        icon: AlignEndHorizontal,
         label: "Bio + Restoration",
         color: "text-emerald-600",
       };
     default:
-      return { icon: FileCode, label: type, color: "text-gray-600" };
+      return { label: type, color: "text-gray-600" };
   }
 };
 
@@ -166,7 +165,6 @@ const WordOrderCard = ({ workOrder, proposalId, proposalTitle }: Props) => {
     ? getProcessTypeConfig(workOrder.process_type)
     : null;
   const StatusIcon = statusConfig?.icon;
-  const ProcessIcon = processConfig?.icon;
 
   return (
     <>
@@ -202,7 +200,7 @@ const WordOrderCard = ({ workOrder, proposalId, proposalTitle }: Props) => {
                       e.stopPropagation();
                       window.open(workOrder.document_key, "_blank");
                     }}>
-                    <FileText className='h-4 w-4 text-emerald-700 ' />
+                    <File className='h-4 w-4 text-emerald-700 ' />
                   </button>
                 )}
                 <CustomButton
@@ -222,9 +220,8 @@ const WordOrderCard = ({ workOrder, proposalId, proposalTitle }: Props) => {
             </h3>
 
             {/* Process Type Badge */}
-            {processConfig && ProcessIcon && (
+            {processConfig && (
               <div className='flex items-center gap-1.5 mb-2'>
-                <ProcessIcon className={`w-4 h-4 ${processConfig.color}`} />
                 <span className={`text-xs font-medium ${processConfig.color}`}>
                   {processConfig.label}
                 </span>
@@ -233,8 +230,7 @@ const WordOrderCard = ({ workOrder, proposalId, proposalTitle }: Props) => {
 
             {/* Dates Grid */}
             <div className='grid grid-cols-3 gap-2 mb-2'>
-              <div className='flex items-center gap-1.5 rounded-md border border-gray-100 bg-linear-to-r from-blue-50/50 to-transparent px-2 py-1.5'>
-                <Clock className='w-3.5 h-3.5 text-emerald-600 shrink-0' />
+              <div className='flex items-center gap-1.5 rounded-md bg-white border border-gray-200/70 px-2 py-1.5'>
                 <div className='min-w-0'>
                   <div className='text-[9px] uppercase tracking-wider text-gray-500'>
                     Start
@@ -244,8 +240,7 @@ const WordOrderCard = ({ workOrder, proposalId, proposalTitle }: Props) => {
                   </div>
                 </div>
               </div>
-              <div className='flex items-center gap-1.5 rounded-md border border-gray-100 bg-linear-to-r from-orange-50/50 to-transparent px-2 py-1.5'>
-                <Calendar className='w-3.5 h-3.5 text-emerald-600 shrink-0' />
+              <div className='flex items-center gap-1.5 rounded-md bg-white border border-gray-200/70 px-2 py-1.5'>
                 <div className='min-w-0'>
                   <div className='text-[9px] uppercase tracking-wider text-gray-500'>
                     End
@@ -255,8 +250,7 @@ const WordOrderCard = ({ workOrder, proposalId, proposalTitle }: Props) => {
                   </div>
                 </div>
               </div>
-              <div className='flex items-center gap-1.5 rounded-md border border-gray-100 bg-linear-to-r from-emerald-50/50 to-transparent px-2 py-1.5'>
-                <CalendarCheck className='w-3.5 h-3.5 text-emerald-600 shrink-0' />
+              <div className='flex items-center gap-1.5 rounded-md bg-white border border-gray-200/70 px-2 py-1.5'>
                 <div className='min-w-0'>
                   <div className='text-[9px] uppercase tracking-wider text-gray-500'>
                     Handover
@@ -270,7 +264,8 @@ const WordOrderCard = ({ workOrder, proposalId, proposalTitle }: Props) => {
 
             {/* Description */}
             <p className='text-xs text-gray-600 leading-relaxed line-clamp-2 mb-2 flex-1'>
-              {workOrder?.description || "No description provided."}
+              {capitalFirstLetter(workOrder?.description || "") ||
+                "No description provided."}
             </p>
           </div>
         ) : (
