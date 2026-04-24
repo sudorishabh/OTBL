@@ -8,12 +8,7 @@ interface Props {
   setOpenDialog?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const OfficeStatCard = ({
-  Icon,
-  stat,
-  title,
-  setOpenDialog,
-}: Props) => {
+const OfficeStatCard = ({ Icon, stat, title, setOpenDialog }: Props) => {
   return (
     <div
       onClick={() => setOpenDialog?.(true)}
@@ -24,7 +19,9 @@ const OfficeStatCard = ({
           {title}
         </div>
       </div>
-      <div className='mt-2 text-3xl font-semibold text-gray-700'>{stat}</div>
+      <div className='mt-1 ml-5 text-xl font-semibold text-gray-700'>
+        {stat}
+      </div>
     </div>
   );
 };

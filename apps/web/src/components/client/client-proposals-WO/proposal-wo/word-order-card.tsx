@@ -10,7 +10,6 @@ import {
   Calendar,
   CalendarCheck,
   FileCode,
-  Hash,
   CheckCircle2,
   AlertCircle,
   XCircle,
@@ -171,7 +170,7 @@ const WordOrderCard = ({ workOrder, proposalId, proposalTitle }: Props) => {
 
   return (
     <>
-      <div className='rounded-lg bg-white drop-shadow-sm hover:drop-shadow-md transition-shadow p-4 flex flex-col min-h-80'>
+      <div className='w-full min-w-0 rounded-lg bg-white border border-gray-200/70 drop-shadow hover:drop-shadow-md transition-shadow p-4 flex flex-col min-h-52'>
         {workOrder ? (
           <div
             className='group cursor-pointer flex flex-col h-full'
@@ -202,7 +201,7 @@ const WordOrderCard = ({ workOrder, proposalId, proposalTitle }: Props) => {
             </div>
 
             {/* Title */}
-            <h3 className='text-sm font-semibold leading-snug text-slate-900 line-clamp-2 mb-2'>
+            <h3 className='text-sm font-semibold leading-snug text-gray-600 line-clamp-2 break-all min-w-0 mb-2'>
               {workOrder.title
                 ? capitalFirstLetter(workOrder.title)
                 : "Untitled Work Order"}
@@ -217,32 +216,6 @@ const WordOrderCard = ({ workOrder, proposalId, proposalTitle }: Props) => {
                 </span>
               </div>
             )}
-
-            {/* Reference Numbers */}
-            <div className='grid grid-cols-2 gap-2 mb-2'>
-              <div className='flex items-center gap-1.5 px-2 py-1.5 rounded bg-gray-50 border border-gray-100'>
-                <Hash className='w-3.5 h-3.5 text-gray-500' />
-                <div className='min-w-0'>
-                  <div className='text-[9px] uppercase tracking-wider text-gray-400'>
-                    Agreement No.
-                  </div>
-                  <div className='text-[11px] font-medium text-gray-700 truncate'>
-                    {workOrder.agreement_number || "—"}
-                  </div>
-                </div>
-              </div>
-              <div className='flex items-center gap-1.5 px-2 py-1.5 rounded bg-gray-50 border border-gray-100'>
-                <FileCode className='w-3.5 h-3.5 text-gray-500' />
-                <div className='min-w-0'>
-                  <div className='text-[9px] uppercase tracking-wider text-gray-400'>
-                    RC Number
-                  </div>
-                  <div className='text-[11px] font-medium text-gray-700 truncate'>
-                    {workOrder.rate_contract_number || "—"}
-                  </div>
-                </div>
-              </div>
-            </div>
 
             {/* Dates Grid */}
             <div className='grid grid-cols-3 gap-2 mb-2'>

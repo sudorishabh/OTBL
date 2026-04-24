@@ -42,9 +42,9 @@ const ProposalWOMain = ({ clientId }: Props) => {
 
   return (
     <div className='flex gap-5'>
-      <div className='w-8/12 bg-white shadow-sm py-2 px-0.5 rounded-xl border'>
+      <div className='w-8/12 bg-white shadow-sm py- px-0.5 rounded-xl border'>
         <div className='flex items-center justify-between py-2 px-4'>
-          <h3 className='text-base ml-2 font-semibold text-gray-900 flex items-center gap-2'>
+          <h3 className='text-sm ml-2 font-semibold text-gray-900 flex items-center gap-2'>
             Proposal - Work Orders
             {total > 0 && (
               <span className='text-xs font-normal text-gray-400'>
@@ -68,7 +68,7 @@ const ProposalWOMain = ({ clientId }: Props) => {
             />
           </div>
         </div>
-        <div className='px-4 pb-4 pt-2 grid grid-cols-1 gap-5'>
+        <div className='px-4 pb-4 grid grid-cols-1 gap-5'>
           {isLoading ? (
             <div className='py-8'>
               <NoFetchData
@@ -81,7 +81,7 @@ const ProposalWOMain = ({ clientId }: Props) => {
             proposals.map(({ workOrder, proposal }: any, index: number) => (
               <div
                 key={proposal?.id || index}
-                className='w-full rounded-xl border border-gray-200 bg-gray-100 p-4'>
+                className='w-full mt-0.5'>
                 <div className='grid grid-cols-1 md:grid-cols-[1fr_72px_1fr] items-stretch gap-y-6 md:gap-y-0 md:gap-x-2'>
                   <ProposalCard proposal={proposal} />
                   <div className='relative flex items-center justify-center'>

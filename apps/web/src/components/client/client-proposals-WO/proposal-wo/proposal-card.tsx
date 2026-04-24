@@ -29,7 +29,7 @@ const ProposalCard = ({ proposal }: Props) => {
           "proposal-id": proposal?.id.toString(),
         })
       }
-      className='rounded-lg bg-white drop-shadow-sm hover:drop-shadow-md transition-shadow p-4 flex flex-col group cursor-pointer min-h-72'>
+      className='w-full min-w-0 rounded-lg bg-white border border-gray-200/70 drop-shadow hover:drop-shadow-md transition-shadow p-4 flex flex-col min-h-52'>
       {/* Header Section */}
       <div className='flex items-start justify-between mb-2'>
         <div className='flex items-center gap-2'>
@@ -65,7 +65,7 @@ const ProposalCard = ({ proposal }: Props) => {
       </div>
 
       {/* Title */}
-      <h3 className='text-sm font-semibold leading-snug text-gray-800 line-clamp-2 mb-2'>
+      <h3 className='text-sm font-semibold leading-snug text-gray-600 line-clamp-2 break-all min-w-0 mb-2'>
         {capitalFirstLetter(proposal?.title)}
       </h3>
 

@@ -43,15 +43,15 @@ const Btn = ({
   switch (variant) {
     case "primary":
       variantStyle =
-        "bg-emerald-600 text-gray-100 rounded-md cursor-pointer hover:bg-emerald-700/90 shadow-sm transition-all duration-200 hover:shadow-md gap-1.5 h-8.5 text-[0.813rem]";
+        "bg-emerald-600 text-gray-100 rounded-md cursor-pointer hover:bg-emerald-700/90 shadow-sm transition-all duration-200 hover:shadow-md gap-1.5 h-8 text-[0.813rem]";
       break;
     case "secondary":
       variantStyle =
-        "bg-gray-50 text-gray-700 rounded-md cursor-pointer borde hover:bg-gray-200/60 shadow-sm transition-all duration-200 hover:shadow-sm gap-1.5 h-8.5 text-[0.813rem]";
+        "bg-gray-50 text-gray-700 rounded-md cursor-pointer borde hover:bg-gray-200/60 shadow-sm transition-all duration-200 hover:shadow-sm gap-1.5 h-8 text-[0.813rem]";
       break;
     case "outline":
       variantStyle =
-        "bg-white text-gray-800 shadow-none hover:bg-gray-50 cursor-pointer border border-gray-200 shadow-sm transition-all duration-200  h-8.5 text-[0.813rem]";
+        "bg-white text-gray-800 shadow-none hover:bg-gray-50 cursor-pointer border border-gray-200 shadow-sm transition-all duration-200  h-8 text-[0.813rem]";
       break;
   }
 
