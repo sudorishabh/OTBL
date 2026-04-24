@@ -1,4 +1,4 @@
-import { Info, Plus } from "lucide-react";
+import { Info, Plus, Users } from "lucide-react";
 import React from "react";
 import OfficeSiteTable from "./office-site-table";
 import { capitalizeEachWord, capitalFirstLetter } from "@pkg/utils";
@@ -69,6 +69,14 @@ const OfficeCard: React.FC<{ office: Office }> = ({ office }) => {
   const handleOfficeDetailsDialogOpen = () => {
     setParams({
       dialog: "view-office",
+      officeId: office.id.toString(),
+      officeName: office.name,
+    });
+  };
+
+  const handleManageMembersOpen = () => {
+    setParams({
+      dialog: "manage-office-members",
       officeId: office.id.toString(),
       officeName: office.name,
     });
@@ -166,6 +174,12 @@ const OfficeCard: React.FC<{ office: Office }> = ({ office }) => {
             arrowType='upright'
             variant='arrow'
             onClick={handleOfficeDetailsDialogOpen}
+          />
+          <CustomButton
+            text='Members'
+            Icon={Users}
+            variant='outline'
+            onClick={handleManageMembersOpen}
           />
           <CustomButton
             text='Create Site'

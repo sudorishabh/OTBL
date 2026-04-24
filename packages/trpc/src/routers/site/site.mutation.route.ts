@@ -1,8 +1,8 @@
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { schema } from "@pkg/db";
 import { router } from "../../trpc";
 import { managerProcedure } from "../../middleware";
-import { notFound, fromDatabaseError } from "../../errors";
+import { alreadyExists, notFound, fromDatabaseError } from "../../errors";
 import { handleMutation } from "../../helper/typed-handler";
 import { siteSchemas } from "@pkg/schema";
 
@@ -87,4 +87,95 @@ export const siteMutationRouter = router({
       }
     }),
   ),
+
+  assignUserToSite: managerProcedure
+    .input(siteSchemas.assignUserToSiteSchema)
+    .mutation(
+      handleMutation(async ({ input, ctx }) => {
+        const { site_id, user_id } = input;
+
+        const [site] = await ctx.db
+          .select()
+          .from(siteTable)
+          .where(eq(siteTable.id, site_id))
+          .limit(1);
+
+        if (!site) {
+          throw notFound("Site", site_id);
+        }
+
+        const [user] = await ctx.db
+          .select()
+          .from(userTable)
+          .where(eq(userTable.id, user_id))
+          .limit(1);
+
+        if (!user) {
+          throw notFound("User", user_id, {
+            userMessage: "The selected user doesn't exist.",
+          });
+        }
+
+        const [existing] = await ctx.db
+          .select({ id: siteUserTable.id })
+          .from(siteUserTable)
+          .where(
+            and(
+              eq(siteUserTable.site_id, site_id),
+              eq(siteUserTable.user_id, user_id),
+            ),
+          )
+          .limit(1);
+
+        if (existing) {
+          throw alreadyExists("Site assignment", undefined, {
+            userMessage: "This operator is already assigned to the site.",
+          });
+        }
+
+        try {
+          await ctx.db.insert(siteUserTable).values({
+            site_id,
+            user_id,
+            office_id: site.office_id,
+          });
+          return { success: true };
+        } catch (error) {
+          throw fromDatabaseError(error, "Assigning user to site");
+        }
+      }),
+    ),
+
+  removeUserFromSite: managerProcedure
+    .input(siteSchemas.removeUserFromSiteSchema)
+    .mutation(
+      handleMutation(async ({ input, ctx }) => {
+        const { site_id, user_id } = input;
+
+        const rows = await ctx.db
+          .select({ id: siteUserTable.id })
+          .from(siteUserTable)
+          .where(
+            and(
+              eq(siteUserTable.site_id, site_id),
+              eq(siteUserTable.user_id, user_id),
+            ),
+          );
+
+        if (!rows[0]) {
+          throw notFound("Site assignment", undefined, {
+            userMessage: "This user is not assigned to this site.",
+          });
+        }
+
+        try {
+          await ctx.db
+            .delete(siteUserTable)
+            .where(eq(siteUserTable.id, rows[0].id));
+          return { success: true };
+        } catch (error) {
+          throw fromDatabaseError(error, "Removing user from site");
+        }
+      }),
+    ),
 });

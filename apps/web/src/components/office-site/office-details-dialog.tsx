@@ -21,8 +21,11 @@ import {
 } from "@/components/ui/table";
 import { capitalizeEachWord } from "@pkg/utils";
 import StatusIndicator from "@/components/shared/status-indicator";
-import { Search } from "lucide-react";
+import { Search, UserMinus } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
+import SiteOperatorsSection from "./site-operators-section";
+import toast from "react-hot-toast";
+import { useApiError } from "@/hooks/useApiError";
 
 const ITEMS_PER_PAGE = 50;
 
@@ -36,6 +39,18 @@ const OfficeDetailsDialog = () => {
   const debouncedSearchTerm = useDebounce(searchTerm, 400);
   const [page, setPage] = useState(1);
 
+  const utils = trpc.useUtils();
+  const { handleError } = useApiError();
+
+  const removeFromSite = trpc.siteMutation.removeUserFromSite.useMutation({
+    onSuccess: async () => {
+      toast.success("Operator removed from site");
+      await utils.siteQuery.getSitesByOfficeId.invalidate();
+      await utils.siteQuery.get6SitesByOfficeId.invalidate();
+    },
+    onError: (e: unknown) => handleError(e, { showToast: true }),
+  });
+
   const { data, isLoading, isFetching } =
     trpc.siteQuery.getSitesByOfficeId.useQuery(
       {
@@ -44,6 +59,7 @@ const OfficeDetailsDialog = () => {
         status: "all",
         page,
         limit: ITEMS_PER_PAGE,
+        siteUsersLimit: 80,
       },
       {
         enabled: isOpenDialog && !!officeId,
@@ -170,9 +186,9 @@ const OfficeDetailsDialog = () => {
                     </div>
                   </CardHeader>
 
-                  {site.users && site.users.length > 0 && (
-                    <CardContent>
-                      <div className='border rounded-lg bg-white'>
+                  <CardContent className='space-y-2'>
+                    {site.users && site.users.length > 0 ? (
+                      <div className='border rounded-lg bg-white overflow-x-auto'>
                         <Table>
                           <TableHeader>
                             <TableRow>
@@ -188,17 +204,25 @@ const OfficeDetailsDialog = () => {
                               <TableHead className='text-xs h-8'>
                                 Contact
                               </TableHead>
+                              <TableHead className='text-xs h-8 text-right w-[72px]'>
+                                Remove
+                              </TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
                             {site.users.map((user: any, idx: number) => (
-                              <TableRow key={`${site.id}-${user.email}-${idx}`}>
-                                <TableCell className='text-xs py-2 flex items-center gap-2'>
-                                  <StatusIndicator
-                                    status={user.status ? "active" : "inactive"}
-                                    size='sm'
-                                  />
-                                  {capitalizeEachWord(user.name || "N/A")}
+                              <TableRow
+                                key={`${site.id}-${user.user_id ?? user.email}-${idx}`}>
+                                <TableCell className='text-xs py-2'>
+                                  <div className='flex items-center gap-2'>
+                                    <StatusIndicator
+                                      status={
+                                        user.status ? "active" : "inactive"
+                                      }
+                                      size='sm'
+                                    />
+                                    {capitalizeEachWord(user.name || "N/A")}
+                                  </div>
                                 </TableCell>
                                 <TableCell className='text-xs py-2'>
                                   {capitalizeEachWord(user.role || "N/A")}
@@ -209,13 +233,38 @@ const OfficeDetailsDialog = () => {
                                 <TableCell className='text-xs py-2'>
                                   {user.contact_number || "N/A"}
                                 </TableCell>
+                                <TableCell className='text-xs py-2 text-right'>
+                                  {typeof user.user_id === "number" ? (
+                                    <button
+                                      type='button'
+                                      disabled={removeFromSite.isPending}
+                                      onClick={() =>
+                                        removeFromSite.mutate({
+                                          site_id: site.id,
+                                          user_id: user.user_id,
+                                        })
+                                      }
+                                      className='inline-flex rounded-md p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-50'
+                                      aria-label={`Remove ${user.name || "operator"} from site`}>
+                                      <UserMinus className='h-4 w-4' />
+                                    </button>
+                                  ) : null}
+                                </TableCell>
                               </TableRow>
                             ))}
                           </TableBody>
                         </Table>
                       </div>
-                    </CardContent>
-                  )}
+                    ) : (
+                      <p className='text-xs text-muted-foreground py-1'>
+                        No operators assigned to this site yet.
+                      </p>
+                    )}
+                    <SiteOperatorsSection
+                      siteId={site.id}
+                      siteUsers={site.users ?? []}
+                    />
+                  </CardContent>
                 </Card>
               ))}
             </div>

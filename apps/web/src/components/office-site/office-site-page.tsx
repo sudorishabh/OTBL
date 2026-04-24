@@ -12,6 +12,9 @@ import Error from "@/components/shared/error";
 
 const CreateOfficeDialog = dynamic(() => import("./create-office-dialog"));
 const OfficeDetailsDialog = dynamic(() => import("./office-details-dialog"));
+const ManageOfficeMembersDialog = dynamic(
+  () => import("./manage-office-members-dialog"),
+);
 const OfficeCard = dynamic(() => import("./office-card"));
 
 const OfficeSitePage = () => {
@@ -117,6 +120,7 @@ const OfficeSitePage = () => {
 
       <CreateOfficeDialog />
       <OfficeDetailsDialog />
+      <ManageOfficeMembersDialog />
     </Suspense>
   );
 };

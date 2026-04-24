@@ -113,7 +113,8 @@ const BioSampleForm = ({
         createMutation.mutate({
           work_order_site_id: woSiteId,
           tph_document_url: result.webUrl,
-          tph_value: tphValue,
+          // Normalize locale decimal separator ("," -> ".") but keep user's precision.
+          tph_value: tphValue.replace(",", "."),
           application_month: applicationMonth,
         });
       }
@@ -143,8 +144,15 @@ const BioSampleForm = ({
               TPH Value
             </label>
             <Input
+              inputMode='decimal'
               value={tphValue}
-              onChange={(e) => setTphValue(e.target.value)}
+              onChange={(e) => {
+                const next = e.target.value;
+                // Let user type freely (incl. decimals) while preventing non-numeric junk.
+                if (next === "" || /^[0-9]*[.,]?[0-9]*$/.test(next)) {
+                  setTphValue(next);
+                }
+              }}
               placeholder='0.00'
               className='h-9'
             />

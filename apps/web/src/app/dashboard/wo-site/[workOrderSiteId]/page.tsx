@@ -194,7 +194,9 @@ export default function WoSiteOperatorUploadPage() {
           </div>
 
           <div className='flex items-center gap-2'>
-            <Badge variant='secondary' className='text-[11px]'>
+            <Badge
+              variant='secondary'
+              className='text-[11px]'>
               Uploaded: {operatorUploads.length}
             </Badge>
             <CustomButton
@@ -224,7 +226,9 @@ export default function WoSiteOperatorUploadPage() {
             </div>
           </div>
           {pendingItems.length > 0 && (
-            <Badge variant='outline' className='text-[11px]'>
+            <Badge
+              variant='outline'
+              className='text-[11px]'>
               Pending: {pendingItems.length}
             </Badge>
           )}
@@ -368,8 +372,8 @@ export default function WoSiteOperatorUploadPage() {
                 No documents uploaded yet
               </p>
               <p className='text-[11px] text-muted-foreground mt-1'>
-                Select files above (or take a photo) and upload them with a short
-                description.
+                Select files above (or take a photo) and upload them with a
+                short description.
               </p>
             </div>
           ) : (
@@ -415,7 +419,9 @@ export default function WoSiteOperatorUploadPage() {
                             <Trash2 className='w-4 h-4' />
                           </button>
                         </TooltipTrigger>
-                        <TooltipContent side='top' className='text-[10px]'>
+                        <TooltipContent
+                          side='top'
+                          className='text-[10px]'>
                           Delete
                         </TooltipContent>
                       </Tooltip>

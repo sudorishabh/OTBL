@@ -1,7 +1,7 @@
 import { PageWrapper } from "@/components/wrapper/page-wrapper";
 import React, { Suspense } from "react";
-import CreateOfficeButton from "../../../components/office-site/create-office-btn";
-import OfficeSitePage from "../../../components/office-site/office-site-page";
+import CreateOfficeButton from "@/components/office-site/create-office-btn";
+import OfficeSitePage from "@/components/office-site/office-site-page";
 import OfficeSitePageSkeleton from "@/components/skeleton/office-site/office-site-page-skeleton";
 
 const page = () => {

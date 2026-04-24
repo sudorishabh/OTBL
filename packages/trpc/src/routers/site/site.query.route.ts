@@ -40,6 +40,7 @@ export const siteQueryRouter = router({
               ctx.db
                 .select({
                   site_id: siteUserTable.id,
+                  user_id: siteUserTable.user_id,
                   role: userTable.role,
                   name: userTable.name,
                   email: userTable.email,
@@ -70,7 +71,9 @@ export const siteQueryRouter = router({
     .input(siteSchemas.getAllSitesByOfficeIdSchema)
     .query(
       handleQuery(async ({ input, ctx }) => {
-        const { office_id, page, limit, searchQuery, status } = input;
+        const { office_id, page, limit, searchQuery, status, siteUsersLimit } =
+          input;
+        const perSiteUserLimit = siteUsersLimit ?? 6;
         const offset = (page - 1) * limit;
 
         try {
@@ -117,6 +120,7 @@ export const siteQueryRouter = router({
               ctx.db
                 .select({
                   site_id: siteUserTable.id,
+                  user_id: siteUserTable.user_id,
                   role: userTable.role,
                   name: userTable.name,
                   email: userTable.email,
@@ -126,7 +130,7 @@ export const siteQueryRouter = router({
                 .from(siteUserTable)
                 .where(eq(siteUserTable.site_id, site.id))
                 .leftJoin(userTable, eq(siteUserTable.user_id, userTable.id))
-                .limit(6)
+                .limit(perSiteUserLimit)
                 .orderBy(desc(siteUserTable.created_at)),
             ),
           );

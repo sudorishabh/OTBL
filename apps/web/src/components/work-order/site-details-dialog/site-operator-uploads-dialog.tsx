@@ -22,7 +22,10 @@ interface Props {
   siteName?: string;
 }
 
-export function SiteOperatorUploadsDialog({ workOrderSiteId, siteName }: Props) {
+export function SiteOperatorUploadsDialog({
+  workOrderSiteId,
+  siteName,
+}: Props) {
   const { getParam, deleteParam } = useHandleParams();
 
   const open =
@@ -93,7 +96,10 @@ export function SiteOperatorUploadsDialog({ workOrderSiteId, siteName }: Props) 
                     <div className='flex flex-wrap items-center gap-x-2 gap-y-0.5'>
                       <span className='text-xs text-gray-500'>
                         {row.created_at
-                          ? format(new Date(row.created_at), "dd MMM yyyy HH:mm")
+                          ? format(
+                              new Date(row.created_at),
+                              "dd MMM yyyy HH:mm",
+                            )
                           : ""}
                       </span>
                     </div>
@@ -121,4 +127,3 @@ export function SiteOperatorUploadsDialog({ workOrderSiteId, siteName }: Props) 
     </DialogWindow>
   );
 }
-
