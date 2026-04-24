@@ -703,6 +703,8 @@ export const workOrderSiteExpenseTable = mysqlTable(
     expense_date: timestamp("expense_date").notNull(),
     invoice_number: varchar("invoice_number", { length: 100 }),
     notes: text("notes"),
+    document_url: varchar("document_url", { length: 500 }),
+    document_id: varchar("document_id", { length: 255 }),
     created_by: int("created_by").references(() => userTable.id, {
       onDelete: "set null",
     }),

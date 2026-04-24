@@ -39,6 +39,7 @@ import {
   Package,
   Wrench,
   MoreHorizontal,
+  ExternalLink,
 } from "lucide-react";
 import { format } from "date-fns";
 import toast from "react-hot-toast";
@@ -78,6 +79,8 @@ interface Expense {
   expense_date: string | Date;
   invoice_number: string | null;
   notes: string | null;
+  document_url: string | null;
+  document_id: string | null;
 }
 
 interface Props {
@@ -304,6 +307,9 @@ const SiteExpensesSection = ({ woSiteId, officeId }: Props) => {
                 <TableHead className='text-xs font-semibold text-gray-600'>
                   Invoice #
                 </TableHead>
+                <TableHead className='text-xs font-semibold text-gray-600 text-center w-[70px]'>
+                  Doc
+                </TableHead>
                 <TableHead className='text-xs font-semibold text-gray-600 text-right'>
                   Amount (₹)
                 </TableHead>
@@ -350,6 +356,30 @@ const SiteExpensesSection = ({ woSiteId, officeId }: Props) => {
                     <TableCell className='py-3 text-xs text-gray-500'>
                       {exp.invoice_number ?? (
                         <span className='text-gray-300'>—</span>
+                      )}
+                    </TableCell>
+                    <TableCell className='py-3 text-center'>
+                      {exp.document_url ? (
+                        <TooltipProvider delayDuration={100}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <a
+                                href={exp.document_url}
+                                target='_blank'
+                                rel='noopener noreferrer'
+                                className='inline-flex items-center justify-center w-6 h-6 rounded-md bg-blue-50 hover:bg-blue-100 text-blue-600 transition-colors'>
+                                <ExternalLink className='w-3 h-3' />
+                              </a>
+                            </TooltipTrigger>
+                            <TooltipContent
+                              side='top'
+                              className='text-[10px] px-2 py-1 bg-gray-900 text-white'>
+                              View Document
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      ) : (
+                        <span className='text-gray-300 text-xs'>—</span>
                       )}
                     </TableCell>
                     <TableCell className='py-3 text-right'>

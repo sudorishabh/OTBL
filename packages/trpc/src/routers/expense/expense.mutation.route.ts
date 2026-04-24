@@ -30,6 +30,8 @@ const createExpenseSchema = z.object({
   expense_date: z.string().min(1, "Date is required"),
   invoice_number: z.string().max(100).optional().nullable(),
   notes: z.string().optional().nullable(),
+  document_url: z.string().max(500).optional().nullable(),
+  document_id: z.string().max(255).optional().nullable(),
 });
 
 const updateExpenseSchema = z.object({
@@ -46,6 +48,8 @@ const updateExpenseSchema = z.object({
   expense_date: z.string().optional(),
   invoice_number: z.string().max(100).optional().nullable(),
   notes: z.string().optional().nullable(),
+  document_url: z.string().max(500).optional().nullable(),
+  document_id: z.string().max(255).optional().nullable(),
 });
 
 export const expenseMutationRouter = router({
@@ -67,6 +71,8 @@ export const expenseMutationRouter = router({
               expense_date: new Date(input.expense_date),
               invoice_number: input.invoice_number ?? null,
               notes: input.notes ?? null,
+              document_url: input.document_url ?? null,
+              document_id: input.document_id ?? null,
               created_by: userId,
             })
             .$returningId();
@@ -109,6 +115,8 @@ export const expenseMutationRouter = router({
           if (updateData.expense_date !== undefined) setData.expense_date = new Date(updateData.expense_date);
           if (updateData.invoice_number !== undefined) setData.invoice_number = updateData.invoice_number;
           if (updateData.notes !== undefined) setData.notes = updateData.notes;
+          if (updateData.document_url !== undefined) setData.document_url = updateData.document_url;
+          if (updateData.document_id !== undefined) setData.document_id = updateData.document_id;
 
           await ctx.db
             .update(workOrderSiteExpenseTable)

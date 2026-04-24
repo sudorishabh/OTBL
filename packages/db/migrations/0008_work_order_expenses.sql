@@ -23,6 +23,8 @@ CREATE TABLE `work_order_site_expenses` (
 	`expense_date` timestamp NOT NULL,
 	`invoice_number` varchar(100),
 	`notes` text,
+	`document_url` varchar(500),
+	`document_id` varchar(255),
 	`created_by` int,
 	`created_at` timestamp NOT NULL DEFAULT (now()),
 	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
