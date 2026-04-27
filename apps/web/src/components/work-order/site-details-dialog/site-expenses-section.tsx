@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import { trpc } from "@/lib/trpc";
+import { constants } from "@pkg/utils";
 import {
   Table,
   TableBody,
@@ -86,13 +87,32 @@ interface Expense {
 interface Props {
   woSiteId: number;
   officeId: number;
+  processType?: string;
 }
 
-const SiteExpensesSection = ({ woSiteId, officeId }: Props) => {
+const SiteExpensesSection = ({ woSiteId, officeId, processType }: Props) => {
   const utils = trpc.useUtils();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+
+  const siteActivitiesQuery =
+    trpc.workOrderSiteQuery.getSiteActivities.useQuery(
+      { work_order_site_id: woSiteId },
+      { enabled: !!woSiteId },
+    );
+
+  const restorationDataQuery =
+    trpc.workOrderSiteQuery.getRestorationData.useQuery(
+      { work_order_site_id: woSiteId },
+      { enabled: !!woSiteId && processType !== "bioremediation" },
+    );
+
+  const bioremediationDataQuery =
+    trpc.workOrderSiteQuery.getBioremediationData.useQuery(
+      { work_order_site_id: woSiteId },
+      { enabled: !!woSiteId && processType === "bioremediation" },
+    );
 
   const expensesQuery = trpc.expenseQuery.getExpenses.useQuery(
     { work_order_site_id: woSiteId },
@@ -126,6 +146,57 @@ const SiteExpensesSection = ({ woSiteId, officeId }: Props) => {
   const incomeTotal = summary?.incomeTotal ?? 0;
   const expenseTotal = summary?.grandTotal ?? 0;
   const netPL = incomeTotal - expenseTotal;
+
+  const isBioremediation = processType === "bioremediation";
+  const estimateType = "estimate_sub-wo";
+
+  const getEstimateQty = (activityKey: string) => {
+    if (isBioremediation) {
+      const data = bioremediationDataQuery.data;
+      if (!data) return undefined;
+      if (
+        activityKey === "biorem_cont_soil" ||
+        activityKey === constants.WO_ACTIVITIES.BIOREMEDIATION_OIL_CONTAMINATED_SOIL
+      ) {
+        return data.contaminatedSoil?.find((i: any) => i.type === estimateType)
+          ?.estimated_quantity;
+      }
+      return undefined;
+    }
+
+    const data = restorationDataQuery.data;
+    if (!data) return undefined;
+    switch (activityKey) {
+      case "clean_up_oil_spill":
+      case "clean_soil_area":
+      case constants.WO_ACTIVITIES.clean_soil_area:
+        return data.cleaningUpSoilArea?.find((i: any) => i.type === estimateType)
+          ?.estimated_quantity;
+      case "lifting_oil_slush":
+      case constants.WO_ACTIVITIES.LIFTING_OILY_SLUSH_OR_RECOVERY_OF_OIL:
+        return data.liftingRecoveryOilSlush?.find(
+          (i: any) => i.type === estimateType,
+        )?.estimated_quantity;
+      case "excav_cont_soil":
+      case constants.WO_ACTIVITIES.EXCAVATION_OIL_CONTAMINATED_SOIL:
+        return data.excavationContSoil?.find((i: any) => i.type === estimateType)
+          ?.estimated_quantity;
+      case "trans_cont_soil":
+      case "trnsprt_oil_slush":
+      case constants.WO_ACTIVITIES.TRANSPORTATION_CONTAMINATED_SOIL:
+        return data.transportationContSoil?.find(
+          (i: any) => i.type === estimateType,
+        )?.estimated_quantity;
+      case "refill_excav_soil":
+      case constants.WO_ACTIVITIES
+        .REFILLING_EXCAVATED_OIL_CONTAMINATED_SOIL_LAND:
+        return data.refillingExcavatedContSoil?.find(
+          (i: any) => i.type === estimateType,
+        )?.estimated_quantity;
+      default:
+        return undefined;
+    }
+  };
 
   const handleEdit = (expense: Expense) => {
     setEditingExpense(expense);
@@ -217,6 +288,67 @@ const SiteExpensesSection = ({ woSiteId, officeId }: Props) => {
             {netPL >= 0 ? "Surplus" : "Deficit"}
           </p>
         </div>
+      </div>
+
+      {/* Estimate/sub-WO quantities */}
+      <div className='rounded-lg border border-slate-200 bg-slate-50/40 overflow-hidden'>
+        <div className='px-4 py-2.5 border-b bg-white'>
+          <p className='text-[10px] font-semibold text-slate-500 uppercase tracking-widest'>
+            Estimate/sub-WO quantities
+          </p>
+          <p className='text-[10px] text-slate-400 mt-0.5'>
+            Read-only view of quantities entered in Estimate/sub-WO tab
+          </p>
+        </div>
+
+        {siteActivitiesQuery.isLoading ? (
+          <div className='text-center py-6 text-gray-400 text-sm'>
+            Loading estimate quantities...
+          </div>
+        ) : !siteActivitiesQuery.data || siteActivitiesQuery.data.length === 0 ? (
+          <div className='text-center py-6 text-gray-400 text-sm'>
+            No activities found for this site.
+          </div>
+        ) : (
+          <div className='bg-white'>
+            <Table>
+              <TableHeader>
+                <TableRow className='bg-slate-50/60 hover:bg-slate-50/60'>
+                  <TableHead className='text-xs font-semibold text-gray-600'>
+                    Activity
+                  </TableHead>
+                  <TableHead className='text-xs font-semibold text-gray-600 w-[90px] text-center'>
+                    Unit
+                  </TableHead>
+                  <TableHead className='text-xs font-semibold text-gray-600 w-[140px] text-right'>
+                    Est. Qty
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {siteActivitiesQuery.data.map((a: any) => {
+                  const qty = getEstimateQty(a.activity);
+                  return (
+                    <TableRow key={a.id} className='hover:bg-blue-50/20'>
+                      <TableCell className='text-xs text-gray-700 py-2.5 font-medium'>
+                        {a.activity
+                          ?.split("_")
+                          ?.map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+                          ?.join(" ")}
+                      </TableCell>
+                      <TableCell className='text-xs text-gray-600 py-2.5 text-center'>
+                        {a.unit ?? "Nos"}
+                      </TableCell>
+                      <TableCell className='text-xs text-gray-800 py-2.5 text-right font-semibold tabular-nums'>
+                        {qty ?? <span className='text-gray-300'>—</span>}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        )}
       </div>
 
       {/* Breakdown by type */}

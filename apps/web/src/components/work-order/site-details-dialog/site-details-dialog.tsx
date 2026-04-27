@@ -127,6 +127,7 @@ const SiteDetailDialog = () => {
               <SiteExpensesSection
                 woSiteId={woSiteId}
                 officeId={siteDetails.work_order.office_id}
+                processType={siteDetails?.process_type}
               />
             ) : (
               <div className='text-center py-8 text-gray-400 text-sm'>
