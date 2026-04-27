@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "230cf9ba-7523-469d-82da-9202f0527c37",
+  "id": "ed164d56-c381-45f3-8592-22088a9eb5cc",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "bio_oil_zapping": {
@@ -35,13 +35,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "type": {
-          "name": "type",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "document_url": {
           "name": "document_url",
           "type": "varchar(255)",
@@ -51,14 +44,7 @@
         },
         "estimated_quantity": {
           "name": "estimated_quantity",
-          "type": "decimal(10,2)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "intended_quantity": {
-          "name": "intended_quantity",
-          "type": "decimal(10,2)",
+          "type": "decimal(20,2)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -283,14 +269,14 @@
         },
         "estimated_quantity": {
           "name": "estimated_quantity",
-          "type": "decimal(10,2)",
+          "type": "decimal(20,2)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "amount": {
           "name": "amount",
-          "type": "decimal(10,2)",
+          "type": "decimal(20,2)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -393,14 +379,14 @@
         },
         "estimated_quantity": {
           "name": "estimated_quantity",
-          "type": "decimal(10,2)",
+          "type": "decimal(20,2)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "amount": {
           "name": "amount",
-          "type": "decimal(10,2)",
+          "type": "decimal(20,2)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -679,6 +665,133 @@
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
+    "contractors": {
+      "name": "contractors",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "office_id": {
+          "name": "office_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "contact_number": {
+          "name": "contact_number",
+          "type": "varchar(15)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "email": {
+          "name": "email",
+          "type": "varchar(320)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "address": {
+          "name": "address",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "gst_number": {
+          "name": "gst_number",
+          "type": "varchar(15)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "pan_number": {
+          "name": "pan_number",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "status": {
+          "name": "status",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "'active'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "contractor_office_idx": {
+          "name": "contractor_office_idx",
+          "columns": [
+            "office_id"
+          ],
+          "isUnique": false
+        },
+        "contractor_name_idx": {
+          "name": "contractor_name_idx",
+          "columns": [
+            "name"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "contractors_office_id_offices_id_fk": {
+          "name": "contractors_office_id_offices_id_fk",
+          "tableFrom": "contractors",
+          "tableTo": "offices",
+          "columnsFrom": [
+            "office_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "contractors_id": {
+          "name": "contractors_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
     "excav_cont_soil": {
       "name": "excav_cont_soil",
       "columns": {
@@ -705,14 +818,14 @@
         },
         "estimated_quantity": {
           "name": "estimated_quantity",
-          "type": "decimal(10,2)",
+          "type": "decimal(20,2)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "amount": {
           "name": "amount",
-          "type": "decimal(10,2)",
+          "type": "decimal(20,2)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -815,14 +928,14 @@
         },
         "estimated_quantity": {
           "name": "estimated_quantity",
-          "type": "decimal(10,2)",
+          "type": "decimal(20,2)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "amount": {
           "name": "amount",
-          "type": "decimal(10,2)",
+          "type": "decimal(20,2)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -1203,13 +1316,6 @@
           "notNull": false,
           "autoincrement": false
         },
-        "proposal_amount": {
-          "name": "proposal_amount",
-          "type": "decimal(10,2)",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
         "proposal_submission_date": {
           "name": "proposal_submission_date",
           "type": "timestamp",
@@ -1351,14 +1457,14 @@
         },
         "estimated_quantity": {
           "name": "estimated_quantity",
-          "type": "decimal(10,2)",
+          "type": "decimal(20,2)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "amount": {
           "name": "amount",
-          "type": "decimal(10,2)",
+          "type": "decimal(20,2)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -1912,14 +2018,14 @@
         },
         "estimated_quantity": {
           "name": "estimated_quantity",
-          "type": "decimal(10,2)",
+          "type": "decimal(20,2)",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
         "amount": {
           "name": "amount",
-          "type": "decimal(10,2)",
+          "type": "decimal(20,2)",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
@@ -2040,7 +2146,7 @@
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "'staff'"
+          "default": "'operator'"
         },
         "created_by": {
           "name": "created_by",
@@ -2193,6 +2299,318 @@
       "uniqueConstraints": {},
       "checkConstraint": {}
     },
+    "wo_site_expenses": {
+      "name": "wo_site_expenses",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "work_order_site_id": {
+          "name": "work_order_site_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expense_type": {
+          "name": "expense_type",
+          "type": "varchar(50)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "contractor_id": {
+          "name": "contractor_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount": {
+          "name": "amount",
+          "type": "decimal(20,2)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "expense_date": {
+          "name": "expense_date",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "invoice_number": {
+          "name": "invoice_number",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "document_url": {
+          "name": "document_url",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "document_id": {
+          "name": "document_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_by": {
+          "name": "created_by",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "expense_wo_site_idx": {
+          "name": "expense_wo_site_idx",
+          "columns": [
+            "work_order_site_id"
+          ],
+          "isUnique": false
+        },
+        "expense_contractor_idx": {
+          "name": "expense_contractor_idx",
+          "columns": [
+            "contractor_id"
+          ],
+          "isUnique": false
+        },
+        "expense_type_idx": {
+          "name": "expense_type_idx",
+          "columns": [
+            "expense_type"
+          ],
+          "isUnique": false
+        },
+        "expense_date_idx": {
+          "name": "expense_date_idx",
+          "columns": [
+            "expense_date"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "wo_site_expenses_work_order_site_id_work_order_sites_id_fk": {
+          "name": "wo_site_expenses_work_order_site_id_work_order_sites_id_fk",
+          "tableFrom": "wo_site_expenses",
+          "tableTo": "work_order_sites",
+          "columnsFrom": [
+            "work_order_site_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "wo_site_expenses_contractor_id_contractors_id_fk": {
+          "name": "wo_site_expenses_contractor_id_contractors_id_fk",
+          "tableFrom": "wo_site_expenses",
+          "tableTo": "contractors",
+          "columnsFrom": [
+            "contractor_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "wo_site_expenses_created_by_users_id_fk": {
+          "name": "wo_site_expenses_created_by_users_id_fk",
+          "tableFrom": "wo_site_expenses",
+          "tableTo": "users",
+          "columnsFrom": [
+            "created_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "wo_site_expenses_id": {
+          "name": "wo_site_expenses_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "wo_site_oprtr_docs": {
+      "name": "wo_site_oprtr_docs",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "work_order_site_id": {
+          "name": "work_order_site_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "uploaded_by_user_id": {
+          "name": "uploaded_by_user_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "file_name": {
+          "name": "file_name",
+          "type": "varchar(512)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "document_url": {
+          "name": "document_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "document_id": {
+          "name": "document_id",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "wosou_wo_site_idx": {
+          "name": "wosou_wo_site_idx",
+          "columns": [
+            "work_order_site_id"
+          ],
+          "isUnique": false
+        },
+        "wosou_user_idx": {
+          "name": "wosou_user_idx",
+          "columns": [
+            "uploaded_by_user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "wo_site_oprtr_docs_work_order_site_id_work_order_sites_id_fk": {
+          "name": "wo_site_oprtr_docs_work_order_site_id_work_order_sites_id_fk",
+          "tableFrom": "wo_site_oprtr_docs",
+          "tableTo": "work_order_sites",
+          "columnsFrom": [
+            "work_order_site_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "wo_site_oprtr_docs_uploaded_by_user_id_users_id_fk": {
+          "name": "wo_site_oprtr_docs_uploaded_by_user_id_users_id_fk",
+          "tableFrom": "wo_site_oprtr_docs",
+          "tableTo": "users",
+          "columnsFrom": [
+            "uploaded_by_user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "wo_site_oprtr_docs_id": {
+          "name": "wo_site_oprtr_docs_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
     "work_order_sites": {
       "name": "work_order_sites",
       "columns": {
@@ -2295,6 +2713,14 @@
           "autoincrement": false,
           "default": "'pending'"
         },
+        "isCompleted": {
+          "name": "isCompleted",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -2388,6 +2814,104 @@
       "compositePrimaryKeys": {
         "work_order_sites_id": {
           "name": "work_order_sites_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "work_order_site_users": {
+      "name": "work_order_site_users",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "work_order_site_id": {
+          "name": "work_order_site_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "wosu_wo_site_user_idx": {
+          "name": "wosu_wo_site_user_idx",
+          "columns": [
+            "work_order_site_id",
+            "user_id"
+          ],
+          "isUnique": true
+        },
+        "wosu_user_idx": {
+          "name": "wosu_user_idx",
+          "columns": [
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "work_order_site_users_work_order_site_id_work_order_sites_id_fk": {
+          "name": "work_order_site_users_work_order_site_id_work_order_sites_id_fk",
+          "tableFrom": "work_order_site_users",
+          "tableTo": "work_order_sites",
+          "columnsFrom": [
+            "work_order_site_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "work_order_site_users_user_id_users_id_fk": {
+          "name": "work_order_site_users_user_id_users_id_fk",
+          "tableFrom": "work_order_site_users",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "work_order_site_users_id": {
+          "name": "work_order_site_users_id",
           "columns": [
             "id"
           ]

@@ -41,6 +41,7 @@ const {
   transportationContSoilTable,
   refillingExcavatedContSoilTable,
   bioremediationContSoilTable,
+  workOrderSiteExpenseTable,
 } = schema;
 
 export const workOrderQueryRouter = router({
@@ -815,6 +816,54 @@ export const workOrderQueryRouter = router({
           ];
         }
 
+        type SiteExpenseAgg = {
+          total: number;
+          byType: Record<string, number>;
+          count: number;
+        };
+        const siteExpenseMap = new Map<number, SiteExpenseAgg>();
+        const woExpenseByType: Record<string, number> = {};
+        let woExpenseTotal = 0;
+        let expenseRows: {
+          work_order_site_id: number;
+          expense_type: string;
+          amount: string | null;
+        }[] = [];
+
+        if (woSiteIds.length > 0) {
+          expenseRows = await ctx.db
+            .select({
+              work_order_site_id:
+                workOrderSiteExpenseTable.work_order_site_id,
+              expense_type: workOrderSiteExpenseTable.expense_type,
+              amount: workOrderSiteExpenseTable.amount,
+            })
+            .from(workOrderSiteExpenseTable)
+            .where(
+              inArray(
+                workOrderSiteExpenseTable.work_order_site_id,
+                woSiteIds,
+              ),
+            );
+
+          for (const row of expenseRows) {
+            const amt = Number(row.amount || 0);
+            woExpenseTotal += amt;
+            woExpenseByType[row.expense_type] =
+              (woExpenseByType[row.expense_type] || 0) + amt;
+
+            let siteAgg = siteExpenseMap.get(row.work_order_site_id);
+            if (!siteAgg) {
+              siteAgg = { total: 0, byType: {}, count: 0 };
+              siteExpenseMap.set(row.work_order_site_id, siteAgg);
+            }
+            siteAgg.total += amt;
+            siteAgg.count += 1;
+            siteAgg.byType[row.expense_type] =
+              (siteAgg.byType[row.expense_type] || 0) + amt;
+          }
+        }
+
         const sitesWithDetails = woSites.map((woSite: any, index: number) => {
           const siteCompletions = allCompletions.filter(
             (e: any) => e.work_order_site_id === woSite.wo_site_id,
@@ -823,6 +872,13 @@ export const workOrderQueryRouter = router({
             (acc: number, curr: any) => acc + Number(curr.amount || 0),
             0,
           );
+
+          const expAgg =
+            siteExpenseMap.get(woSite.wo_site_id) ?? {
+              total: 0,
+              byType: {} as Record<string, number>,
+              count: 0,
+            };
 
           return {
             site: {
@@ -843,12 +899,20 @@ export const workOrderQueryRouter = router({
             metric_ton_rate: woSite.metric_ton_rate,
             budget_amount: woSite.budget_amount,
             total_completion_amount: totalCompletionAmount.toString(),
+            total_expenses: expAgg.total.toString(),
+            expense_by_type: expAgg.byType,
+            expense_entry_count: expAgg.count,
             created_at: woSite.created_at,
             users: sitesUsers[index],
             measurement_sheets: sitesSheets[index],
             completions: siteCompletions,
           };
         });
+
+        const totalIncomeFromSites = sitesWithDetails.reduce(
+          (acc, s) => acc + Number(s.total_completion_amount || 0),
+          0,
+        );
 
         const scheduleOfRates = await ctx.db
           .select()
@@ -861,6 +925,13 @@ export const workOrderQueryRouter = router({
           scheduleOfRates,
           stats: {
             total_sites: sitesWithDetails.length,
+          },
+          work_order_expense_summary: {
+            total_expenses: woExpenseTotal,
+            by_type: woExpenseByType,
+            expense_entry_count: expenseRows.length,
+            total_income: totalIncomeFromSites,
+            net_surplus: totalIncomeFromSites - woExpenseTotal,
           },
         };
       } catch (error) {

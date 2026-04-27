@@ -1,1 +1,0 @@
-ALTER TABLE `proposals` DROP COLUMN `proposal_amount`;

@@ -3,10 +3,8 @@ CREATE TABLE `bio_oil_zapping` (
 	`site_activity_id` int,
 	`work_order_site_id` int NOT NULL,
 	`bio_sample_id` int,
-	`type` varchar(255) NOT NULL,
 	`document_url` varchar(255),
-	`estimated_quantity` decimal(10,2),
-	`intended_quantity` decimal(10,2),
+	`estimated_quantity` decimal(20,2),
 	`created_at` timestamp NOT NULL DEFAULT (now()),
 	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `bio_oil_zapping_id` PRIMARY KEY(`id`)
@@ -29,8 +27,8 @@ CREATE TABLE `biorem_cont_soil` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`site_activity_id` int,
 	`work_order_site_id` int NOT NULL,
-	`estimated_quantity` decimal(10,2) NOT NULL,
-	`amount` decimal(10,2),
+	`estimated_quantity` decimal(20,2) NOT NULL,
+	`amount` decimal(20,2),
 	`transportation_km` decimal(10,2),
 	`type` varchar(255) NOT NULL,
 	`created_at` timestamp NOT NULL DEFAULT (now()),
@@ -42,8 +40,8 @@ CREATE TABLE `clean_soil_area` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`site_activity_id` int,
 	`work_order_site_id` int NOT NULL,
-	`estimated_quantity` decimal(10,2) NOT NULL,
-	`amount` decimal(10,2),
+	`estimated_quantity` decimal(20,2) NOT NULL,
+	`amount` decimal(20,2),
 	`transportation_km` decimal(10,2),
 	`type` varchar(255) NOT NULL,
 	`created_at` timestamp NOT NULL DEFAULT (now()),
@@ -80,12 +78,27 @@ CREATE TABLE `clients` (
 	CONSTRAINT `clients_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
+CREATE TABLE `contractors` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`office_id` int NOT NULL,
+	`name` varchar(255) NOT NULL,
+	`contact_number` varchar(15),
+	`email` varchar(320),
+	`address` varchar(500),
+	`gst_number` varchar(15),
+	`pan_number` varchar(10),
+	`status` varchar(50) NOT NULL DEFAULT 'active',
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `contractors_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
 CREATE TABLE `excav_cont_soil` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`site_activity_id` int,
 	`work_order_site_id` int NOT NULL,
-	`estimated_quantity` decimal(10,2) NOT NULL,
-	`amount` decimal(10,2),
+	`estimated_quantity` decimal(20,2) NOT NULL,
+	`amount` decimal(20,2),
 	`transportation_km` decimal(10,2),
 	`type` varchar(255) NOT NULL,
 	`created_at` timestamp NOT NULL DEFAULT (now()),
@@ -97,8 +110,8 @@ CREATE TABLE `lifting_oil_slush` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`site_activity_id` int,
 	`work_order_site_id` int NOT NULL,
-	`estimated_quantity` decimal(10,2) NOT NULL,
-	`amount` decimal(10,2),
+	`estimated_quantity` decimal(20,2) NOT NULL,
+	`amount` decimal(20,2),
 	`transportation_km` decimal(10,2),
 	`type` varchar(255) NOT NULL,
 	`created_at` timestamp NOT NULL DEFAULT (now()),
@@ -141,7 +154,6 @@ CREATE TABLE `proposals` (
 	`title` varchar(255) NOT NULL,
 	`document_key` varchar(255) NOT NULL,
 	`description` text,
-	`proposal_amount` decimal(10,2) NOT NULL,
 	`proposal_submission_date` timestamp NOT NULL,
 	`status` varchar(50) NOT NULL DEFAULT 'pending',
 	`created_by` int,
@@ -155,8 +167,8 @@ CREATE TABLE `refill_excav_soil` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`site_activity_id` int,
 	`work_order_site_id` int NOT NULL,
-	`estimated_quantity` decimal(10,2) NOT NULL,
-	`amount` decimal(10,2),
+	`estimated_quantity` decimal(20,2) NOT NULL,
+	`amount` decimal(20,2),
 	`transportation_km` decimal(10,2),
 	`type` varchar(255) NOT NULL,
 	`created_at` timestamp NOT NULL DEFAULT (now()),
@@ -219,8 +231,8 @@ CREATE TABLE `trans_cont_soil` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`site_activity_id` int,
 	`work_order_site_id` int NOT NULL,
-	`estimated_quantity` decimal(10,2) NOT NULL,
-	`amount` decimal(10,2),
+	`estimated_quantity` decimal(20,2) NOT NULL,
+	`amount` decimal(20,2),
 	`transportation_km` decimal(10,2),
 	`type` varchar(255) NOT NULL,
 	`created_at` timestamp NOT NULL DEFAULT (now()),
@@ -234,7 +246,7 @@ CREATE TABLE `users` (
 	`email` varchar(320) NOT NULL,
 	`password` varchar(255) NOT NULL,
 	`contact_number` varchar(15),
-	`role` varchar(50) NOT NULL DEFAULT 'staff',
+	`role` varchar(50) NOT NULL DEFAULT 'operator',
 	`created_by` int,
 	`status` varchar(50) NOT NULL DEFAULT 'active',
 	`created_at` timestamp NOT NULL DEFAULT (now()),
@@ -255,6 +267,37 @@ CREATE TABLE `work_order_site_docs` (
 	CONSTRAINT `work_order_site_docs_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
+CREATE TABLE `wo_site_expenses` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`work_order_site_id` int NOT NULL,
+	`expense_type` varchar(50) NOT NULL,
+	`contractor_id` int,
+	`description` varchar(500) NOT NULL,
+	`amount` decimal(20,2) NOT NULL,
+	`expense_date` timestamp NOT NULL,
+	`invoice_number` varchar(100),
+	`notes` text,
+	`document_url` varchar(500),
+	`document_id` varchar(255),
+	`created_by` int,
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `wo_site_expenses_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `wo_site_oprtr_docs` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`work_order_site_id` int NOT NULL,
+	`uploaded_by_user_id` int NOT NULL,
+	`description` text NOT NULL,
+	`file_name` varchar(512),
+	`document_url` text NOT NULL,
+	`document_id` varchar(255),
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `wo_site_oprtr_docs_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
 CREATE TABLE `work_order_sites` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`work_order_id` int NOT NULL,
@@ -270,10 +313,21 @@ CREATE TABLE `work_order_sites` (
 	`land_owner_name` varchar(255) NOT NULL,
 	`remarks` varchar(255) NOT NULL,
 	`status` varchar(50) NOT NULL DEFAULT 'pending',
+	`isCompleted` boolean NOT NULL DEFAULT false,
 	`created_at` timestamp NOT NULL DEFAULT (now()),
 	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `work_order_sites_id` PRIMARY KEY(`id`),
 	CONSTRAINT `wo_site_unique_idx` UNIQUE(`work_order_id`,`site_id`)
+);
+--> statement-breakpoint
+CREATE TABLE `work_order_site_users` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`work_order_site_id` int NOT NULL,
+	`user_id` int NOT NULL,
+	`created_at` timestamp NOT NULL DEFAULT (now()),
+	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `work_order_site_users_id` PRIMARY KEY(`id`),
+	CONSTRAINT `wosu_wo_site_user_idx` UNIQUE(`work_order_site_id`,`user_id`)
 );
 --> statement-breakpoint
 CREATE TABLE `work_orders` (
@@ -311,6 +365,7 @@ ALTER TABLE `biorem_cont_soil` ADD CONSTRAINT `biorem_cont_soil_work_order_site_
 ALTER TABLE `clean_soil_area` ADD CONSTRAINT `clean_soil_area_site_activity_id_site_activity_items_id_fk` FOREIGN KEY (`site_activity_id`) REFERENCES `site_activity_items`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `clean_soil_area` ADD CONSTRAINT `clean_soil_area_work_order_site_id_work_order_sites_id_fk` FOREIGN KEY (`work_order_site_id`) REFERENCES `work_order_sites`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `client_contacts` ADD CONSTRAINT `client_contacts_client_id_clients_id_fk` FOREIGN KEY (`client_id`) REFERENCES `clients`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `contractors` ADD CONSTRAINT `contractors_office_id_offices_id_fk` FOREIGN KEY (`office_id`) REFERENCES `offices`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `excav_cont_soil` ADD CONSTRAINT `excav_cont_soil_site_activity_id_site_activity_items_id_fk` FOREIGN KEY (`site_activity_id`) REFERENCES `site_activity_items`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `excav_cont_soil` ADD CONSTRAINT `excav_cont_soil_work_order_site_id_work_order_sites_id_fk` FOREIGN KEY (`work_order_site_id`) REFERENCES `work_order_sites`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `lifting_oil_slush` ADD CONSTRAINT `lifting_oil_slush_site_activity_id_site_activity_items_id_fk` FOREIGN KEY (`site_activity_id`) REFERENCES `site_activity_items`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -333,13 +388,22 @@ ALTER TABLE `site_users` ADD CONSTRAINT `site_users_user_id_users_id_fk` FOREIGN
 ALTER TABLE `trans_cont_soil` ADD CONSTRAINT `trans_cont_soil_site_activity_id_site_activity_items_id_fk` FOREIGN KEY (`site_activity_id`) REFERENCES `site_activity_items`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `trans_cont_soil` ADD CONSTRAINT `trans_cont_soil_work_order_site_id_work_order_sites_id_fk` FOREIGN KEY (`work_order_site_id`) REFERENCES `work_order_sites`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `work_order_site_docs` ADD CONSTRAINT `work_order_site_docs_work_order_site_id_work_order_sites_id_fk` FOREIGN KEY (`work_order_site_id`) REFERENCES `work_order_sites`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `wo_site_expenses` ADD CONSTRAINT `wo_site_expenses_work_order_site_id_work_order_sites_id_fk` FOREIGN KEY (`work_order_site_id`) REFERENCES `work_order_sites`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `wo_site_expenses` ADD CONSTRAINT `wo_site_expenses_contractor_id_contractors_id_fk` FOREIGN KEY (`contractor_id`) REFERENCES `contractors`(`id`) ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `wo_site_expenses` ADD CONSTRAINT `wo_site_expenses_created_by_users_id_fk` FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `wo_site_oprtr_docs` ADD CONSTRAINT `wo_site_oprtr_docs_work_order_site_id_work_order_sites_id_fk` FOREIGN KEY (`work_order_site_id`) REFERENCES `work_order_sites`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `wo_site_oprtr_docs` ADD CONSTRAINT `wo_site_oprtr_docs_uploaded_by_user_id_users_id_fk` FOREIGN KEY (`uploaded_by_user_id`) REFERENCES `users`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `work_order_sites` ADD CONSTRAINT `work_order_sites_work_order_id_work_orders_id_fk` FOREIGN KEY (`work_order_id`) REFERENCES `work_orders`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `work_order_sites` ADD CONSTRAINT `work_order_sites_client_id_clients_id_fk` FOREIGN KEY (`client_id`) REFERENCES `clients`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `work_order_sites` ADD CONSTRAINT `work_order_sites_site_id_sites_id_fk` FOREIGN KEY (`site_id`) REFERENCES `sites`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `work_order_site_users` ADD CONSTRAINT `work_order_site_users_work_order_site_id_work_order_sites_id_fk` FOREIGN KEY (`work_order_site_id`) REFERENCES `work_order_sites`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE `work_order_site_users` ADD CONSTRAINT `work_order_site_users_user_id_users_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `work_orders` ADD CONSTRAINT `work_orders_proposal_id_proposals_id_fk` FOREIGN KEY (`proposal_id`) REFERENCES `proposals`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `work_orders` ADD CONSTRAINT `work_orders_client_id_clients_id_fk` FOREIGN KEY (`client_id`) REFERENCES `clients`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `work_orders` ADD CONSTRAINT `work_orders_office_id_offices_id_fk` FOREIGN KEY (`office_id`) REFERENCES `offices`(`id`) ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `work_orders` ADD CONSTRAINT `work_orders_created_by_users_id_fk` FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX `contractor_office_idx` ON `contractors` (`office_id`);--> statement-breakpoint
+CREATE INDEX `contractor_name_idx` ON `contractors` (`name`);--> statement-breakpoint
 CREATE INDEX `name_idx` ON `offices` (`name`);--> statement-breakpoint
 CREATE INDEX `city_idx` ON `offices` (`city`);--> statement-breakpoint
 CREATE INDEX `state_idx` ON `offices` (`state`);--> statement-breakpoint
@@ -352,9 +416,16 @@ CREATE INDEX `site_city_idx` ON `sites` (`city`);--> statement-breakpoint
 CREATE INDEX `site_state_idx` ON `sites` (`state`);--> statement-breakpoint
 CREATE INDEX `site_office_idx` ON `sites` (`office_id`);--> statement-breakpoint
 CREATE INDEX `name_idx` ON `users` (`name`);--> statement-breakpoint
+CREATE INDEX `expense_wo_site_idx` ON `wo_site_expenses` (`work_order_site_id`);--> statement-breakpoint
+CREATE INDEX `expense_contractor_idx` ON `wo_site_expenses` (`contractor_id`);--> statement-breakpoint
+CREATE INDEX `expense_type_idx` ON `wo_site_expenses` (`expense_type`);--> statement-breakpoint
+CREATE INDEX `expense_date_idx` ON `wo_site_expenses` (`expense_date`);--> statement-breakpoint
+CREATE INDEX `wosou_wo_site_idx` ON `wo_site_oprtr_docs` (`work_order_site_id`);--> statement-breakpoint
+CREATE INDEX `wosou_user_idx` ON `wo_site_oprtr_docs` (`uploaded_by_user_id`);--> statement-breakpoint
 CREATE INDEX `wo_site_work_order_idx` ON `work_order_sites` (`work_order_id`);--> statement-breakpoint
 CREATE INDEX `wo_site_site_idx` ON `work_order_sites` (`site_id`);--> statement-breakpoint
 CREATE INDEX `wo_site_status_idx` ON `work_order_sites` (`status`);--> statement-breakpoint
+CREATE INDEX `wosu_user_idx` ON `work_order_site_users` (`user_id`);--> statement-breakpoint
 CREATE INDEX `wo_client_idx` ON `work_orders` (`client_id`);--> statement-breakpoint
 CREATE INDEX `wo_office_idx` ON `work_orders` (`office_id`);--> statement-breakpoint
 CREATE INDEX `wo_status_idx` ON `work_orders` (`status`);--> statement-breakpoint

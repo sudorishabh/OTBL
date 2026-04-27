@@ -12,6 +12,9 @@ import {
   IndianRupee,
   CheckCircle2,
   MapPin,
+  TrendingDown,
+  Wallet,
+  Receipt,
 } from "lucide-react";
 import { capitalFirstLetter, constants } from "@pkg/utils";
 import CustomButton from "@/components/shared/btn";
@@ -43,10 +46,29 @@ interface Props {
     totalBudgetAmount: number;
     totalCompletionAmount: number;
     budgetUtilization: number;
+    totalExpenses?: number;
+    expenseByType?: Record<string, number>;
+    expenseEntryCount?: number;
+    netSurplus?: number;
   };
+  expenseSummary?: {
+    total_expenses: number;
+    by_type: Record<string, number>;
+    expense_entry_count: number;
+    total_income: number;
+    net_surplus: number;
+  } | null;
 }
 
-const WorkOrderDetailsCard = ({ workOrder, stats }: Props) => {
+const EXPENSE_TYPE_SHORT: Record<string, string> = {
+  contractor_payment: "Contractor",
+  labour: "Labour",
+  material: "Material",
+  equipment: "Equipment",
+  miscellaneous: "Misc.",
+};
+
+const WorkOrderDetailsCard = ({ workOrder, stats, expenseSummary }: Props) => {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
   const getStatusColor = (status: string) => {
@@ -271,6 +293,54 @@ const WorkOrderDetailsCard = ({ workOrder, stats }: Props) => {
           title='Budget Utilization'
           stat={`${Number(stats.budgetUtilization).toFixed(1)}%`}
         />
+      </div>
+
+      {/* Expenses & P&L (work order level) */}
+      <div className='space-y-3'>
+        <h3 className='text-xs font-semibold text-gray-500 uppercase tracking-wide px-0.5'>
+          Expenses &amp; profitability
+        </h3>
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
+          <WorkOrderStatCard
+            Icon={IndianRupee}
+            title='Income (completion)'
+            stat={`${Number(expenseSummary?.total_income ?? stats.totalCompletionAmount).toLocaleString("en-IN")}`}
+          />
+          <WorkOrderStatCard
+            Icon={TrendingDown}
+            title='Total expenses'
+            stat={`${Number(expenseSummary?.total_expenses ?? stats.totalExpenses ?? 0).toLocaleString("en-IN")}`}
+          />
+          <WorkOrderStatCard
+            Icon={Wallet}
+            title={Number(expenseSummary?.net_surplus ?? stats.netSurplus ?? 0) >= 0 ? "Net surplus" : "Net deficit"}
+            stat={`${Number(Math.abs(expenseSummary?.net_surplus ?? stats.netSurplus ?? 0)).toLocaleString("en-IN")}`}
+          />
+          <WorkOrderStatCard
+            Icon={Receipt}
+            title='Expense records'
+            stat={`${Number(expenseSummary?.expense_entry_count ?? stats.expenseEntryCount ?? 0).toLocaleString("en-IN")}`}
+          />
+        </div>
+        {expenseSummary &&
+          Object.keys(expenseSummary.by_type).length > 0 && (
+            <div className='rounded-lg border border-slate-200 bg-slate-50/60 px-4 py-3'>
+              <p className='text-[10px] font-semibold text-slate-500 uppercase tracking-widest mb-2'>
+                Expenses by category
+              </p>
+              <div className='flex flex-wrap gap-2'>
+                {Object.entries(expenseSummary.by_type).map(([type, amt]) => (
+                  <Badge
+                    key={type}
+                    variant='outline'
+                    className='text-[11px] font-normal bg-white'>
+                    {EXPENSE_TYPE_SHORT[type] ?? type}: ₹
+                    {Number(amt).toLocaleString("en-IN")}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
       </div>
     </div>
   );

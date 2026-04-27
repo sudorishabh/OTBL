@@ -192,6 +192,9 @@ const WorkOrder = ({ workOrderId, from }: Props) => {
       0,
     ) || 0;
 
+  const expenseSummary = workOrderData?.work_order_expense_summary;
+  const totalExpensesAgg = expenseSummary?.total_expenses ?? 0;
+
   const statsForComponent = {
     totalSites: stats.total_sites || 0,
     completedSites:
@@ -202,6 +205,12 @@ const WorkOrder = ({ workOrderId, from }: Props) => {
       totalBudgetAmount > 0
         ? (totalCompletionAmount / totalBudgetAmount) * 100
         : 0,
+    totalExpenses: totalExpensesAgg,
+    expenseByType: expenseSummary?.by_type ?? {},
+    expenseEntryCount: expenseSummary?.expense_entry_count ?? 0,
+    netSurplus:
+      expenseSummary?.net_surplus ??
+      totalCompletionAmount - totalExpensesAgg,
   };
 
   const handleCrateSiteDialog = () => {
@@ -238,6 +247,7 @@ const WorkOrder = ({ workOrderId, from }: Props) => {
         <WorkOrderDetailsCard
           workOrder={derivedWorkOrder}
           stats={statsForComponent}
+          expenseSummary={expenseSummary}
         />
 
         {isSitesQueryLoading ? (
@@ -345,6 +355,7 @@ const WorkOrder = ({ workOrderId, from }: Props) => {
         <ScheduleOfRatesTable
           scheduleOfRates={scheduleOfRates}
           sites={sites}
+          expenseSummary={expenseSummary}
         />
         <CreateWorkOrderSiteDialog
           workOrder={derivedWorkOrder}

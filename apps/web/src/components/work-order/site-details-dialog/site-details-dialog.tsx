@@ -92,22 +92,30 @@ const SiteDetailDialog = () => {
 
         <Tabs defaultValue='activities'>
           <TabsList className='w-full grid grid-cols-2 h-9'>
-            <TabsTrigger value='activities' className='text-xs'>
+            <TabsTrigger
+              value='activities'
+              className='text-xs'>
               Activities
             </TabsTrigger>
-            <TabsTrigger value='expenses' className='text-xs'>
+            <TabsTrigger
+              value='expenses'
+              className='text-xs'>
               Expenses &amp; P&amp;L
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value='activities' className='mt-4'>
+          <TabsContent
+            value='activities'
+            className='mt-4'>
             <SiteActivities
               woSiteId={woSiteId}
               processType={siteDetails?.process_type}
             />
           </TabsContent>
 
-          <TabsContent value='expenses' className='mt-4'>
+          <TabsContent
+            value='expenses'
+            className='mt-4'>
             {woSiteId > 0 && siteDetails?.work_order?.office_id ? (
               <SiteExpensesSection
                 woSiteId={woSiteId}

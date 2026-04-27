@@ -109,7 +109,9 @@ const AddExpenseDialog = ({
     if (editingExpense) {
       setExpenseType(editingExpense.expense_type as ExpenseType);
       setContractorId(
-        editingExpense.contractor_id ? String(editingExpense.contractor_id) : "",
+        editingExpense.contractor_id
+          ? String(editingExpense.contractor_id)
+          : "",
       );
       setDescription(editingExpense.description);
       setAmount(editingExpense.amount);
@@ -147,7 +149,9 @@ const AddExpenseDialog = ({
   const createContractorMutation =
     trpc.contractorMutation.createContractor.useMutation({
       onSuccess: (data: any) => {
-        utils.contractorQuery.getContractors.invalidate({ office_id: officeId });
+        utils.contractorQuery.getContractors.invalidate({
+          office_id: officeId,
+        });
         setContractorId(String(data.id));
         setShowAddContractor(false);
         setNewContractorName("");
@@ -158,35 +162,33 @@ const AddExpenseDialog = ({
       onError: (e: any) => toast.error(e.message || "Failed to add contractor"),
     });
 
-  const createExpenseMutation =
-    trpc.expenseMutation.createExpense.useMutation({
-      onSuccess: () => {
-        utils.expenseQuery.getExpenses.invalidate({
-          work_order_site_id: workOrderSiteId,
-        });
-        utils.expenseQuery.getExpenseSummary.invalidate({
-          work_order_site_id: workOrderSiteId,
-        });
-        toast.success("Expense recorded");
-        onClose();
-      },
-      onError: (e: any) => toast.error(e.message || "Failed to save expense"),
-    });
+  const createExpenseMutation = trpc.expenseMutation.createExpense.useMutation({
+    onSuccess: () => {
+      utils.expenseQuery.getExpenses.invalidate({
+        work_order_site_id: workOrderSiteId,
+      });
+      utils.expenseQuery.getExpenseSummary.invalidate({
+        work_order_site_id: workOrderSiteId,
+      });
+      toast.success("Expense recorded");
+      onClose();
+    },
+    onError: (e: any) => toast.error(e.message || "Failed to save expense"),
+  });
 
-  const updateExpenseMutation =
-    trpc.expenseMutation.updateExpense.useMutation({
-      onSuccess: () => {
-        utils.expenseQuery.getExpenses.invalidate({
-          work_order_site_id: workOrderSiteId,
-        });
-        utils.expenseQuery.getExpenseSummary.invalidate({
-          work_order_site_id: workOrderSiteId,
-        });
-        toast.success("Expense updated");
-        onClose();
-      },
-      onError: (e: any) => toast.error(e.message || "Failed to update expense"),
-    });
+  const updateExpenseMutation = trpc.expenseMutation.updateExpense.useMutation({
+    onSuccess: () => {
+      utils.expenseQuery.getExpenses.invalidate({
+        work_order_site_id: workOrderSiteId,
+      });
+      utils.expenseQuery.getExpenseSummary.invalidate({
+        work_order_site_id: workOrderSiteId,
+      });
+      toast.success("Expense updated");
+      onClose();
+    },
+    onError: (e: any) => toast.error(e.message || "Failed to update expense"),
+  });
 
   const handleAddContractor = () => {
     if (!newContractorName.trim()) {
@@ -279,7 +281,9 @@ const AddExpenseDialog = ({
   const hasUploadedDoc = !!uploadedDocUrl;
 
   return (
-    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => !v && onClose()}>
       <DialogContent className='max-w-lg max-h-[90vh] flex flex-col'>
         <DialogHeader className='shrink-0'>
           <DialogTitle className='text-base'>
@@ -313,7 +317,10 @@ const AddExpenseDialog = ({
                 </SelectTrigger>
                 <SelectContent>
                   {Object.entries(EXPENSE_TYPE_LABELS).map(([val, label]) => (
-                    <SelectItem key={val} value={val} className='text-sm'>
+                    <SelectItem
+                      key={val}
+                      value={val}
+                      className='text-sm'>
                       {label}
                     </SelectItem>
                   ))}
@@ -376,7 +383,9 @@ const AddExpenseDialog = ({
                       <Input
                         placeholder='Contact number'
                         value={newContractorContact}
-                        onChange={(e) => setNewContractorContact(e.target.value)}
+                        onChange={(e) =>
+                          setNewContractorContact(e.target.value)
+                        }
                         className='h-9 text-sm'
                       />
                       <Input

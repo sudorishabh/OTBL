@@ -5,64 +5,8 @@
     {
       "idx": 0,
       "version": "5",
-      "when": 1771826925814,
-      "tag": "0000_gifted_salo",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "5",
-      "when": 1771828680018,
-      "tag": "0001_exotic_natasha_romanoff",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "5",
-      "when": 1771829847983,
-      "tag": "0002_lumpy_peter_parker",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "5",
-      "when": 1772774720429,
-      "tag": "0003_mixed_gressill",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "5",
-      "when": 1773037058474,
-      "tag": "0004_same_silvermane",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "5",
-      "when": 1773037058475,
-      "tag": "0005_work_order_site_users",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "5",
-      "when": 1773037058476,
-      "tag": "0006_work_order_site_operator_uploads",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "5",
-      "when": 1774805378009,
-      "tag": "0007_fat_spencer_smythe",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "5",
-      "when": 1777027955142,
-      "tag": "0008_nifty_blade",
+      "when": 1777030919617,
+      "tag": "0000_misty_klaw",
       "breakpoints": true
     }
   ]

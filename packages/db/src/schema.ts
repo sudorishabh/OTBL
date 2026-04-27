@@ -370,7 +370,7 @@ export const workOrderSiteUserTable = mysqlTable(
 
 /** Operator-uploaded site documents: metadata in DB, binary in SharePoint. */
 export const workOrderSiteOperatorUploadTable = mysqlTable(
-  "work_order_site_operator_uploads",
+  "wo_site_oprtr_docs",
   {
     id: int("id").autoincrement().primaryKey(),
     work_order_site_id: int("work_order_site_id")
@@ -679,7 +679,7 @@ export const contractorTable = mysqlTable(
 
 // Expense records per work-order site
 export const workOrderSiteExpenseTable = mysqlTable(
-  "work_order_site_expenses",
+  "wo_site_expenses",
   {
     id: int("id").autoincrement().primaryKey(),
     work_order_site_id: int("work_order_site_id")
