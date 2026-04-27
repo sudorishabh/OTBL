@@ -90,26 +90,33 @@ const SiteDetailDialog = () => {
         )}
         <SiteDetailsCard siteDetails={siteDetails} />
 
-        <Tabs defaultValue='activities'>
-          <TabsList className='w-full grid grid-cols-2 h-9'>
+        <Tabs defaultValue='estimate'>
+          <TabsList className='w-full grid grid-cols-3 h-9'>
             <TabsTrigger
-              value='activities'
+              value='estimate'
               className='text-xs'>
-              Activities
+              Estimate/sub-WO
             </TabsTrigger>
             <TabsTrigger
               value='expenses'
               className='text-xs'>
               Expenses &amp; P&amp;L
             </TabsTrigger>
+            <TabsTrigger
+              value='completion'
+              className='text-xs'>
+              Completion
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent
-            value='activities'
+            value='estimate'
             className='mt-4'>
             <SiteActivities
               woSiteId={woSiteId}
               processType={siteDetails?.process_type}
+              phase='estimate_sub-wo'
+              showPhaseTabs={false}
             />
           </TabsContent>
 
@@ -126,6 +133,17 @@ const SiteDetailDialog = () => {
                 Loading site details...
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent
+            value='completion'
+            className='mt-4'>
+            <SiteActivities
+              woSiteId={woSiteId}
+              processType={siteDetails?.process_type}
+              phase='completion'
+              showPhaseTabs={false}
+            />
           </TabsContent>
         </Tabs>
       </div>

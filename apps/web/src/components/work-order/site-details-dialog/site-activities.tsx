@@ -876,9 +876,13 @@ const PhaseForm = ({
 const SiteActivities = ({
   woSiteId,
   processType,
+  phase,
+  showPhaseTabs = true,
 }: {
   woSiteId: number;
   processType: string | undefined;
+  phase?: (typeof PHASES)[number];
+  showPhaseTabs?: boolean;
 }) => {
   const siteActivitiesQuery =
     trpc.workOrderSiteQuery.getSiteActivities.useQuery(
@@ -1096,54 +1100,76 @@ const SiteActivities = ({
                     : "Restoration Data"}
                 </h3>
                 <p className='text-[10px] text-slate-400'>
-                  Enter estimate and completion data for activities
+                  {showPhaseTabs
+                    ? "Enter estimate and completion data for activities"
+                    : `Enter ${PHASE_LABELS[phase ?? "estimate_sub-wo"]} data for activities`}
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Tabs inside card */}
-        <Tabs
-          defaultValue='estimate_sub-wo'
-          className='w-full'>
-          <div className=' pt-3'>
-            <TabsList className='grid w-full max-w-xs grid-cols-2 bg-slate-100 p-1 rounded-lg h-9'>
-              {PHASES.map((phase) => (
-                <TabsTrigger
-                  key={phase}
-                  value={phase}
-                  className='text-xs font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:font-semibold rounded-md transition-all'>
-                  {PHASE_LABELS[phase]}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-          </div>
+        {showPhaseTabs ? (
+          /* Tabs inside card */
+          <Tabs
+            defaultValue='estimate_sub-wo'
+            className='w-full'>
+            <div className=' pt-3'>
+              <TabsList className='grid w-full max-w-xs grid-cols-2 bg-slate-100 p-1 rounded-lg h-9'>
+                {PHASES.map((phase) => (
+                  <TabsTrigger
+                    key={phase}
+                    value={phase}
+                    className='text-xs font-medium data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:font-semibold rounded-md transition-all'>
+                    {PHASE_LABELS[phase]}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </div>
 
-          {PHASES.map((phase) => (
-            <TabsContent
-              key={phase}
-              value={phase}
-              className='py-5 pt-4'>
-              {siteActivitiesQuery.data &&
-              siteActivitiesQuery.data.length > 0 ? (
-                <PhaseForm
-                  woSiteId={woSiteId}
-                  phase={phase}
-                  processType={processType}
-                  activities={siteActivitiesQuery.data}
-                  getActivityData={getActivityData}
-                  siteDocuments={siteDocumentsQuery.data}
-                  oilZappingData={bioremediationDataQuery.data?.oilZapping}
-                />
-              ) : (
-                <div className='text-xs text-center text-slate-400 italic py-10 border-2 border-dashed border-slate-200 rounded-xl'>
-                  No activities found for this site.
-                </div>
-              )}
-            </TabsContent>
-          ))}
-        </Tabs>
+            {PHASES.map((phase) => (
+              <TabsContent
+                key={phase}
+                value={phase}
+                className='py-5 pt-4'>
+                {siteActivitiesQuery.data &&
+                siteActivitiesQuery.data.length > 0 ? (
+                  <PhaseForm
+                    woSiteId={woSiteId}
+                    phase={phase}
+                    processType={processType}
+                    activities={siteActivitiesQuery.data}
+                    getActivityData={getActivityData}
+                    siteDocuments={siteDocumentsQuery.data}
+                    oilZappingData={bioremediationDataQuery.data?.oilZapping}
+                  />
+                ) : (
+                  <div className='text-xs text-center text-slate-400 italic py-10 border-2 border-dashed border-slate-200 rounded-xl'>
+                    No activities found for this site.
+                  </div>
+                )}
+              </TabsContent>
+            ))}
+          </Tabs>
+        ) : (
+          <div className='py-5 pt-4'>
+            {siteActivitiesQuery.data && siteActivitiesQuery.data.length > 0 ? (
+              <PhaseForm
+                woSiteId={woSiteId}
+                phase={phase ?? "estimate_sub-wo"}
+                processType={processType}
+                activities={siteActivitiesQuery.data}
+                getActivityData={getActivityData}
+                siteDocuments={siteDocumentsQuery.data}
+                oilZappingData={bioremediationDataQuery.data?.oilZapping}
+              />
+            ) : (
+              <div className='text-xs text-center text-slate-400 italic py-10 border-2 border-dashed border-slate-200 rounded-xl'>
+                No activities found for this site.
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {processType === "bioremediation" && (
