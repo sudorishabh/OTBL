@@ -209,8 +209,7 @@ const WorkOrder = ({ workOrderId, from }: Props) => {
     expenseByType: expenseSummary?.by_type ?? {},
     expenseEntryCount: expenseSummary?.expense_entry_count ?? 0,
     netSurplus:
-      expenseSummary?.net_surplus ??
-      totalCompletionAmount - totalExpensesAgg,
+      expenseSummary?.net_surplus ?? totalCompletionAmount - totalExpensesAgg,
   };
 
   const handleCrateSiteDialog = () => {

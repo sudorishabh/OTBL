@@ -1,4 +1,4 @@
-import { eq, sum, desc, and } from "drizzle-orm";
+import { eq, sum, desc, and, ne } from "drizzle-orm";
 import { schema } from "@pkg/db";
 import { router } from "../../trpc";
 import { protectedProcedure } from "../../core";
@@ -30,6 +30,9 @@ export const expenseQueryRouter = router({
               expense_type: workOrderSiteExpenseTable.expense_type,
               contractor_id: workOrderSiteExpenseTable.contractor_id,
               contractor_name: contractorTable.name,
+              activity_key: workOrderSiteExpenseTable.activity_key,
+              quantity: workOrderSiteExpenseTable.quantity,
+              is_exceeded: workOrderSiteExpenseTable.is_exceeded,
               description: workOrderSiteExpenseTable.description,
               amount: workOrderSiteExpenseTable.amount,
               expense_date: workOrderSiteExpenseTable.expense_date,
@@ -85,6 +88,19 @@ export const expenseQueryRouter = router({
             grandTotal += t;
           }
 
+          // Exceeded expenses total
+          const exceededRows = await ctx.db
+            .select({ total: sum(workOrderSiteExpenseTable.amount) })
+            .from(workOrderSiteExpenseTable)
+            .where(
+              and(
+                eq(workOrderSiteExpenseTable.work_order_site_id, work_order_site_id),
+                ne(workOrderSiteExpenseTable.is_exceeded, 0),
+              ),
+            );
+          const exceededTotal = Number(exceededRows[0]?.total ?? 0);
+          const regularTotal = grandTotal - exceededTotal;
+
           // Income total = sum of completion-type amounts across all 6 activity tables
           const completionTables = [
             cleaningUpSoilAreaTable,
@@ -114,7 +130,7 @@ export const expenseQueryRouter = router({
             incomeTotal += Number(result[0]?.total ?? 0);
           }
 
-          return { byType, grandTotal, incomeTotal };
+          return { byType, grandTotal, regularTotal, exceededTotal, incomeTotal };
         } catch (error) {
           throw fromDatabaseError(error, "Fetching expense summary");
         }

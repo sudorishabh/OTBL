@@ -14,6 +14,7 @@ import {
   Receipt,
   BarChart3,
   Rows3,
+  ReceiptIndianRupee,
 } from "lucide-react";
 import DeferredFilePicker from "@/components/shared/deferred-file-picker";
 import { useSharePointUpload } from "@/hooks/useSharePointUpload";
@@ -583,7 +584,7 @@ const PhaseForm = ({
             <div className='rounded-xl border border-slate-200/80 bg-slate-50/50 p-3'>
               <div className='flex items-center justify-between mb-2.5'>
                 <div className='flex items-center gap-2'>
-                  <Receipt className='size-3.5 text-slate-400' />
+                  <ReceiptIndianRupee className='size-3.5 text-slate-400' />
                   <h4 className='text-[10px] font-semibold text-slate-500 uppercase tracking-wider'>
                     Bills
                   </h4>

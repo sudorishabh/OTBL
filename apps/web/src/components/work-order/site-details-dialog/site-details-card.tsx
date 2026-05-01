@@ -8,7 +8,6 @@ import {
   FileText,
   Building2,
   Upload,
-  File,
   Trash2,
   ExternalLink,
   X,

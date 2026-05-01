@@ -15,6 +15,7 @@ import {
   TrendingDown,
   Wallet,
   Receipt,
+  ReceiptIndianRupee,
 } from "lucide-react";
 import { capitalFirstLetter, constants } from "@pkg/utils";
 import CustomButton from "@/components/shared/btn";
@@ -313,34 +314,37 @@ const WorkOrderDetailsCard = ({ workOrder, stats, expenseSummary }: Props) => {
           />
           <WorkOrderStatCard
             Icon={Wallet}
-            title={Number(expenseSummary?.net_surplus ?? stats.netSurplus ?? 0) >= 0 ? "Net surplus" : "Net deficit"}
+            title={
+              Number(expenseSummary?.net_surplus ?? stats.netSurplus ?? 0) >= 0
+                ? "Net surplus"
+                : "Net deficit"
+            }
             stat={`${Number(Math.abs(expenseSummary?.net_surplus ?? stats.netSurplus ?? 0)).toLocaleString("en-IN")}`}
           />
           <WorkOrderStatCard
-            Icon={Receipt}
+            Icon={ReceiptIndianRupee}
             title='Expense records'
             stat={`${Number(expenseSummary?.expense_entry_count ?? stats.expenseEntryCount ?? 0).toLocaleString("en-IN")}`}
           />
         </div>
-        {expenseSummary &&
-          Object.keys(expenseSummary.by_type).length > 0 && (
-            <div className='rounded-lg border border-slate-200 bg-slate-50/60 px-4 py-3'>
-              <p className='text-[10px] font-semibold text-slate-500 uppercase tracking-widest mb-2'>
-                Expenses by category
-              </p>
-              <div className='flex flex-wrap gap-2'>
-                {Object.entries(expenseSummary.by_type).map(([type, amt]) => (
-                  <Badge
-                    key={type}
-                    variant='outline'
-                    className='text-[11px] font-normal bg-white'>
-                    {EXPENSE_TYPE_SHORT[type] ?? type}: ₹
-                    {Number(amt).toLocaleString("en-IN")}
-                  </Badge>
-                ))}
-              </div>
+        {expenseSummary && Object.keys(expenseSummary.by_type).length > 0 && (
+          <div className='rounded-lg border border-slate-200 bg-slate-50/60 px-4 py-3'>
+            <p className='text-[10px] font-semibold text-slate-500 uppercase tracking-widest mb-2'>
+              Expenses by category
+            </p>
+            <div className='flex flex-wrap gap-2'>
+              {Object.entries(expenseSummary.by_type).map(([type, amt]) => (
+                <Badge
+                  key={type}
+                  variant='outline'
+                  className='text-[11px] font-normal bg-white'>
+                  {EXPENSE_TYPE_SHORT[type] ?? type}: ₹
+                  {Number(amt).toLocaleString("en-IN")}
+                </Badge>
+              ))}
             </div>
-          )}
+          </div>
+        )}
       </div>
     </div>
   );

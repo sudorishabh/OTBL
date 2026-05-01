@@ -6,6 +6,7 @@ import {
   int,
   decimal,
   text,
+  tinyint,
   index,
   uniqueIndex,
 } from "drizzle-orm/mysql-core";
@@ -703,6 +704,9 @@ export const workOrderSiteExpenseTable = mysqlTable(
     expense_date: timestamp("expense_date").notNull(),
     invoice_number: varchar("invoice_number", { length: 100 }),
     notes: text("notes"),
+    activity_key: varchar("activity_key", { length: 100 }),
+    quantity: decimal("quantity", { precision: 20, scale: 4 }),
+    is_exceeded: tinyint("is_exceeded").notNull().default(0),
     document_url: varchar("document_url", { length: 500 }),
     document_id: varchar("document_id", { length: 255 }),
     created_by: int("created_by").references(() => userTable.id, {

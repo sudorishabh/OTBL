@@ -20,6 +20,9 @@ const createExpenseSchema = z.object({
   work_order_site_id: z.number().positive(),
   expense_type: expenseTypeEnum,
   contractor_id: z.number().positive().optional().nullable(),
+  activity_key: z.string().max(100).optional().nullable(),
+  quantity: z.string().optional().nullable(),
+  is_exceeded: z.boolean().optional().default(false),
   description: z.string().min(1, "Description is required").max(500),
   amount: z
     .string()
@@ -38,6 +41,9 @@ const updateExpenseSchema = z.object({
   id: z.number().positive(),
   expense_type: expenseTypeEnum.optional(),
   contractor_id: z.number().positive().optional().nullable(),
+  activity_key: z.string().max(100).optional().nullable(),
+  quantity: z.string().optional().nullable(),
+  is_exceeded: z.boolean().optional(),
   description: z.string().min(1).max(500).optional(),
   amount: z
     .string()
@@ -66,6 +72,9 @@ export const expenseMutationRouter = router({
               work_order_site_id: input.work_order_site_id,
               expense_type: input.expense_type,
               contractor_id: input.contractor_id ?? null,
+              activity_key: input.activity_key ?? null,
+              quantity: input.quantity ?? null,
+              is_exceeded: input.is_exceeded ? 1 : 0,
               description: input.description,
               amount: input.amount,
               expense_date: new Date(input.expense_date),
@@ -110,6 +119,9 @@ export const expenseMutationRouter = router({
           const setData: Record<string, unknown> = {};
           if (updateData.expense_type !== undefined) setData.expense_type = updateData.expense_type;
           if (updateData.contractor_id !== undefined) setData.contractor_id = updateData.contractor_id;
+          if (updateData.activity_key !== undefined) setData.activity_key = updateData.activity_key;
+          if (updateData.quantity !== undefined) setData.quantity = updateData.quantity;
+          if (updateData.is_exceeded !== undefined) setData.is_exceeded = updateData.is_exceeded ? 1 : 0;
           if (updateData.description !== undefined) setData.description = updateData.description;
           if (updateData.amount !== undefined) setData.amount = updateData.amount;
           if (updateData.expense_date !== undefined) setData.expense_date = new Date(updateData.expense_date);

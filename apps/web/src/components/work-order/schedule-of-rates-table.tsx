@@ -291,7 +291,7 @@ const SiteSpendingCard = ({
             onClick={() => setExpenseExpanded(!expenseExpanded)}
             className='w-full flex items-center justify-between px-4 py-2.5 cursor-pointer hover:bg-rose-50/50 transition-colors'>
             <div className='flex items-center gap-2'>
-              <Receipt className='w-3.5 h-3.5 text-rose-500' />
+              <ReceiptIndianRupee className='w-3.5 h-3.5 text-rose-500' />
               <span className='text-xs font-semibold text-rose-800'>
                 Site expenses
               </span>
@@ -597,7 +597,8 @@ const ScheduleOfRatesTable = ({
                 </div>
                 <div>
                   <span className='text-[10px] uppercase tracking-wider text-slate-500 font-semibold block'>
-                    Net {expenseSummary.net_surplus >= 0 ? "surplus" : "deficit"}
+                    Net{" "}
+                    {expenseSummary.net_surplus >= 0 ? "surplus" : "deficit"}
                   </span>
                   <p
                     className={`text-base font-bold ${
