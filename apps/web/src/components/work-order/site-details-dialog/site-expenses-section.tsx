@@ -106,6 +106,19 @@ const formatActivityLabel = (key: string) =>
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
 
+const getExpenseRecordKey = (exp: Expense) =>
+  [
+    exp.activity_key ?? "__none__",
+    String(exp.expense_date),
+    exp.quantity ?? "",
+    String(!!exp.is_exceeded),
+    exp.description ?? "",
+    exp.notes ?? "",
+    exp.contractor_name ?? "",
+    exp.invoice_number ?? "",
+    exp.document_url ?? "",
+  ].join("||");
+
 interface Props {
   woSiteId: number;
   officeId: number;
@@ -213,13 +226,16 @@ const SiteExpensesSection = ({ woSiteId, officeId, processType }: Props) => {
     }));
   }, [siteActivitiesQuery.data, restorationDataQuery.data, bioremediationDataQuery.data]);
 
-  // Compute used qty per activity (only non-exceeded normal expenses contribute to used qty)
+  // Compute used qty per activity (count once per consolidated record)
   const usedQtyByActivity = useMemo(() => {
     const map: Record<string, number> = {};
+    const seen = new Set<string>();
     for (const exp of expenses) {
-      if (exp.activity_key && exp.quantity && !exp.is_exceeded) {
-        map[exp.activity_key] = (map[exp.activity_key] ?? 0) + Number(exp.quantity);
-      }
+      if (!exp.activity_key || !exp.quantity || exp.is_exceeded) continue;
+      const recordKey = getExpenseRecordKey(exp);
+      if (seen.has(recordKey)) continue;
+      seen.add(recordKey);
+      map[exp.activity_key] = (map[exp.activity_key] ?? 0) + Number(exp.quantity);
     }
     return map;
   }, [expenses]);
@@ -278,17 +294,7 @@ const SiteExpensesSection = ({ woSiteId, officeId, processType }: Props) => {
         : { label: "Other / Unlinked Expenses", unit: null };
 
       // Heuristic grouping: in multi-add, these shared fields are identical across rows.
-      const recordKey = [
-        activityKey ?? "__none__",
-        String(exp.expense_date),
-        exp.quantity ?? "",
-        String(!!exp.is_exceeded),
-        exp.description ?? "",
-        exp.notes ?? "",
-        exp.contractor_name ?? "",
-        exp.invoice_number ?? "",
-        exp.document_url ?? "",
-      ].join("||");
+      const recordKey = getExpenseRecordKey(exp);
 
       if (!recordMap[recordKey]) {
         recordMap[recordKey] = {
@@ -532,6 +538,89 @@ const SiteExpensesSection = ({ woSiteId, officeId, processType }: Props) => {
             {netPL >= 0 ? "Surplus" : "Deficit"}
           </p>
         </div>
+      </div>
+
+      {/* Estimate activities + qty spending */}
+      <div className='rounded-lg border border-slate-200 bg-slate-50/40 overflow-hidden'>
+        <div className='px-3 py-2 border-b bg-white flex items-center justify-between gap-3'>
+          <div className='min-w-0'>
+            <p className='text-[10px] font-semibold text-slate-500 uppercase tracking-widest whitespace-nowrap'>
+              Estimate Activities
+            </p>
+            <p className='text-[9px] text-slate-400 mt-0.5'>
+              Qty spending = used qty from expense records
+            </p>
+          </div>
+          <div className='text-[9px] text-slate-400 whitespace-nowrap'>
+            {siteActivitiesQuery.data?.length ? `${siteActivitiesQuery.data.length} activities` : ""}
+          </div>
+        </div>
+
+        {siteActivitiesQuery.isLoading ? (
+          <div className='text-center py-4 text-gray-400 text-sm'>Loading...</div>
+        ) : !siteActivitiesQuery.data || siteActivitiesQuery.data.length === 0 ? (
+          <div className='text-center py-4 text-gray-400 text-sm'>No activities found.</div>
+        ) : (
+          <div className='bg-white overflow-x-auto'>
+            <Table>
+              <TableHeader>
+                <TableRow className='bg-gray-50/60 hover:bg-gray-50/60'>
+                  <TableHead className='text-[10px] font-semibold text-gray-600 whitespace-nowrap'>
+                    Activity
+                  </TableHead>
+                  <TableHead className='text-[10px] font-semibold text-gray-600 text-right whitespace-nowrap w-[90px]'>
+                    Est
+                  </TableHead>
+                  <TableHead className='text-[10px] font-semibold text-gray-600 text-right whitespace-nowrap w-[90px]'>
+                    Used
+                  </TableHead>
+                  <TableHead className='text-[10px] font-semibold text-gray-600 text-right whitespace-nowrap w-[90px]'>
+                    Left
+                  </TableHead>
+                  <TableHead className='text-[10px] font-semibold text-gray-600 whitespace-nowrap w-[70px]'>
+                    Unit
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {siteActivitiesQuery.data
+                  .map((a: any) => {
+                    const estQty = getEstimateQty(a.activity);
+                    if (estQty === null) return null;
+                    const usedQty = usedQtyByActivity[a.activity] ?? 0;
+                    const left = Math.max(0, estQty - usedQty);
+                    const exhausted = estQty > 0 && left <= 0;
+                    return (
+                      <TableRow
+                        key={a.id}
+                        className={exhausted ? "bg-orange-50/30 hover:bg-orange-50/40" : "hover:bg-blue-50/20"}>
+                        <TableCell className='py-2 text-xs text-gray-700 font-medium whitespace-nowrap'>
+                          {formatActivityLabel(a.activity)}
+                        </TableCell>
+                        <TableCell className='py-2 text-xs text-gray-600 text-right tabular-nums whitespace-nowrap'>
+                          {estQty}
+                        </TableCell>
+                        <TableCell className='py-2 text-xs text-gray-600 text-right tabular-nums whitespace-nowrap'>
+                          {usedQty}
+                        </TableCell>
+                        <TableCell className='py-2 text-xs text-right tabular-nums whitespace-nowrap'>
+                          {exhausted ? (
+                            <span className='text-orange-700 font-semibold'>0</span>
+                          ) : (
+                            <span className='text-emerald-700 font-semibold'>{left}</span>
+                          )}
+                        </TableCell>
+                        <TableCell className='py-2 text-xs text-gray-500 whitespace-nowrap'>
+                          {a.unit ?? "Nos"}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                  .filter(Boolean)}
+              </TableBody>
+            </Table>
+          </div>
+        )}
       </div>
 
       {/* Header + Add button */}
