@@ -445,53 +445,14 @@ const AddExpenseDialog = ({
                 <SelectContent>
                   <SelectItem value='__none__' className='text-sm text-gray-400'>— None —</SelectItem>
                   {activities.map((a) => {
-                    const used = usedQtyByActivity[a.key] ?? 0;
-                    const rem = a.estimateQty !== null ? Math.max(0, a.estimateQty - used) : null;
-                    const exhausted = rem !== null && rem <= 0;
                     return (
                       <SelectItem key={a.key} value={a.key} className='text-sm'>
-                        <div className='flex items-center gap-2'>
-                          {exhausted
-                            ? <AlertTriangle className='w-3 h-3 text-orange-500 shrink-0' />
-                            : <CheckCircle2 className='w-3 h-3 text-emerald-500 shrink-0' />}
-                          <span className={exhausted ? "text-orange-700" : ""}>{a.label}</span>
-                          {a.estimateQty !== null && (
-                            <span className={`text-[10px] shrink-0 ${exhausted ? "text-orange-400" : "text-gray-400"}`}>
-                              {rem !== null ? `${rem} left` : `Est: ${a.estimateQty}`} {a.unit ?? "Nos"}
-                            </span>
-                          )}
-                        </div>
+                        {a.label}
                       </SelectItem>
                     );
                   })}
                 </SelectContent>
               </Select>
-
-              {/* Qty usage bar */}
-              {selectedActivity && estimateQty !== null && (
-                <div className='rounded-lg border px-3 py-2.5 space-y-1.5 bg-gray-50/60'>
-                  <div className='flex items-center justify-between text-[10px]'>
-                    <span className='text-gray-500 font-medium'>Qty usage — {selectedActivity.label}</span>
-                    <span className={`font-semibold ${isQuotaExhausted ? "text-orange-600" : "text-emerald-600"}`}>
-                      {alreadyUsedQty} / {estimateQty} {selectedActivity.unit ?? "Nos"}
-                    </span>
-                  </div>
-                  <div className='h-1.5 rounded-full bg-gray-200 overflow-hidden'>
-                    <div
-                      className={`h-full rounded-full ${pctUsed >= 100 ? "bg-orange-500" : pctUsed >= 75 ? "bg-amber-500" : "bg-emerald-500"}`}
-                      style={{ width: `${Math.min(100, pctUsed)}%` }}
-                    />
-                  </div>
-                  <div className='flex justify-between text-[10px]'>
-                    <span className='text-gray-400'>Used: {alreadyUsedQty} {selectedActivity.unit ?? "Nos"}</span>
-                    <span className={isQuotaExhausted ? "text-orange-600 font-semibold" : "text-emerald-600 font-semibold"}>
-                      {isQuotaExhausted
-                        ? "Quota exhausted — exceeded expense"
-                        : `Remaining: ${remainingQty} ${selectedActivity.unit ?? "Nos"}`}
-                    </span>
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
@@ -499,20 +460,14 @@ const AddExpenseDialog = ({
           {selectedActivityKey && !isExceededMode && (
             <div className='space-y-1.5'>
               <Label className='text-xs font-medium text-gray-700'>
-                Quantity{" "}
-                {remainingQty !== null && (
-                  <span className='text-gray-400'>(max: {remainingQty} {selectedActivity?.unit ?? "Nos"})</span>
-                )}
+                Quantity <span className='text-gray-400'>(optional)</span>
               </Label>
               <Input
                 type='number' min='0' step='0.01' placeholder='0.00'
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
-                className={`h-9 text-sm ${qtyExceedsRemaining ? "border-red-400 focus-visible:ring-red-300" : ""}`}
+                className='h-9 text-sm'
               />
-              {qtyExceedsRemaining && (
-                <p className='text-[10px] text-red-600'>Exceeds remaining qty of {remainingQty}</p>
-              )}
             </div>
           )}
 
@@ -768,7 +723,7 @@ const AddExpenseDialog = ({
             Icon={Save}
             onClick={handleSubmit}
             loading={isSaving}
-            disabled={isSaving || qtyExceedsRemaining}
+            disabled={isSaving}
             className={`flex-1 h-9 text-sm ${isExceededMode ? "bg-orange-600 hover:bg-orange-700 border-orange-600" : ""}`}
           />
           <button

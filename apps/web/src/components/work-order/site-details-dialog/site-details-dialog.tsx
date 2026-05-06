@@ -239,5 +239,5 @@ const SiteDetailDialog = () => {
     </DialogWindow>
   );
 };
-
+  
 export default SiteDetailDialog;
