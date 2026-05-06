@@ -52,8 +52,8 @@ const DialogWindow = ({
     sm: "w-[100vw] sm:max-w-[525px]",
     md: "w-[100vw] sm:max-w-[700px]",
     lg: "w-[100vw] sm:max-w-[900px]",
-    xl: "w-[100vw] sm:max-w-[1100px]",
-    "2xl": "w-[100vw] sm:max-w-[1300px]",
+    xl: "w-[100vw] sm:max-w-[1200px]",
+    "2xl": "w-[100vw] sm:max-w-[1400px]",
     full: "w-[calc(100vw-4rem)] max-w-none sm:max-w-none",
   };
 

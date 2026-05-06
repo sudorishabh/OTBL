@@ -273,10 +273,9 @@ const SiteExpensesSection = ({ woSiteId, officeId, processType }: Props) => {
     const recordMap: Record<string, ExpenseRecordGroup> = {};
     for (const exp of expenses) {
       const activityKey = exp.activity_key ?? null;
-      const activityMeta =
-        activityKey && activityLabelByKey[activityKey]
-          ? activityLabelByKey[activityKey]
-          : { label: activityKey ? formatActivityLabel(activityKey) : "Other / Unlinked Expenses", unit: null };
+      const activityMeta = activityKey
+        ? (activityLabelByKey[activityKey] ?? { label: formatActivityLabel(activityKey), unit: null })
+        : { label: "Other / Unlinked Expenses", unit: null };
 
       // Heuristic grouping: in multi-add, these shared fields are identical across rows.
       const recordKey = [
@@ -539,7 +538,7 @@ const SiteExpensesSection = ({ woSiteId, officeId, processType }: Props) => {
       <div className='flex items-center justify-between'>
         <div className='flex items-center gap-2'>
           <ReceiptIndianRupee className='w-4 h-4 text-gray-400' />
-          <h3 className='text-sm font-semibold text-gray-700'>Expense List</h3>
+          <h3 className='text-sm font-semibold text-gray-700 whitespace-nowrap'>Expense List</h3>
           {expenses.length > 0 && (
             <Badge variant='outline' className='text-[10px] px-1.5 py-0 h-4 bg-gray-50'>
               {expenses.length}
@@ -593,15 +592,15 @@ const SiteExpensesSection = ({ woSiteId, officeId, processType }: Props) => {
           <Table>
             <TableHeader>
               <TableRow className='bg-gray-50/50 hover:bg-gray-50/50'>
-                <TableHead className='text-xs font-semibold text-gray-600 w-[110px]'>Date</TableHead>
-                <TableHead className='text-xs font-semibold text-gray-600'>Activity</TableHead>
-                <TableHead className='text-xs font-semibold text-gray-600'>Type</TableHead>
-                <TableHead className='text-xs font-semibold text-gray-600'>Description</TableHead>
-                <TableHead className='text-xs font-semibold text-gray-600 text-center w-[90px]'>Qty</TableHead>
-                <TableHead className='text-xs font-semibold text-gray-600'>Contractor</TableHead>
-                <TableHead className='text-xs font-semibold text-gray-600'>Invoice #</TableHead>
-                <TableHead className='text-xs font-semibold text-gray-600 text-center w-[60px]'>Doc</TableHead>
-                <TableHead className='text-xs font-semibold text-gray-600 text-right'>Amount (₹)</TableHead>
+                <TableHead className='text-xs font-semibold text-gray-600 w-[110px] whitespace-nowrap'>Date</TableHead>
+                <TableHead className='text-xs font-semibold text-gray-600 whitespace-nowrap'>Activity</TableHead>
+                <TableHead className='text-xs font-semibold text-gray-600 whitespace-nowrap'>Type</TableHead>
+                <TableHead className='text-xs font-semibold text-gray-600 whitespace-nowrap'>Description</TableHead>
+                <TableHead className='text-xs font-semibold text-gray-600 text-center w-[90px] whitespace-nowrap'>Qty</TableHead>
+                <TableHead className='text-xs font-semibold text-gray-600 whitespace-nowrap'>Contractor</TableHead>
+                <TableHead className='text-xs font-semibold text-gray-600 whitespace-nowrap'>Invoice #</TableHead>
+                <TableHead className='text-xs font-semibold text-gray-600 text-center w-[60px] whitespace-nowrap'>Doc</TableHead>
+                <TableHead className='text-xs font-semibold text-gray-600 text-right whitespace-nowrap'>Amount (₹)</TableHead>
                 <TableHead className='w-[70px]' />
               </TableRow>
             </TableHeader>
