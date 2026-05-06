@@ -25,6 +25,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -73,7 +80,7 @@ type ExpenseRecordGroup = {
   invoiceNumber: string | null;
   documentUrl: string | null;
   ids: number[];
-  types: string[];
+  items: { id: number; expense_type: string; amount: number }[];
   totalAmount: number;
 };
 
@@ -131,6 +138,7 @@ const SiteExpensesSection = ({ woSiteId, officeId, processType }: Props) => {
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [deletingGroupIds, setDeletingGroupIds] = useState<number[] | null>(null);
   const [activityFilter, setActivityFilter] = useState<string>("__all__");
+  const [breakdownGroup, setBreakdownGroup] = useState<ExpenseRecordGroup | null>(null);
 
   const siteActivitiesQuery = trpc.workOrderSiteQuery.getSiteActivities.useQuery(
     { work_order_site_id: woSiteId },
@@ -311,13 +319,17 @@ const SiteExpensesSection = ({ woSiteId, officeId, processType }: Props) => {
           invoiceNumber: exp.invoice_number ?? null,
           documentUrl: exp.document_url ?? null,
           ids: [],
-          types: [],
+          items: [],
           totalAmount: 0,
         };
       }
 
       recordMap[recordKey]!.ids.push(exp.id);
-      recordMap[recordKey]!.types.push(exp.expense_type);
+      recordMap[recordKey]!.items.push({
+        id: exp.id,
+        expense_type: exp.expense_type,
+        amount: Number(exp.amount),
+      });
       recordMap[recordKey]!.totalAmount += Number(exp.amount);
     }
 
@@ -354,13 +366,19 @@ const SiteExpensesSection = ({ woSiteId, officeId, processType }: Props) => {
 
   const renderRecordRow = (group: ExpenseRecordGroup) => {
     const isExceeded = group.isExceeded;
-    const uniqueTypes = Array.from(new Set(group.types));
+    const uniqueTypes = Array.from(new Set(group.items.map((i) => i.expense_type)));
     const primaryExpenseForEdit: Expense | undefined =
       expenses.find((e) => e.id === group.ids[0]) ?? expenses.find((e) => group.ids.includes(e.id));
 
     return (
       <TableRow
         key={group.key}
+        onClick={() => setBreakdownGroup(group)}
+        role='button'
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") setBreakdownGroup(group);
+        }}
         className={`transition-colors ${isExceeded ? "bg-orange-50/40 hover:bg-orange-50/70" : "hover:bg-blue-50/20"}`}>
         <TableCell className='text-xs text-gray-600 py-2.5'>
           {format(new Date(group.expenseDate), "dd MMM yyyy")}
@@ -451,7 +469,10 @@ const SiteExpensesSection = ({ woSiteId, officeId, processType }: Props) => {
                 <TooltipTrigger asChild>
                   <button
                     type='button'
-                    onClick={() => primaryExpenseForEdit && handleEdit(primaryExpenseForEdit)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (primaryExpenseForEdit) handleEdit(primaryExpenseForEdit);
+                    }}
                     disabled={!primaryExpenseForEdit}
                     className='p-1.5 rounded-md text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors disabled:opacity-30'>
                     <Pencil className='w-3 h-3' />
@@ -467,7 +488,10 @@ const SiteExpensesSection = ({ woSiteId, officeId, processType }: Props) => {
                 <TooltipTrigger asChild>
                   <button
                     type='button'
-                    onClick={() => setDeletingGroupIds(group.ids)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeletingGroupIds(group.ids);
+                    }}
                     className='p-1.5 rounded-md text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors'>
                     <Trash2 className='w-3 h-3' />
                   </button>
@@ -485,6 +509,53 @@ const SiteExpensesSection = ({ woSiteId, officeId, processType }: Props) => {
 
   return (
     <div className='space-y-4'>
+      <Dialog open={!!breakdownGroup} onOpenChange={(v) => !v && setBreakdownGroup(null)}>
+        <DialogContent className='max-w-md'>
+          <DialogHeader>
+            <DialogTitle>Expense breakdown</DialogTitle>
+            <DialogDescription>
+              {breakdownGroup?.activityLabel ? `${breakdownGroup.activityLabel} · ` : ""}
+              {breakdownGroup?.expenseDate ? format(new Date(breakdownGroup.expenseDate), "dd MMM yyyy") : ""}
+            </DialogDescription>
+          </DialogHeader>
+          {breakdownGroup && (
+            <div className='space-y-3'>
+              <div className='rounded-md border overflow-hidden'>
+                <Table>
+                  <TableHeader>
+                    <TableRow className='bg-gray-50/60 hover:bg-gray-50/60'>
+                      <TableHead className='text-xs font-semibold text-gray-600 whitespace-nowrap'>Type</TableHead>
+                      <TableHead className='text-xs font-semibold text-gray-600 text-right whitespace-nowrap'>Amount</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {breakdownGroup.items.map((item) => (
+                      <TableRow key={item.id} className='hover:bg-transparent'>
+                        <TableCell className='py-2 text-xs text-gray-700'>
+                          {EXPENSE_TYPE_LABELS[item.expense_type] ?? item.expense_type}
+                        </TableCell>
+                        <TableCell className='py-2 text-xs text-right tabular-nums font-semibold text-gray-800'>
+                          {formatCurrency(item.amount)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              <div className='flex items-center justify-between text-xs'>
+                <span className='text-gray-500'>
+                  {breakdownGroup.items.length} item{breakdownGroup.items.length !== 1 ? "s" : ""}
+                </span>
+                <span className='font-semibold text-gray-900'>
+                  Total: {formatCurrency(breakdownGroup.totalAmount)}
+                </span>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Summary Cards */}
       <div className='grid grid-cols-3 gap-2'>
         <div className='rounded-lg border bg-emerald-50/60 border-emerald-100 p-2.5'>
