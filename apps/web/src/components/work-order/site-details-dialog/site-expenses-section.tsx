@@ -481,37 +481,37 @@ const SiteExpensesSection = ({ woSiteId, officeId, processType }: Props) => {
   return (
     <div className='space-y-4'>
       {/* Summary Cards */}
-      <div className='grid grid-cols-3 gap-3'>
-        <div className='rounded-xl border bg-emerald-50/60 border-emerald-100 p-4'>
-          <div className='flex items-center gap-2 mb-1'>
-            <TrendingUp className='w-3.5 h-3.5 text-emerald-600' />
+      <div className='grid grid-cols-3 gap-2'>
+        <div className='rounded-lg border bg-emerald-50/60 border-emerald-100 p-2.5'>
+          <div className='flex items-center gap-1 mb-0.5'>
+            <TrendingUp className='w-2.5 h-2.5 text-emerald-600' />
             <span className='text-[10px] font-semibold text-emerald-600 uppercase tracking-wider'>
               Income Earned
             </span>
           </div>
-          <p className='text-lg font-bold text-emerald-700'>
+          <p className='text-sm font-bold text-emerald-700 leading-tight'>
             {summaryQuery.isLoading ? <span className='text-gray-400'>—</span> : formatCurrency(incomeTotal)}
           </p>
-          <p className='text-[10px] text-emerald-600 mt-0.5'>From completed activities</p>
+          <p className='text-[8px] text-emerald-600 mt-0.5'>From completed activities</p>
         </div>
 
-        <div className='rounded-xl border border-gray-100 p-4 space-y-1.5'>
-          <div className='flex items-center gap-2'>
-            <TrendingDown className='w-3.5 h-3.5 text-gray-500' />
+        <div className='rounded-lg border border-gray-100 p-2.5 space-y-1'>
+          <div className='flex items-center gap-1'>
+            <TrendingDown className='w-2.5 h-2.5 text-gray-500' />
             <span className='text-[10px] font-semibold text-gray-500 uppercase tracking-wider'>
               Total Expenses
             </span>
           </div>
-          <p className='text-lg font-bold text-gray-800'>
+          <p className='text-sm font-bold text-gray-800 leading-tight'>
             {summaryQuery.isLoading ? <span className='text-gray-400'>—</span> : formatCurrency(expenseTotal)}
           </p>
           {exceededTotal > 0 && (
-            <div className='flex flex-col gap-0.5 pt-0.5 border-t border-gray-100'>
-              <span className='text-[9px] text-gray-400'>
+            <div className='flex flex-col gap-0.5 pt-1 border-t border-gray-100'>
+              <span className='text-[8px] text-gray-400'>
                 Regular: {formatCurrency(regularTotal)}
               </span>
-              <span className='text-[9px] text-orange-600 font-semibold flex items-center gap-1'>
-                <AlertTriangle className='w-2.5 h-2.5' />
+              <span className='text-[8px] text-orange-600 font-semibold flex items-center gap-1'>
+                <AlertTriangle className='w-2 h-2' />
                 Exceeded: {formatCurrency(exceededTotal)}
               </span>
             </div>
@@ -519,17 +519,17 @@ const SiteExpensesSection = ({ woSiteId, officeId, processType }: Props) => {
         </div>
 
         <div
-          className={`rounded-xl border p-4 ${netPL >= 0 ? "bg-emerald-50/60 border-emerald-100" : "bg-orange-50/60 border-orange-100"}`}>
-          <div className='flex items-center gap-2 mb-1'>
-            <Minus className={`w-3.5 h-3.5 ${netPL >= 0 ? "text-emerald-600" : "text-orange-600"}`} />
+          className={`rounded-lg border p-2.5 ${netPL >= 0 ? "bg-emerald-50/60 border-emerald-100" : "bg-orange-50/60 border-orange-100"}`}>
+          <div className='flex items-center gap-1 mb-0.5'>
+            <Minus className={`w-2.5 h-2.5 ${netPL >= 0 ? "text-emerald-600" : "text-orange-600"}`} />
             <span className={`text-[10px] font-semibold uppercase tracking-wider ${netPL >= 0 ? "text-emerald-600" : "text-orange-600"}`}>
               Net P&amp;L
             </span>
           </div>
-          <p className={`text-lg font-bold ${netPL >= 0 ? "text-emerald-700" : "text-orange-700"}`}>
+          <p className={`text-sm font-bold leading-tight ${netPL >= 0 ? "text-emerald-700" : "text-orange-700"}`}>
             {summaryQuery.isLoading ? <span className='text-gray-400'>—</span> : formatCurrency(Math.abs(netPL))}
           </p>
-          <p className={`text-[10px] mt-0.5 ${netPL >= 0 ? "text-emerald-600" : "text-orange-600"}`}>
+          <p className={`text-[8px] mt-0.5 ${netPL >= 0 ? "text-emerald-600" : "text-orange-600"}`}>
             {netPL >= 0 ? "Surplus" : "Deficit"}
           </p>
         </div>
