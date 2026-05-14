@@ -6,9 +6,9 @@ const LoginBgEffect = () => {
       <svg
         viewBox='0 0 1440 420'
         xmlns='http://www.w3.org/2000/svg'
-        className='w-full text-gray-200/60 dark:text-gray-700/50'
+        className='w-full opacity-60 dark:opacity-25'
         preserveAspectRatio='xMidYMax slice'
-        fill='currentColor'>
+        fill='rgba(15,23,42,0.06)'>
         {/* Stepped / tiered tower — left */}
         <rect
           x='20'

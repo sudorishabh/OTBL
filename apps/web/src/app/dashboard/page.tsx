@@ -1,7 +1,7 @@
 "use client";
-
 import { useAuthContext, useIsAdmin } from "@/contexts/AuthContext";
 import { PageWrapper } from "@/components/wrapper/page-wrapper";
+import DashboardPageSkeleton from "@/components/skeleton/dashboard/dashboard-page-skeleton";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -168,9 +168,11 @@ export default function DashboardPage() {
 
   if (isUserLoading) {
     return (
-      <div className='flex min-h-screen items-center justify-center bg-gray-200/80'>
-        <p className='text-sm text-muted-foreground'>Loading your session…</p>
-      </div>
+      <PageWrapper
+        title='Overview'
+        description='sas'>
+        <DashboardPageSkeleton />
+      </PageWrapper>
     );
   }
 
@@ -460,9 +462,9 @@ function StatTile({
                 {value ?? 0}
               </p>
             )}
-            {hint && !loading && (
+            {/* {hint && !loading && (
               <p className='mt-1 text-[11px] text-muted-foreground'>{hint}</p>
-            )}
+            )} */}
           </div>
           <div className='rounded-md bg-cyan-900/10 p-2 text-cyan-900'>
             <Icon className='size-4' />

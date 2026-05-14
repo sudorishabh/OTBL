@@ -144,9 +144,9 @@ function AppSidebar() {
           <Image
             src='/otbl-logo.png'
             alt='OTBL Logo'
-            width={500}
-            height={500}
-            className='h-16 w-28'
+            width={112}
+            height={64}
+            className='h-16 w-28 object-contain'
             loading='eager'
           />
           {state !== "collapsed" && (

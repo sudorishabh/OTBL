@@ -90,7 +90,7 @@ const LoginForm = () => {
               <FormControl>
                 <Input
                   type='password'
-                  placeholder='••••••••'
+                  placeholder='f3#••••••••'
                   className='h-11 bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700'
                   {...field}
                 />
@@ -110,7 +110,7 @@ const LoginForm = () => {
 
         <Button
           type='submit'
-          className='w-full h-11 bg-emerald-600 hover:bg-emerald-700/90 cursor-pointer text-white shadow-md transition-colors duration-200 font-medium'
+          className='w-full mt-6 h-11 bg-emerald-600 hover:bg-emerald-700/90 cursor-pointer text-white shadow-md transition-colors duration-200 font-medium'
           size='lg'>
           Sign In
         </Button>
