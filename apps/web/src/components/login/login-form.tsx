@@ -100,13 +100,13 @@ const LoginForm = () => {
           )}
         />
 
-        <div className='flex items-center justify-between pt-1'>
+        {/* <div className='flex items-center justify-between pt-1'>
           <button
             type='button'
             className='text-sm font-medium text-cyan-700 hover:text-cyan-800 dark:text-cyan-400 dark:hover:text-cyan-300 transition-colors'>
             Forgot password?
           </button>
-        </div>
+        </div> */}
 
         <Button
           type='submit'
