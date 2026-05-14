@@ -385,7 +385,10 @@ const AddExpenseDialog = ({
   };
 
   const isUploadingDoc = sharePointUpload.isUploading;
-  const isSaving = isSavingMulti || updateExpenseMutation.isPending || isUploadingDoc;
+  const isSaving =
+    isSavingMulti ||
+    updateExpenseMutation.isPending ||
+    isUploadingDoc;
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -397,7 +400,11 @@ const AddExpenseDialog = ({
           <DialogTitle
             className={`text-base font-semibold flex items-center gap-2 ${isExceededMode ? "text-orange-700" : ""}`}>
             {isExceededMode && <AlertTriangle className='w-4 h-4 text-orange-600' />}
-            {isEditing ? "Edit Expense" : isExceededMode ? "Record Exceeded Expense" : "Record Expense"}
+            {isEditing
+              ? "Edit Expense"
+              : isExceededMode
+                ? "Record Exceeded Expense"
+                : "Record Expense"}
           </DialogTitle>
           <DialogDescription className='text-xs text-gray-500'>
             {isExceededMode
