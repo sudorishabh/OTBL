@@ -10,10 +10,8 @@ const OfficeSitePageSkeleton = () => {
         <Skeleton className={cn(skeletonStyle, "h-8 w-[65%]")} />
         <Skeleton className={cn(skeletonStyle, "h-8 w-[35%]")} />
       </div>
-      <Skeleton className={cn(skeletonStyle, "h-14")} />
-      <Skeleton className={cn(skeletonStyle, "h-52")} />
-      <Skeleton className={cn(skeletonStyle, "h-14")} />
-      <Skeleton className={cn(skeletonStyle, "h-52")} />
+      <Skeleton className={cn(skeletonStyle, "h-64")} />
+      <Skeleton className={cn(skeletonStyle, "h-64")} />
     </div>
   );
 };

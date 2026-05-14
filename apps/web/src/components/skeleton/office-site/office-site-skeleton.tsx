@@ -6,10 +6,10 @@ import React from "react";
 const OfficeSiteSkeleton = () => {
   return (
     <div className={skeletonsParentStyle}>
-      <Skeleton className={cn(skeletonStyle, "h-14")} />
-      <Skeleton className={cn(skeletonStyle, "h-52")} />
-      <Skeleton className={cn(skeletonStyle, "h-14")} />
-      <Skeleton className={cn(skeletonStyle, "h-52")} />
+      {/* <Skeleton className={cn(skeletonStyle, "h-14")} /> */}
+      <Skeleton className={cn(skeletonStyle, "h-64")} />
+      {/* <Skeleton className={cn(skeletonStyle, "h-14")} /> */}
+      <Skeleton className={cn(skeletonStyle, "h-64")} />
     </div>
   );
 };

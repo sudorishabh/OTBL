@@ -14,13 +14,11 @@ import {
   MapPin,
   TrendingDown,
   Wallet,
-  Receipt,
   ReceiptIndianRupee,
 } from "lucide-react";
-import { capitalFirstLetter, constants } from "@pkg/utils";
+import { capitalFirstLetter, constants, formatCurrency } from "@pkg/utils";
 import CustomButton from "@/components/shared/btn";
 import Link from "next/link";
-import WorkOrderStatCard from "./work-order-stat-card";
 
 interface Props {
   workOrder: {
@@ -69,8 +67,60 @@ const EXPENSE_TYPE_SHORT: Record<string, string> = {
   miscellaneous: "Misc.",
 };
 
+const Stat = ({
+  label,
+  value,
+  icon: Icon,
+  valueClass = "text-gray-800",
+}: {
+  label: string;
+  value: React.ReactNode;
+  icon?: React.ElementType;
+  valueClass?: string;
+}) => (
+  <div className='min-w-[88px]'>
+    <div className='flex items-center gap-1 text-[12px] text-gray-600'>
+      {/* {Icon && <Icon className='size-3' />} */}
+      <span>{label}</span>
+    </div>
+    <div
+      className={`mt-0.5 text-base font-semibold leading-tight ${valueClass}`}>
+      {value}
+    </div>
+  </div>
+);
+
+const StatGroup = ({
+  title,
+  icon: Icon,
+  children,
+  className = "flex-1",
+}: {
+  title: string;
+  icon: React.ElementType;
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <div className={`px-5 py-3.5 ${className}`}>
+    <div className='flex items-center gap-1.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-3'>
+      <Icon className='size-3' />
+      {title}
+    </div>
+    <div className='flex  items-start gap-6 justify-between'>{children}</div>
+  </div>
+);
+
 const WorkOrderDetailsCard = ({ workOrder, stats, expenseSummary }: Props) => {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+
+  const income = expenseSummary?.total_income ?? stats.totalCompletionAmount;
+  const expenses = expenseSummary?.total_expenses ?? stats.totalExpenses ?? 0;
+  const netRaw = expenseSummary?.net_surplus ?? stats.netSurplus ?? 0;
+  const isSurplus = Number(netRaw) >= 0;
+  const expenseRecords =
+    expenseSummary?.expense_entry_count ?? stats.expenseEntryCount ?? 0;
+  const hasExpenseBreakdown =
+    !!expenseSummary && Object.keys(expenseSummary.by_type).length > 0;
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -268,81 +318,84 @@ const WorkOrderDetailsCard = ({ workOrder, stats, expenseSummary }: Props) => {
         </CardContent>
       </Card>
 
-      <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4'>
-        <WorkOrderStatCard
-          Icon={MapPin}
-          title='Total Sites'
-          stat={Number(stats.totalSites).toLocaleString()}
-        />
-        <WorkOrderStatCard
-          Icon={CheckCircle2}
-          title='Completed Sites'
-          stat={Number(stats.completedSites).toLocaleString()}
-        />
-        <WorkOrderStatCard
-          Icon={IndianRupee}
-          title='Total Budget'
-          stat={`${Number(stats.totalBudgetAmount).toLocaleString()}`}
-        />
-        <WorkOrderStatCard
-          Icon={IndianRupee}
-          title='Total Completion'
-          stat={`${Number(stats.totalCompletionAmount).toLocaleString()}`}
-        />
-        <WorkOrderStatCard
-          Icon={TrendingUp}
-          title='Budget Utilization'
-          stat={`${Number(stats.budgetUtilization).toFixed(1)}%`}
-        />
-      </div>
+      <div className='rounded-xl border bg-white shadow-sm overflow-hidden'>
+        <div className='flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x divide-gray-200'>
+          <StatGroup
+            title='Sites'
+            icon={MapPin}
+            className='lg:w-2/9'>
+            <Stat
+              label='Total'
+              value={Number(stats.totalSites).toLocaleString()}
+            />
+            <Stat
+              label='Completed'
+              icon={CheckCircle2}
+              valueClass='text-emerald-700'
+              value={Number(stats.completedSites).toLocaleString()}
+            />
+          </StatGroup>
 
-      {/* Expenses & P&L (work order level) */}
-      <div className='space-y-3'>
-        <h3 className='text-xs font-semibold text-gray-500 uppercase tracking-wide px-0.5'>
-          Expenses &amp; profitability
-        </h3>
-        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4'>
-          <WorkOrderStatCard
-            Icon={IndianRupee}
-            title='Income (completion)'
-            stat={`${Number(expenseSummary?.total_income ?? stats.totalCompletionAmount).toLocaleString("en-IN")}`}
-          />
-          <WorkOrderStatCard
-            Icon={TrendingDown}
-            title='Total expenses'
-            stat={`${Number(expenseSummary?.total_expenses ?? stats.totalExpenses ?? 0).toLocaleString("en-IN")}`}
-          />
-          <WorkOrderStatCard
-            Icon={Wallet}
-            title={
-              Number(expenseSummary?.net_surplus ?? stats.netSurplus ?? 0) >= 0
-                ? "Net surplus"
-                : "Net deficit"
-            }
-            stat={`${Number(Math.abs(expenseSummary?.net_surplus ?? stats.netSurplus ?? 0)).toLocaleString("en-IN")}`}
-          />
-          <WorkOrderStatCard
-            Icon={ReceiptIndianRupee}
-            title='Expense records'
-            stat={`${Number(expenseSummary?.expense_entry_count ?? stats.expenseEntryCount ?? 0).toLocaleString("en-IN")}`}
-          />
+          <StatGroup
+            title='Budget'
+            icon={IndianRupee}
+            className='lg:w-3/9'>
+            <Stat
+              label='Total'
+              value={formatCurrency(Number(stats.totalBudgetAmount))}
+            />
+            <Stat
+              label='Completion'
+              value={formatCurrency(Number(stats.totalCompletionAmount))}
+            />
+            <Stat
+              label='Utilized'
+              icon={TrendingUp}
+              value={`${Number(stats.budgetUtilization).toFixed(1)}%`}
+            />
+          </StatGroup>
+
+          <StatGroup
+            title='Profit & Loss'
+            icon={Wallet}
+            className='lg:w-4/9'>
+            <Stat
+              label='Income'
+              value={formatCurrency(Number(income))}
+            />
+            <Stat
+              label='Expenses'
+              icon={TrendingDown}
+              valueClass='text-rose-700'
+              value={formatCurrency(Number(expenses))}
+            />
+            <Stat
+              label={isSurplus ? "Net surplus" : "Net deficit"}
+              valueClass={isSurplus ? "text-emerald-700" : "text-rose-700"}
+              value={formatCurrency(Math.abs(Number(netRaw)))}
+            />
+            <Stat
+              label='Records'
+              icon={ReceiptIndianRupee}
+              value={Number(expenseRecords).toLocaleString("en-IN")}
+            />
+          </StatGroup>
         </div>
-        {expenseSummary && Object.keys(expenseSummary.by_type).length > 0 && (
-          <div className='rounded-lg border border-slate-200 bg-slate-50/60 px-4 py-3'>
-            <p className='text-[10px] font-semibold text-slate-500 uppercase tracking-widest mb-2'>
-              Expenses by category
-            </p>
-            <div className='flex flex-wrap gap-2'>
-              {Object.entries(expenseSummary.by_type).map(([type, amt]) => (
-                <Badge
-                  key={type}
-                  variant='outline'
-                  className='text-[11px] font-normal bg-white'>
-                  {EXPENSE_TYPE_SHORT[type] ?? type}: ₹
-                  {Number(amt).toLocaleString("en-IN")}
-                </Badge>
-              ))}
-            </div>
+
+        {hasExpenseBreakdown && (
+          <div className='border-t border-gray-200 bg-slate-50/60 px-5 py-2.5 flex items-center gap-2 flex-wrap'>
+            <span className='text-[10px] font-semibold text-slate-500 uppercase tracking-wider'>
+              By category
+            </span>
+            {Object.entries(expenseSummary!.by_type).map(([type, amt]) => (
+              <Badge
+                key={type}
+                variant='outline'
+                className='text-[11px] font-normal bg-white'>
+                {EXPENSE_TYPE_SHORT[type] ?? type}: ₹
+                {Number(amt).toLocaleString("en-IN")}
+              </Badge>
+            ))}
           </div>
         )}
       </div>
