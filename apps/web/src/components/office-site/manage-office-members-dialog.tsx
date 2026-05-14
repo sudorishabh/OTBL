@@ -60,7 +60,7 @@ const ManageOfficeMembersDialog = () => {
         limit: itemsPerPage,
         search: managerSearch,
       },
-      { enabled: isOpen && activeTab === "managers" },
+      { enabled: isOpen && activeTab === "managers", refetchOnMount: "always" },
     );
 
   const { data: operatorsData, isLoading: loadingOperators } =
@@ -71,7 +71,7 @@ const ManageOfficeMembersDialog = () => {
         limit: itemsPerPage,
         search: operatorSearch,
       },
-      { enabled: isOpen && activeTab === "operators" },
+      { enabled: isOpen && activeTab === "operators", refetchOnMount: "always" },
     );
 
   useEffect(() => {
@@ -129,8 +129,6 @@ const ManageOfficeMembersDialog = () => {
     setOperatorSearch("");
     setManagerPage(1);
     setOperatorPage(1);
-    setManagerResults([]);
-    setOperatorResults([]);
   }, [deleteParams]);
 
   const onRemove = async (userId: number, label: string) => {
