@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/table";
 import { capitalFirstLetter, capitalizeEachWord } from "@pkg/utils";
 import StatusIndicator from "@/components/shared/status-indicator";
-import { Search, UserMinus } from "lucide-react";
+import { Building2, Mail, MapPin, Search, Shield, UserMinus, Users } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 import SiteOperatorsSection from "./site-operators-section";
 import toast from "react-hot-toast";
@@ -51,6 +51,14 @@ const OfficeDetailsDialog = () => {
     },
     onError: (e: unknown) => handleError(e, { showToast: true }),
   });
+
+  const { data: officesData } = trpc.officeQuery.getOffices.useQuery(
+    {},
+    { enabled: isOpenDialog && !!officeId },
+  );
+  const officeInfo = (officesData as any)?.offices?.find(
+    (o: any) => o.id === Number(officeId),
+  );
 
   const { data, isLoading, isFetching } =
     trpc.siteQuery.getSitesByOfficeId.useQuery(
@@ -128,6 +136,55 @@ const OfficeDetailsDialog = () => {
       size='xl'
       heightMode='full'>
       <div className='space-y-4'>
+        {/* Office Info Card */}
+        {officeInfo && (
+          <div className='rounded-xl border border-slate-200 bg-slate-50 p-4 flex flex-col gap-3'>
+            <div className='flex items-start justify-between gap-2'>
+              <div className='flex items-center gap-2'>
+                <Building2 className='w-4 h-4 text-primary shrink-0 mt-0.5' />
+                <span className='text-sm font-semibold text-slate-800'>
+                  {capitalizeEachWord(officeInfo.name)}
+                </span>
+              </div>
+              <span
+                className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                  officeInfo.status === "active"
+                    ? "bg-green-100 text-green-700"
+                    : "bg-red-100 text-red-700"
+                }`}>
+                {capitalFirstLetter(officeInfo.status)}
+              </span>
+            </div>
+            <div className='grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-600'>
+              <div className='flex items-start gap-1.5'>
+                <MapPin className='w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5' />
+                <span>
+                  {capitalFirstLetter(officeInfo.address)},{" "}
+                  {capitalizeEachWord(officeInfo.city)},{" "}
+                  {capitalizeEachWord(officeInfo.state)} – {officeInfo.pincode}
+                </span>
+              </div>
+              <div className='flex items-center gap-1.5'>
+                <Mail className='w-3.5 h-3.5 text-slate-400 shrink-0' />
+                <span className='truncate'>{officeInfo.email}</span>
+              </div>
+              <div className='flex items-center gap-1.5'>
+                <Shield className='w-3.5 h-3.5 text-slate-400 shrink-0' />
+                <span>GST: {officeInfo.gst_number}</span>
+              </div>
+              {officeInfo.manager && (
+                <div className='flex items-center gap-1.5'>
+                  <Users className='w-3.5 h-3.5 text-slate-400 shrink-0' />
+                  <span>
+                    Manager:{" "}
+                    {capitalizeEachWord(officeInfo.manager.name ?? "N/A")}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Search Bar */}
         <div className='relative pt-1'>
           <Search className='absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400' />

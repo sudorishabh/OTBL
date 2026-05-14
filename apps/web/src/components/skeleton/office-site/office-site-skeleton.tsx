@@ -1,15 +1,11 @@
-import React from "react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { skeletonsParentStyle, skeletonStyle } from "@/styles";
 import { cn } from "@/lib/utils";
+import { skeletonStyle, skeletonsParentStyle } from "@/styles";
+import React from "react";
 
-const OfficeSitePageSkeleton = () => {
+const OfficeSiteSkeleton = () => {
   return (
     <div className={skeletonsParentStyle}>
-      <div className='w-2/5 mt-8 flex items-center gap-4'>
-        <Skeleton className={cn(skeletonStyle, "h-8 w-[65%]")} />
-        <Skeleton className={cn(skeletonStyle, "h-8 w-[35%]")} />
-      </div>
       <Skeleton className={cn(skeletonStyle, "h-14")} />
       <Skeleton className={cn(skeletonStyle, "h-52")} />
       <Skeleton className={cn(skeletonStyle, "h-14")} />
@@ -18,4 +14,4 @@ const OfficeSitePageSkeleton = () => {
   );
 };
 
-export default OfficeSitePageSkeleton;
+export default OfficeSiteSkeleton;
