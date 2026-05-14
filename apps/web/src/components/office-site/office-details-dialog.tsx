@@ -85,11 +85,9 @@ const OfficeDetailsDialog = () => {
   useEffect(() => {
     if (responseData?.sites && !isFetching) {
       setAllSites((prev) => {
-        // If it's page 1, replace all sites
         if (page === 1) {
           return responseData.sites;
         }
-        // Otherwise, append new sites
         const existingIds = new Set(prev.map((s: any) => s.id));
         const newSites = responseData.sites.filter(
           (s: any) => !existingIds.has(s.id),
@@ -97,11 +95,10 @@ const OfficeDetailsDialog = () => {
         return [...prev, ...newSites];
       });
     }
-  }, [responseData?.sites, page, isFetching]);
+  }, [responseData?.sites, page, isFetching, debouncedSearchTerm]);
 
   useEffect(() => {
     setPage(1);
-    setAllSites([]);
   }, [debouncedSearchTerm]);
 
   // Reset page when dialog closes
