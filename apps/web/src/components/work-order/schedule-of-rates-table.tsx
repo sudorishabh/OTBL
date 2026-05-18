@@ -16,7 +16,6 @@ import {
   ChevronRight,
   TrendingUp,
   Wallet,
-  Receipt,
 } from "lucide-react";
 import DialogWindow from "@/components/shared/dialog-window";
 import useHandleParams from "@/hooks/useHandleParams";
@@ -571,20 +570,25 @@ const ScheduleOfRatesTable = ({
                   Expenses &amp; profitability
                 </h3>
                 <p className='text-xs text-gray-500'>
-                  Recorded costs across all sites vs completion income (SOR
-                  activity amounts)
+                  Recorded costs across all sites vs SOR income
                 </p>
               </div>
             </div>
 
+            {(() => {
+              const income = grandTotal;
+              const expenses = Number(expenseSummary.total_expenses) || 0;
+              const profit = income - expenses;
+              const isProfit = profit >= 0;
+              return (
             <div className='rounded-lg border border-rose-100 bg-linear-to-r from-rose-50/40 to-slate-50 p-4 mb-2'>
               <div className='grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4'>
                 <div>
                   <span className='text-[10px] uppercase tracking-wider text-slate-500 font-semibold block'>
-                    Income (completion)
+                    Income (SOR total)
                   </span>
                   <p className='text-base font-bold text-emerald-700'>
-                    {formatCurrency(expenseSummary.total_income)}
+                    {formatCurrency(income)}
                   </p>
                 </div>
                 <div>
@@ -592,21 +596,18 @@ const ScheduleOfRatesTable = ({
                     Total expenses
                   </span>
                   <p className='text-base font-bold text-rose-700'>
-                    {formatCurrency(expenseSummary.total_expenses)}
+                    {formatCurrency(expenses)}
                   </p>
                 </div>
                 <div>
                   <span className='text-[10px] uppercase tracking-wider text-slate-500 font-semibold block'>
-                    Net{" "}
-                    {expenseSummary.net_surplus >= 0 ? "surplus" : "deficit"}
+                    {isProfit ? "Profit" : "Loss"}
                   </span>
                   <p
                     className={`text-base font-bold ${
-                      expenseSummary.net_surplus >= 0
-                        ? "text-blue-700"
-                        : "text-orange-700"
+                      isProfit ? "text-blue-700" : "text-orange-700"
                     }`}>
-                    {formatCurrency(Math.abs(expenseSummary.net_surplus))}
+                    {formatCurrency(Math.abs(profit))}
                   </p>
                 </div>
                 <div>
@@ -639,6 +640,8 @@ const ScheduleOfRatesTable = ({
                 </div>
               )}
             </div>
+              );
+            })()}
           </section>
         )}
 

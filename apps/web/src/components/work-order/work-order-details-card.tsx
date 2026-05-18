@@ -113,10 +113,17 @@ const StatGroup = ({
 const WorkOrderDetailsCard = ({ workOrder, stats, expenseSummary }: Props) => {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
 
-  const income = expenseSummary?.total_income ?? stats.totalCompletionAmount;
-  const expenses = expenseSummary?.total_expenses ?? stats.totalExpenses ?? 0;
-  const netRaw = expenseSummary?.net_surplus ?? stats.netSurplus ?? 0;
-  const isSurplus = Number(netRaw) >= 0;
+  // Budget is the income from the client; activity spending is how that
+  // income is consumed across sites; profit = income − expenses.
+  const income = Number(stats.totalBudgetAmount) || 0;
+  const activitySpending = Number(stats.totalCompletionAmount) || 0;
+  const activityUsedPct = income > 0 ? (activitySpending / income) * 100 : 0;
+  const expenses = Number(
+    expenseSummary?.total_expenses ?? stats.totalExpenses ?? 0,
+  );
+  const profit = income - expenses;
+  const isProfit = profit >= 0;
+  const profitMargin = income > 0 ? (profit / income) * 100 : 0;
   const expenseRecords =
     expenseSummary?.expense_entry_count ?? stats.expenseEntryCount ?? 0;
   const hasExpenseBreakdown =
@@ -289,18 +296,18 @@ const WorkOrderDetailsCard = ({ workOrder, stats, expenseSummary }: Props) => {
           )}
 
           {workOrder.description && (
-            <div className='mt-4 pt-4 border-t border-gray-200'>
-              <div className='text-[11px] uppercase tracking-wide text-gray-500 mb-2'>
-                Description
-              </div>
+            <div className='mt-3 pt-3 border-t border-gray-200 flex items-baseline gap-2 text-xs'>
+              <span className='font-semibold text-gray-500 uppercase tracking-wide shrink-0'>
+                desp:
+              </span>
               <p
-                className={`text-gray-700 text-sm leading-relaxed ${!isDescriptionExpanded ? "line-clamp-2" : ""}`}>
+                className={`text-gray-700 leading-relaxed min-w-0 ${isDescriptionExpanded ? "" : "line-clamp-1"}`}>
                 {capitalFirstLetter(workOrder.description)}
               </p>
               <button
                 onClick={() => setIsDescriptionExpanded((prev) => !prev)}
-                className='text-xs text-emerald-600 hover:text-emerald-700 font-medium mt-1'>
-                {isDescriptionExpanded ? "Read less" : "Read more"}
+                className='text-emerald-600 hover:text-emerald-700 font-medium shrink-0'>
+                {isDescriptionExpanded ? "less" : "more"}
               </button>
             </div>
           )}
@@ -337,21 +344,21 @@ const WorkOrderDetailsCard = ({ workOrder, stats, expenseSummary }: Props) => {
           </StatGroup>
 
           <StatGroup
-            title='Budget'
+            title='Income & Activity'
             icon={IndianRupee}
             className='lg:w-3/9'>
             <Stat
-              label='Total'
-              value={formatCurrency(Number(stats.totalBudgetAmount))}
+              label='Income'
+              value={formatCurrency(income)}
             />
             <Stat
-              label='Completion'
-              value={formatCurrency(Number(stats.totalCompletionAmount))}
+              label='Activity spending'
+              value={formatCurrency(activitySpending)}
             />
             <Stat
-              label='Utilized'
+              label='Used'
               icon={TrendingUp}
-              value={`${Number(stats.budgetUtilization).toFixed(1)}%`}
+              value={`${activityUsedPct.toFixed(1)}%`}
             />
           </StatGroup>
 
@@ -360,19 +367,20 @@ const WorkOrderDetailsCard = ({ workOrder, stats, expenseSummary }: Props) => {
             icon={Wallet}
             className='lg:w-4/9'>
             <Stat
-              label='Income'
-              value={formatCurrency(Number(income))}
-            />
-            <Stat
               label='Expenses'
               icon={TrendingDown}
               valueClass='text-rose-700'
-              value={formatCurrency(Number(expenses))}
+              value={formatCurrency(expenses)}
             />
             <Stat
-              label={isSurplus ? "Net surplus" : "Net deficit"}
-              valueClass={isSurplus ? "text-emerald-700" : "text-rose-700"}
-              value={formatCurrency(Math.abs(Number(netRaw)))}
+              label={isProfit ? "Profit" : "Loss"}
+              valueClass={isProfit ? "text-emerald-700" : "text-rose-700"}
+              value={formatCurrency(Math.abs(profit))}
+            />
+            <Stat
+              label='Margin'
+              value={`${profitMargin.toFixed(1)}%`}
+              valueClass={isProfit ? "text-emerald-700" : "text-rose-700"}
             />
             <Stat
               label='Records'

@@ -15,6 +15,7 @@ import {
   BarChart3,
   Rows3,
   ReceiptIndianRupee,
+  Pencil,
 } from "lucide-react";
 import DeferredFilePicker from "@/components/shared/deferred-file-picker";
 import { useSharePointUpload } from "@/hooks/useSharePointUpload";
@@ -111,6 +112,17 @@ const PhaseForm = ({
   }, [isBioremediation, oilZappingData]);
 
   const [formData, setFormData] = useState<Record<string, ActivityData>>({});
+  const [isEditMode, setIsEditMode] = useState(false);
+
+  const hasExistingData = React.useMemo(() => {
+    return activities.some((activity) => {
+      const data = getActivityData(activity.activity, phase, isBioremediation);
+      return data && data.estimated_quantity != null && data.estimated_quantity !== "";
+    });
+  }, [activities, phase, getActivityData, isBioremediation]);
+
+  const isReadOnly = hasExistingData && !isEditMode;
+
   const [file, setFile] = useState<File | null>(null);
   const [subWoFile, setSubWoFile] = useState<File | null>(null);
   const [estimateFile, setEstimateFile] = useState<File | null>(null);
@@ -243,6 +255,7 @@ const PhaseForm = ({
         setCompletionCertFile(null);
         setBillFiles([]);
         resetUpload();
+        setIsEditMode(false);
       },
       onError: (err: any) => {
         const message =
@@ -268,6 +281,7 @@ const PhaseForm = ({
         setCompletionCertFile(null);
         setBillFiles([]);
         resetUpload();
+        setIsEditMode(false);
       },
       onError: (err: any) => {
         const message =
@@ -779,8 +793,8 @@ const PhaseForm = ({
                               e.target.value,
                             )
                           }
-                          readOnly={isAutoFilledFromZapping}
-                          className={`h-10 w-full border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 px-3 text-center text-xs placeholder:text-slate-300 ${isAutoFilledFromZapping ? "bg-blue-50/60 text-blue-700 font-semibold cursor-default" : "bg-transparent"}`}
+                          readOnly={isAutoFilledFromZapping || isReadOnly}
+                          className={`h-10 w-full border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 px-3 text-center text-xs placeholder:text-slate-300 ${isAutoFilledFromZapping ? "bg-blue-50/60 text-blue-700 font-semibold cursor-default" : isReadOnly ? "bg-slate-50/60 text-slate-600 cursor-default" : "bg-transparent"}`}
                           placeholder={
                             activity.sor_estimated_quantity
                               ? `Max: ${activity.sor_estimated_quantity}`
@@ -840,7 +854,8 @@ const PhaseForm = ({
                                   e.target.value,
                                 )
                               }
-                              className='h-10 w-full border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 bg-transparent px-3 text-center text-xs placeholder:text-slate-300'
+                              readOnly={isReadOnly}
+                              className={`h-10 w-full border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 px-3 text-center text-xs placeholder:text-slate-300 ${isReadOnly ? "bg-slate-50/60 text-slate-600 cursor-default" : "bg-transparent"}`}
                               placeholder='0.00'
                             />
                           ) : (
@@ -859,16 +874,36 @@ const PhaseForm = ({
         );
       })()}
 
-      {/* === Save Button === */}
-      <div className='flex justify-end pt-1'>
-        <CustomButton
-          variant='primary'
-          text={`Save ${PHASE_LABELS[phase]} Data`}
-          onClick={handleSaveAll}
-          type='button'
-          loading={isLoading}
-          disabled={isLoading}
-        />
+      {/* === Save / Edit Button === */}
+      <div className='flex justify-end gap-2 pt-1'>
+        {isReadOnly ? (
+          <CustomButton
+            variant='outline'
+            text='Edit'
+            Icon={Pencil}
+            onClick={() => setIsEditMode(true)}
+            type='button'
+          />
+        ) : (
+          <>
+            {hasExistingData && (
+              <CustomButton
+                variant='outline'
+                text='Cancel'
+                onClick={() => setIsEditMode(false)}
+                type='button'
+              />
+            )}
+            <CustomButton
+              variant='primary'
+              text={`Save ${PHASE_LABELS[phase]} Data`}
+              onClick={handleSaveAll}
+              type='button'
+              loading={isLoading}
+              disabled={isLoading}
+            />
+          </>
+        )}
       </div>
     </div>
   );
