@@ -9,6 +9,8 @@ import { z } from "zod";
 const {
   workOrderSiteExpenseTable,
   contractorTable,
+  workOrderSiteTable,
+  siteTable,
   cleaningUpSoilAreaTable,
   liftingRecoveryOilSlushTable,
   excavationContSoilTable,
@@ -133,6 +135,59 @@ export const expenseQueryRouter = router({
           return { byType, grandTotal, regularTotal, exceededTotal, incomeTotal };
         } catch (error) {
           throw fromDatabaseError(error, "Fetching expense summary");
+        }
+      }),
+    ),
+
+  // All expense rows across every site of a work order, with site + contractor labels.
+  // Used by the work-order-level "View All Expenses" dialog.
+  getExpensesByWorkOrder: protectedProcedure
+    .input(z.object({ work_order_id: z.number().positive() }))
+    .query(
+      handleQuery(async ({ input, ctx }) => {
+        try {
+          const expenses = await ctx.db
+            .select({
+              id: workOrderSiteExpenseTable.id,
+              work_order_site_id: workOrderSiteExpenseTable.work_order_site_id,
+              site_id: workOrderSiteTable.site_id,
+              site_name: siteTable.name,
+              expense_type: workOrderSiteExpenseTable.expense_type,
+              contractor_id: workOrderSiteExpenseTable.contractor_id,
+              contractor_name: contractorTable.name,
+              activity_key: workOrderSiteExpenseTable.activity_key,
+              quantity: workOrderSiteExpenseTable.quantity,
+              is_exceeded: workOrderSiteExpenseTable.is_exceeded,
+              description: workOrderSiteExpenseTable.description,
+              amount: workOrderSiteExpenseTable.amount,
+              expense_date: workOrderSiteExpenseTable.expense_date,
+              invoice_number: workOrderSiteExpenseTable.invoice_number,
+              notes: workOrderSiteExpenseTable.notes,
+              document_url: workOrderSiteExpenseTable.document_url,
+              created_at: workOrderSiteExpenseTable.created_at,
+            })
+            .from(workOrderSiteExpenseTable)
+            .innerJoin(
+              workOrderSiteTable,
+              eq(
+                workOrderSiteExpenseTable.work_order_site_id,
+                workOrderSiteTable.id,
+              ),
+            )
+            .innerJoin(
+              siteTable,
+              eq(workOrderSiteTable.site_id, siteTable.id),
+            )
+            .leftJoin(
+              contractorTable,
+              eq(workOrderSiteExpenseTable.contractor_id, contractorTable.id),
+            )
+            .where(eq(workOrderSiteTable.work_order_id, input.work_order_id))
+            .orderBy(desc(workOrderSiteExpenseTable.expense_date));
+
+          return { expenses };
+        } catch (error) {
+          throw fromDatabaseError(error, "Fetching work order expenses");
         }
       }),
     ),

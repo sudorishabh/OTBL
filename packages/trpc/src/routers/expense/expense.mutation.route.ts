@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq, ne, sum } from "drizzle-orm";
 import { schema } from "@pkg/db";
 import { router } from "../../trpc";
 import { protectedProcedure } from "../../core";
@@ -6,7 +6,86 @@ import { fromDatabaseError, notFound } from "../../errors";
 import { handleMutation } from "../../helper/typed-handler";
 import { z } from "zod";
 
-const { workOrderSiteExpenseTable } = schema;
+const {
+  workOrderSiteExpenseTable,
+  cleaningUpSoilAreaTable,
+  liftingRecoveryOilSlushTable,
+  excavationContSoilTable,
+  transportationContSoilTable,
+  refillingExcavatedContSoilTable,
+  bioremediationContSoilTable,
+} = schema;
+
+// Maps an activity key (as stored on siteActivityTable.activity) to the
+// table holding its per-phase quantity rows. Keep in sync with
+// work-order-site.query.route.ts → entriesByTable mapping.
+const activityTableByKey: Record<string, any> = {
+  clean_soil_area: cleaningUpSoilAreaTable,
+  lifting_oily_slush_or_recovery_of_oil: liftingRecoveryOilSlushTable,
+  excavation_oil_contaminated_soil: excavationContSoilTable,
+  transportation_contaminated_soil: transportationContSoilTable,
+  refilling_excavated_oil_contaminated_soil_land:
+    refillingExcavatedContSoilTable,
+  bioremediation_oil_contaminated_soil: bioremediationContSoilTable,
+};
+
+async function getEstimateQtyForSite(
+  ctx: any,
+  siteId: number,
+  activityKey: string,
+): Promise<number | null> {
+  const table = activityTableByKey[activityKey];
+  if (!table) return null;
+  const rows = await ctx.db
+    .select()
+    .from(table)
+    .where(
+      and(
+        eq(table.work_order_site_id, siteId),
+        eq(table.type, "estimate_sub-wo"),
+      ),
+    );
+  if (rows.length === 0) return null;
+  return parseFloat(rows[0].estimated_quantity || "0");
+}
+
+// Auto-decide whether a new/updated expense pushes cumulative used quantity
+// for the activity past the estimate-phase allocation for that site.
+// Returns null when we can't determine a budget (no activity link, no qty,
+// or no estimate yet) — caller should keep the client-supplied flag.
+async function computeIsExceeded(
+  ctx: any,
+  siteId: number,
+  activityKey: string | null | undefined,
+  newQuantity: string | null | undefined,
+  excludeExpenseId?: number,
+): Promise<boolean | null> {
+  if (!activityKey || !newQuantity) return null;
+  const newQty = parseFloat(newQuantity);
+  if (!Number.isFinite(newQty) || newQty <= 0) return null;
+
+  const estimateQty = await getEstimateQtyForSite(ctx, siteId, activityKey);
+  if (estimateQty === null || estimateQty <= 0) return null;
+
+  const whereClause = excludeExpenseId
+    ? and(
+        eq(workOrderSiteExpenseTable.work_order_site_id, siteId),
+        eq(workOrderSiteExpenseTable.activity_key, activityKey),
+        ne(workOrderSiteExpenseTable.id, excludeExpenseId),
+      )
+    : and(
+        eq(workOrderSiteExpenseTable.work_order_site_id, siteId),
+        eq(workOrderSiteExpenseTable.activity_key, activityKey),
+      );
+
+  const rows = await ctx.db
+    .select({ total: sum(workOrderSiteExpenseTable.quantity) })
+    .from(workOrderSiteExpenseTable)
+    .where(whereClause);
+
+  const existingTotal = Number(rows[0]?.total ?? 0);
+  return existingTotal + newQty > estimateQty + 0.001;
+}
 
 const expenseTypeEnum = z.enum([
   "contractor_payment",
@@ -66,6 +145,15 @@ export const expenseMutationRouter = router({
         try {
           const userId = ctx.user ? Number(ctx.user.sub) : null;
 
+          const autoExceeded = await computeIsExceeded(
+            ctx,
+            input.work_order_site_id,
+            input.activity_key,
+            input.quantity,
+          );
+          const finalExceeded =
+            autoExceeded !== null ? autoExceeded : !!input.is_exceeded;
+
           const [created] = await ctx.db
             .insert(workOrderSiteExpenseTable)
             .values({
@@ -74,7 +162,7 @@ export const expenseMutationRouter = router({
               contractor_id: input.contractor_id ?? null,
               activity_key: input.activity_key ?? null,
               quantity: input.quantity ?? null,
-              is_exceeded: input.is_exceeded ? 1 : 0,
+              is_exceeded: finalExceeded ? 1 : 0,
               description: input.description,
               amount: input.amount,
               expense_date: new Date(input.expense_date),
@@ -121,7 +209,26 @@ export const expenseMutationRouter = router({
           if (updateData.contractor_id !== undefined) setData.contractor_id = updateData.contractor_id;
           if (updateData.activity_key !== undefined) setData.activity_key = updateData.activity_key;
           if (updateData.quantity !== undefined) setData.quantity = updateData.quantity;
-          if (updateData.is_exceeded !== undefined) setData.is_exceeded = updateData.is_exceeded ? 1 : 0;
+
+          const prev = existing[0]!;
+          const effectiveActivityKey =
+            updateData.activity_key !== undefined
+              ? updateData.activity_key
+              : prev.activity_key;
+          const effectiveQuantity =
+            updateData.quantity !== undefined ? updateData.quantity : prev.quantity;
+          const autoExceeded = await computeIsExceeded(
+            ctx,
+            prev.work_order_site_id,
+            effectiveActivityKey,
+            effectiveQuantity,
+            id,
+          );
+          if (autoExceeded !== null) {
+            setData.is_exceeded = autoExceeded ? 1 : 0;
+          } else if (updateData.is_exceeded !== undefined) {
+            setData.is_exceeded = updateData.is_exceeded ? 1 : 0;
+          }
           if (updateData.description !== undefined) setData.description = updateData.description;
           if (updateData.amount !== undefined) setData.amount = updateData.amount;
           if (updateData.expense_date !== undefined) setData.expense_date = new Date(updateData.expense_date);

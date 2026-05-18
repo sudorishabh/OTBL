@@ -49,9 +49,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isSuccess || !layout?.success) return;
 
-    if (layout.mode === "wo_site_upload" && layout.defaultWorkOrderSiteId) {
-      const target = `/dashboard/wo-site/${layout.defaultWorkOrderSiteId}`;
+    if (layout.mode === "wo_site_upload") {
       if (!pathname.startsWith("/dashboard/wo-site")) {
+        const target =
+          layout.workOrderSiteIds.length === 1 && layout.defaultWorkOrderSiteId
+            ? `/dashboard/wo-site/${layout.defaultWorkOrderSiteId}`
+            : "/dashboard/wo-site";
         let cancelled = false;
         queueMicrotask(() => {
           if (cancelled) return;

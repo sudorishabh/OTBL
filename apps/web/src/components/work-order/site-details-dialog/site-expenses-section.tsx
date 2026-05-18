@@ -234,12 +234,15 @@ const SiteExpensesSection = ({ woSiteId, officeId, processType }: Props) => {
     }));
   }, [siteActivitiesQuery.data, restorationDataQuery.data, bioremediationDataQuery.data]);
 
-  // Compute used qty per activity (count once per consolidated record)
+  // Compute used qty per activity (count once per consolidated record).
+  // Note: exceeded expenses are counted too — being over budget doesn't mean
+  // the quantity wasn't used. Excluding them previously hid real spend from
+  // the SOR-availability view.
   const usedQtyByActivity = useMemo(() => {
     const map: Record<string, number> = {};
     const seen = new Set<string>();
     for (const exp of expenses) {
-      if (!exp.activity_key || !exp.quantity || exp.is_exceeded) continue;
+      if (!exp.activity_key || !exp.quantity) continue;
       const recordKey = getExpenseRecordKey(exp);
       if (seen.has(recordKey)) continue;
       seen.add(recordKey);

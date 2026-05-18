@@ -52,6 +52,8 @@ interface Props {
   };
   expenseSummary?: {
     total_expenses: number;
+    exceeded_total?: number;
+    regular_total?: number;
     by_type: Record<string, number>;
     expense_entry_count: number;
     total_income: number;
@@ -121,6 +123,7 @@ const WorkOrderDetailsCard = ({ workOrder, stats, expenseSummary }: Props) => {
   const expenses = Number(
     expenseSummary?.total_expenses ?? stats.totalExpenses ?? 0,
   );
+  const exceededExpenses = Number(expenseSummary?.exceeded_total ?? 0);
   const profit = income - expenses;
   const isProfit = profit >= 0;
   const profitMargin = income > 0 ? (profit / income) * 100 : 0;
@@ -371,6 +374,11 @@ const WorkOrderDetailsCard = ({ workOrder, stats, expenseSummary }: Props) => {
               icon={TrendingDown}
               valueClass='text-rose-700'
               value={formatCurrency(expenses)}
+            />
+            <Stat
+              label='Exceeded'
+              valueClass={exceededExpenses > 0 ? "text-orange-600" : "text-gray-400"}
+              value={formatCurrency(exceededExpenses)}
             />
             <Stat
               label={isProfit ? "Profit" : "Loss"}

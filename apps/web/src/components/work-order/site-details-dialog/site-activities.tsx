@@ -16,6 +16,7 @@ import {
   Rows3,
   ReceiptIndianRupee,
   Pencil,
+  AlertTriangle,
 } from "lucide-react";
 import DeferredFilePicker from "@/components/shared/deferred-file-picker";
 import { useSharePointUpload } from "@/hooks/useSharePointUpload";
@@ -123,6 +124,64 @@ const PhaseForm = ({
 
   const isReadOnly = hasExistingData && !isEditMode;
 
+  // Per-activity expense data for the Completion tab (spent + exceeded).
+  const expensesQuery = trpc.expenseQuery.getExpenses.useQuery(
+    { work_order_site_id: woSiteId },
+    { enabled: phase === "completion" && woSiteId > 0 },
+  );
+
+  const expensesByActivity = React.useMemo(() => {
+    const map: Record<
+      string,
+      {
+        totalAmount: number;
+        exceededAmount: number;
+        totalQuantity: number;
+        count: number;
+      }
+    > = {};
+    // Mirror of getExpenseRecordKey in site-expenses-section.tsx — used to
+    // dedupe quantity across rows that represent the same logical expense
+    // split into multiple expense_type rows (multi-add).
+    const seenForQty = new Set<string>();
+    const rows = expensesQuery.data?.expenses ?? [];
+    for (const exp of rows) {
+      if (!exp.activity_key) continue;
+      if (!map[exp.activity_key]) {
+        map[exp.activity_key] = {
+          totalAmount: 0,
+          exceededAmount: 0,
+          totalQuantity: 0,
+          count: 0,
+        };
+      }
+      const amt = parseFloat(exp.amount || "0") || 0;
+      map[exp.activity_key]!.totalAmount += amt;
+      if (exp.is_exceeded) map[exp.activity_key]!.exceededAmount += amt;
+      map[exp.activity_key]!.count += 1;
+
+      if (exp.quantity) {
+        const recordKey = [
+          exp.activity_key,
+          String(exp.expense_date),
+          exp.quantity,
+          String(!!exp.is_exceeded),
+          exp.description ?? "",
+          exp.notes ?? "",
+          (exp as any).contractor_name ?? "",
+          exp.invoice_number ?? "",
+          exp.document_url ?? "",
+        ].join("||");
+        if (!seenForQty.has(recordKey)) {
+          seenForQty.add(recordKey);
+          map[exp.activity_key]!.totalQuantity +=
+            parseFloat(exp.quantity || "0") || 0;
+        }
+      }
+    }
+    return map;
+  }, [expensesQuery.data]);
+
   const [file, setFile] = useState<File | null>(null);
   const [subWoFile, setSubWoFile] = useState<File | null>(null);
   const [estimateFile, setEstimateFile] = useState<File | null>(null);
@@ -180,25 +239,44 @@ const PhaseForm = ({
           amount: autoAmount,
           transportation_km: "",
         };
-      } else {
-        const data = getActivityData(
+        return;
+      }
+
+      // For non-bioremediation completion phase, qty is derived from the
+      // sum of expense quantities for that activity; amount uses the SOR rate.
+      const expenseTotal =
+        phase === "completion"
+          ? (expensesByActivity[activity.activity]?.totalQuantity ?? 0)
+          : 0;
+      if (!isBioremediation && phase === "completion" && expenseTotal > 0) {
+        const rate = parseFloat(activity.rate || "0");
+        const autoAmount = (expenseTotal * rate).toFixed(2);
+        const saved = getActivityData(
           activity.activity,
           phase,
           isBioremediation,
         );
-        if (data) {
-          newFormData[activity.activity] = {
-            estimated_quantity: data.estimated_quantity?.toString() || "",
-            amount: data.amount?.toString() || "",
-            transportation_km: data.transportation_km?.toString() || "",
-          };
-        } else {
-          newFormData[activity.activity] = {
-            estimated_quantity: "",
-            amount: "",
-            transportation_km: "",
-          };
-        }
+        newFormData[activity.activity] = {
+          estimated_quantity: expenseTotal.toFixed(2),
+          amount: autoAmount,
+          transportation_km: saved?.transportation_km?.toString() || "",
+        };
+        return;
+      }
+
+      const data = getActivityData(activity.activity, phase, isBioremediation);
+      if (data) {
+        newFormData[activity.activity] = {
+          estimated_quantity: data.estimated_quantity?.toString() || "",
+          amount: data.amount?.toString() || "",
+          transportation_km: data.transportation_km?.toString() || "",
+        };
+      } else {
+        newFormData[activity.activity] = {
+          estimated_quantity: "",
+          amount: "",
+          transportation_km: "",
+        };
       }
     });
     setFormData(newFormData);
@@ -208,6 +286,7 @@ const PhaseForm = ({
     getActivityData,
     isBioremediation,
     totalOilZappingQty,
+    expensesByActivity,
   ]);
 
   const handleChange = (
@@ -249,6 +328,12 @@ const PhaseForm = ({
           work_order_site_id: woSiteId,
         });
         utils.workOrderSiteQuery.getSiteDocuments.invalidate();
+        utils.expenseQuery.getExpenseSummary.invalidate({
+          work_order_site_id: woSiteId,
+        });
+        utils.expenseQuery.getExpenses.invalidate({
+          work_order_site_id: woSiteId,
+        });
         setFile(null);
         setSubWoFile(null);
         setEstimateFile(null);
@@ -275,6 +360,12 @@ const PhaseForm = ({
           work_order_site_id: woSiteId,
         });
         utils.workOrderSiteQuery.getSiteDocuments.invalidate();
+        utils.expenseQuery.getExpenseSummary.invalidate({
+          work_order_site_id: woSiteId,
+        });
+        utils.expenseQuery.getExpenses.invalidate({
+          work_order_site_id: woSiteId,
+        });
         setFile(null);
         setSubWoFile(null);
         setEstimateFile(null);
@@ -752,14 +843,27 @@ const PhaseForm = ({
                     phase === "completion" &&
                     totalOilZappingQty > 0;
 
-                  // Check if exceeded: compare oil zapping total vs estimate phase quantity
-                  const estimatePhaseData = isBioremActivity
-                    ? getActivityData(
-                        activity.activity,
-                        "estimate_sub-wo" as DocType,
-                        true,
-                      )
-                    : undefined;
+                  const expenseSummary =
+                    phase === "completion"
+                      ? expensesByActivity[activity.activity]
+                      : undefined;
+
+                  // Auto-fill from expenses on completion phase (non-bio activities)
+                  const isAutoFilledFromExpenses =
+                    !isBioremediation &&
+                    phase === "completion" &&
+                    !!expenseSummary &&
+                    expenseSummary.totalQuantity > 0;
+
+                  // Estimate-phase qty (used for the in-row breakdown).
+                  const estimatePhaseData =
+                    isBioremActivity || isAutoFilledFromExpenses
+                      ? getActivityData(
+                          activity.activity,
+                          "estimate_sub-wo" as DocType,
+                          isBioremediation,
+                        )
+                      : undefined;
                   const estimateQty = parseFloat(
                     estimatePhaseData?.estimated_quantity?.toString() || "0",
                   );
@@ -767,10 +871,17 @@ const PhaseForm = ({
                     isAutoFilledFromZapping && estimateQty > 0
                       ? totalOilZappingQty - estimateQty
                       : 0;
+                  const expenseQty = expenseSummary?.totalQuantity ?? 0;
+                  const expenseExceededQty =
+                    isAutoFilledFromExpenses && estimateQty > 0
+                      ? expenseQty - estimateQty
+                      : 0;
+
+                  const expenseColSpan = hasTransportActivity ? 6 : 5;
 
                   return (
+                    <React.Fragment key={activity.id}>
                     <TableRow
-                      key={activity.id}
                       className='group hover:bg-blue-50/20 transition-colors'>
                       <TableCell className='px-4 py-2.5 font-medium text-slate-700 text-xs'>
                         {formatName(activity.activity)}
@@ -793,14 +904,56 @@ const PhaseForm = ({
                               e.target.value,
                             )
                           }
-                          readOnly={isAutoFilledFromZapping || isReadOnly}
-                          className={`h-10 w-full border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 px-3 text-center text-xs placeholder:text-slate-300 ${isAutoFilledFromZapping ? "bg-blue-50/60 text-blue-700 font-semibold cursor-default" : isReadOnly ? "bg-slate-50/60 text-slate-600 cursor-default" : "bg-transparent"}`}
+                          readOnly={
+                            isAutoFilledFromZapping ||
+                            isAutoFilledFromExpenses ||
+                            isReadOnly
+                          }
+                          className={`h-10 w-full border-0 rounded-none focus-visible:ring-0 focus-visible:ring-offset-0 px-3 text-center text-xs placeholder:text-slate-300 ${
+                            isAutoFilledFromZapping || isAutoFilledFromExpenses
+                              ? "bg-blue-50/60 text-blue-700 font-semibold cursor-default"
+                              : isReadOnly
+                                ? "bg-slate-50/60 text-slate-600 cursor-default"
+                                : "bg-transparent"
+                          }`}
                           placeholder={
                             activity.sor_estimated_quantity
                               ? `Max: ${activity.sor_estimated_quantity}`
                               : "0.00"
                           }
                         />
+                        {isAutoFilledFromExpenses && (
+                          <div className='px-2 py-1.5 flex flex-col gap-1 text-xs border-t border-blue-100 bg-blue-50/40'>
+                            <div className='flex justify-between text-blue-600'>
+                              <span className='opacity-70'>
+                                From expenses:
+                              </span>
+                              <span className='font-medium'>
+                                {expenseQty.toFixed(2)}
+                              </span>
+                            </div>
+                            {estimateQty > 0 && (
+                              <div className='flex justify-between text-slate-500'>
+                                <span className='opacity-70'>
+                                  Estimate qty:
+                                </span>
+                                <span className='font-medium'>
+                                  {estimateQty.toFixed(2)}
+                                </span>
+                              </div>
+                            )}
+                            {expenseExceededQty > 0 && (
+                              <div className='flex justify-between border-t border-red-200/60 pt-1 mt-0.5'>
+                                <span className='font-semibold text-red-600'>
+                                  Exceeded:
+                                </span>
+                                <span className='text-red-600 font-bold'>
+                                  +{expenseExceededQty.toFixed(2)}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        )}
                         {isAutoFilledFromZapping && (
                           <div className='px-2 py-1.5 flex flex-col gap-1 text-xs border-t border-blue-100 bg-blue-50/40'>
                             <div className='flex justify-between text-blue-600'>
@@ -866,6 +1019,36 @@ const PhaseForm = ({
                         </TableCell>
                       )}
                     </TableRow>
+                    {expenseSummary && expenseSummary.count > 0 && (
+                      <TableRow className='bg-slate-50/60 hover:bg-slate-50/60'>
+                        <TableCell
+                          colSpan={expenseColSpan}
+                          className='px-4 py-1.5'>
+                          <div className='flex items-center gap-4 text-[10px] text-slate-500'>
+                            <span>
+                              Expenses logged:{" "}
+                              <span className='font-semibold text-slate-700'>
+                                {expenseSummary.count}
+                              </span>
+                            </span>
+                            <span>
+                              Spent:{" "}
+                              <span className='font-semibold text-slate-700'>
+                                ₹{expenseSummary.totalAmount.toFixed(2)}
+                              </span>
+                            </span>
+                            {expenseSummary.exceededAmount > 0 && (
+                              <span className='ml-auto flex items-center gap-1 font-semibold text-orange-600'>
+                                <AlertTriangle className='w-3 h-3' />
+                                Exceeded: ₹
+                                {expenseSummary.exceededAmount.toFixed(2)}
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    </React.Fragment>
                   );
                 })}
               </TableBody>
@@ -1012,7 +1195,7 @@ const SiteActivities = ({
               SOR availability
             </span>
             <span className='text-[10px] text-slate-400 truncate'>
-              (from completion totals)
+              (estimates + completions across sites)
             </span>
           </div>
           <div
@@ -1050,13 +1233,16 @@ const SiteActivities = ({
                     const sorQty = parseFloat(
                       activity.sor_estimated_quantity || "0",
                     );
-                    const completionUsed = parseFloat(
-                      activity.total_completion_quantity || "0",
+                    // total_used_quantity = sum across sites of
+                    // max(completion_qty, estimate_qty). Completion takes
+                    // precedence; estimate is a proxy until completion lands.
+                    const usedTotal = parseFloat(
+                      activity.total_used_quantity || "0",
                     );
-                    const available = sorQty - completionUsed;
+                    const available = sorQty - usedTotal;
                     const usedPct =
                       sorQty > 0
-                        ? Math.min(100, (completionUsed / sorQty) * 100)
+                        ? Math.min(100, (usedTotal / sorQty) * 100)
                         : 0;
                     const barColor =
                       usedPct >= 100
@@ -1079,7 +1265,7 @@ const SiteActivities = ({
                           </span>
                         </TableCell>
                         <TableCell className='px-2 py-1.5 text-right tabular-nums text-amber-700'>
-                          {completionUsed.toFixed(2)}
+                          {usedTotal.toFixed(2)}
                         </TableCell>
                         <TableCell
                           className={`px-2 py-1.5 text-right tabular-nums font-semibold ${

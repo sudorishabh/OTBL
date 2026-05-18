@@ -2,7 +2,7 @@
 
 import DialogWindow from "@/components/shared/dialog-window";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { trpc, type RouterOutputs } from "@/lib/trpc";
+import { type RouterOutputs } from "@/lib/trpc";
 import { format } from "date-fns";
 import { ExternalLink, FileText } from "lucide-react";
 import useHandleParams from "@/hooks/useHandleParams";
@@ -18,13 +18,15 @@ const isImageFileName = (fileName: string | null | undefined) => {
 };
 
 interface Props {
-  workOrderSiteId: number;
   siteName?: string;
+  uploads: UploadRow[];
+  isLoading?: boolean;
 }
 
 export function SiteOperatorUploadsDialog({
-  workOrderSiteId,
   siteName,
+  uploads,
+  isLoading = false,
 }: Props) {
   const { getParam, deleteParam } = useHandleParams();
 
@@ -32,14 +34,8 @@ export function SiteOperatorUploadsDialog({
     getParam("dialog") === "site-details" &&
     getParam("site-dialog") === "operator-uploads";
 
-  const { data: uploads = [], isLoading } =
-    trpc.workOrderSiteQuery.getOperatorUploads.useQuery(
-      { work_order_site_id: workOrderSiteId },
-      { enabled: open && workOrderSiteId > 0 },
-    );
-
   const rows = useMemo(() => {
-    return (uploads as UploadRow[]).map((row: UploadRow) => ({
+    return uploads.map((row) => ({
       ...row,
       isImage: isImageFileName(row.file_name),
     }));

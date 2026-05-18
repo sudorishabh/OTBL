@@ -11,6 +11,8 @@ import {
   Trash2,
   ExternalLink,
   X,
+  FolderOpen,
+  ChevronRight,
 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -94,9 +96,15 @@ interface WorkOrderSiteDetails {
 
 interface Props {
   siteDetails: WorkOrderSiteDetails | undefined | null;
+  operatorUploadsCount?: number;
+  onOpenOperatorUploads?: () => void;
 }
 
-const SiteDetailsCard = ({ siteDetails }: Props) => {
+const SiteDetailsCard = ({
+  siteDetails,
+  operatorUploadsCount = 0,
+  onOpenOperatorUploads,
+}: Props) => {
   const [measurementSheetFiles, setMeasurementSheetFiles] = useState<File[]>(
     [],
   );
@@ -194,14 +202,30 @@ const SiteDetailsCard = ({ siteDetails }: Props) => {
     "N/A";
   return (
     <div className='bg-linear-to-br from-gray-50 to-gray-100/50 rounded-xl p-5 border'>
-      <div className='flex items-center justify-between mb-4'>
+      <div className='flex items-center justify-between mb-4 gap-2'>
         <h3 className='text-xs font-medium text-gray-500 uppercase tracking-wide'>
           Site Information
         </h3>
-        <Badge
-          className={`text-[10px] border ${getStatusColor(siteDetails?.status ?? "pending")}`}>
-          {capitalFirstLetter(siteDetails?.status ?? "pending")}
-        </Badge>
+        <div className='flex items-center gap-2'>
+          {operatorUploadsCount > 0 && onOpenOperatorUploads && (
+            <button
+              type='button'
+              onClick={onOpenOperatorUploads}
+              title='View operator uploads'
+              className='group inline-flex items-center gap-1.5 rounded-full border border-emerald-300 bg-white px-2.5 py-1 text-[10px] font-semibold text-emerald-700 shadow-xs cursor-pointer hover:bg-emerald-50 hover:border-emerald-400 hover:shadow-sm active:scale-[0.98] transition-all'>
+              <FolderOpen className='size-3' />
+              <span>
+                {operatorUploadsCount} operator{" "}
+                {operatorUploadsCount === 1 ? "upload" : "uploads"}
+              </span>
+              <ChevronRight className='size-3 -mr-0.5 transition-transform group-hover:translate-x-0.5' />
+            </button>
+          )}
+          <Badge
+            className={`text-[10px] border ${getStatusColor(siteDetails?.status ?? "pending")}`}>
+            {capitalFirstLetter(siteDetails?.status ?? "pending")}
+          </Badge>
+        </div>
       </div>
 
       <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>

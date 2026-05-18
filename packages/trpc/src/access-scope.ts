@@ -1,4 +1,4 @@
-import { and, count, eq, inArray, or, sql, type SQL } from "drizzle-orm";
+import { and, eq, inArray, or, sql, type SQL } from "drizzle-orm";
 import type { Database } from "@pkg/db";
 import { schema } from "@pkg/db";
 import type { UserRole } from "@pkg/utils/auth";
@@ -66,7 +66,7 @@ export async function getAccessScope(
 
   const officeIds = [...new Set(officeRows.map((r) => r.office_id))];
 
-  const woSiteRows = await db
+  const directWoSiteRows = await db
     .select({
       wosId: workOrderSiteTable.id,
       woId: workOrderSiteTable.work_order_id,
@@ -81,16 +81,38 @@ export async function getAccessScope(
     )
     .where(eq(workOrderSiteUserTable.user_id, userId));
 
-  const workOrderSiteIds = woSiteRows.map((r) => r.wosId);
-  const workOrderIdsFromSiteAssignment = [
-    ...new Set(woSiteRows.map((r) => r.woId)),
-  ];
-
-  const [siteCnt] = await db
-    .select({ c: count() })
+  // Operators assigned to a master site (siteUserTable) inherit upload access
+  // to every WO-site at that site. This is the primary assignment path today;
+  // direct WO-site assignment (workOrderSiteUserTable) is the older mechanism.
+  const siteAssignmentRows = await db
+    .select({ siteId: siteUserTable.site_id })
     .from(siteUserTable)
     .where(eq(siteUserTable.user_id, userId));
-  const hasSiteAssignment = Number(siteCnt?.c ?? 0) > 0;
+
+  const assignedSiteIds = [
+    ...new Set(siteAssignmentRows.map((r) => r.siteId)),
+  ];
+  const hasSiteAssignment = assignedSiteIds.length > 0;
+
+  let derivedWoSiteRows: { wosId: number; woId: number }[] = [];
+  if (assignedSiteIds.length > 0) {
+    derivedWoSiteRows = await db
+      .select({
+        wosId: workOrderSiteTable.id,
+        woId: workOrderSiteTable.work_order_id,
+      })
+      .from(workOrderSiteTable)
+      .where(inArray(workOrderSiteTable.site_id, assignedSiteIds));
+  }
+
+  const mergedWoSites = new Map<number, number>();
+  for (const r of [...directWoSiteRows, ...derivedWoSiteRows]) {
+    mergedWoSites.set(r.wosId, r.woId);
+  }
+  const workOrderSiteIds = [...mergedWoSites.keys()];
+  const workOrderIdsFromSiteAssignment = [
+    ...new Set(mergedWoSites.values()),
+  ];
 
   if (workOrderSiteIds.length > 0) {
     return {

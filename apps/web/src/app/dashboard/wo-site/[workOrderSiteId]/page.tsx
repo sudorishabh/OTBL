@@ -17,6 +17,7 @@ import { useSharePointUpload } from "@/hooks/useSharePointUpload";
 import { trpc, type RouterOutputs } from "@/lib/trpc";
 import { format } from "date-fns";
 import {
+  ArrowLeft,
   Camera,
   ExternalLink,
   FileText,
@@ -25,6 +26,7 @@ import {
   Upload,
   X,
 } from "lucide-react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCallback, useRef, useState } from "react";
 import toast from "react-hot-toast";
@@ -175,6 +177,12 @@ export default function WoSiteOperatorUploadPage() {
   return (
     <div className='mx-auto w-full max-w-4xl p-4 sm:p-6 space-y-6'>
       <div className='sticky top-0 z-10 -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60 border-b'>
+        <Link
+          href='/dashboard/wo-site'
+          className='inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors mb-2'>
+          <ArrowLeft className='size-3' />
+          My sites
+        </Link>
         <div className='flex flex-wrap items-start justify-between gap-4'>
           <div className='min-w-0'>
             <p className='text-[11px] font-medium uppercase tracking-wide text-muted-foreground'>

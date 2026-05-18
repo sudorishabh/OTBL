@@ -1,4 +1,4 @@
-import { eq, desc, and, inArray } from "drizzle-orm";
+import { eq, desc, and, inArray, count } from "drizzle-orm";
 import { schema } from "@pkg/db";
 import { router } from "../../trpc";
 import { protectedProcedure } from "../../core";
@@ -100,6 +100,89 @@ export const workOrderSiteQueryRouter = router({
         }
       }),
     ),
+
+  /** Sites assigned to the current operator (used by the operator dashboard list page).
+   * Includes WO-sites from both direct assignment (workOrderSiteUserTable) and
+   * site-level assignment (siteUserTable → all WO-sites at that master site). */
+  getMyAssignedWorkOrderSites: protectedProcedure.query(
+    handleQuery(async ({ ctx }) => {
+      try {
+        const scope = await getAccessScope(
+          ctx.db,
+          Number(ctx.user!.sub),
+          ctx.user!.role,
+        );
+
+        const assignedIds =
+          scope.kind === "restricted" && scope.ui === "wo_site_upload"
+            ? scope.workOrderSiteIds
+            : [];
+        if (assignedIds.length === 0) return [];
+
+        const rows = await ctx.db
+          .select({
+            work_order_site_id: workOrderSiteTable.id,
+            work_order_id: workOrderTable.id,
+            wo_code: workOrderTable.code,
+            wo_title: workOrderTable.title,
+            site_name: siteTable.name,
+            site_address: siteTable.address,
+            site_city: siteTable.city,
+            site_state: siteTable.state,
+            job_number: workOrderSiteTable.job_number,
+            area: workOrderSiteTable.area,
+            process_type: workOrderSiteTable.process_type,
+            start_date: workOrderSiteTable.date,
+            end_date: workOrderSiteTable.end_date,
+            status: workOrderSiteTable.status,
+            is_completed: workOrderSiteTable.is_completed,
+          })
+          .from(workOrderSiteTable)
+          .innerJoin(
+            workOrderTable,
+            eq(workOrderSiteTable.work_order_id, workOrderTable.id),
+          )
+          .innerJoin(
+            siteTable,
+            eq(workOrderSiteTable.site_id, siteTable.id),
+          )
+          .where(inArray(workOrderSiteTable.id, assignedIds))
+          .orderBy(desc(workOrderSiteTable.date));
+
+        if (rows.length === 0) return [];
+
+        const ids = rows.map((r) => r.work_order_site_id);
+        const uploadCounts = await ctx.db
+          .select({
+            work_order_site_id:
+              workOrderSiteOperatorUploadTable.work_order_site_id,
+            uploads_count: count(),
+          })
+          .from(workOrderSiteOperatorUploadTable)
+          .where(
+            inArray(
+              workOrderSiteOperatorUploadTable.work_order_site_id,
+              ids,
+            ),
+          )
+          .groupBy(workOrderSiteOperatorUploadTable.work_order_site_id);
+
+        const countByWoSiteId = new Map<number, number>(
+          uploadCounts.map((c) => [
+            c.work_order_site_id,
+            Number(c.uploads_count),
+          ]),
+        );
+
+        return rows.map((r) => ({
+          ...r,
+          uploads_count: countByWoSiteId.get(r.work_order_site_id) ?? 0,
+        }));
+      } catch (error) {
+        throw fromDatabaseError(error, "Fetching assigned work order sites");
+      }
+    }),
+  ),
 
   getOperatorUploads: protectedProcedure
     .input(

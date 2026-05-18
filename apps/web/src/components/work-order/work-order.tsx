@@ -5,10 +5,12 @@ import { trpc } from "@/lib/trpc";
 import { capitalFirstLetter, getEffectiveWorkOrderStatus } from "@pkg/utils";
 import { useRouter } from "next/navigation";
 import WorkOrderDetailsCard from "./work-order-details-card";
-import { File, Plus, Rows3 } from "lucide-react";
+import { File, FolderOpen, Plus, ReceiptIndianRupee, Rows3 } from "lucide-react";
 import ScheduleOfRatesTable from "./schedule-of-rates-table";
 import CreateWorkOrderSiteDialog from "./create-wo-site/create-wo-site-dialog";
 import SiteDetailDialog from "./site-details-dialog/site-details-dialog";
+import WorkOrderExpensesDialog from "./work-order-expenses-dialog";
+import { WorkOrderOperatorUploadsDialog } from "./work-order-operator-uploads-dialog";
 import useHandleParams from "@/hooks/useHandleParams";
 import CustomButton from "@/components/shared/btn";
 import LoadMoreBtn from "@/components/loading/LoadMoreBtn";
@@ -76,6 +78,13 @@ const WorkOrder = ({ workOrderId, from }: Props) => {
     page: currentPage,
     limit: sitesQueryLimit,
   });
+
+  const { data: woOperatorUploads = [] } =
+    trpc.workOrderSiteQuery.getOperatorUploadsByWorkOrder.useQuery(
+      { work_order_id: Number(workOrderId) },
+      { enabled: !!workOrderId },
+    );
+  const woOperatorUploadsCount = woOperatorUploads.length;
 
   const { sites: fetchedSites, pagination: fetchedPagination } = sitesData || {
     sites: [],
@@ -294,6 +303,20 @@ const WorkOrder = ({ workOrderId, from }: Props) => {
                         onClick={() => setParam("dialog", "schedule-of-rates")}
                       />
                       <CustomButton
+                        text='View All Expenses'
+                        variant='outline'
+                        Icon={ReceiptIndianRupee}
+                        onClick={() => setParam("dialog", "all-expenses")}
+                      />
+                      {woOperatorUploadsCount > 0 && (
+                        <CustomButton
+                          text={`Operator Uploads (${woOperatorUploadsCount})`}
+                          variant='outline'
+                          Icon={FolderOpen}
+                          onClick={() => setParam("dialog", "operator-uploads")}
+                        />
+                      )}
+                      <CustomButton
                         variant='primary'
                         Icon={Plus}
                         text='Create Site'
@@ -361,6 +384,14 @@ const WorkOrder = ({ workOrderId, from }: Props) => {
           scheduleOfRates={scheduleOfRates}
         />
         <SiteDetailDialog />
+        <WorkOrderExpensesDialog
+          workOrderId={Number(workOrderId)}
+          workOrderCode={workOrderData.workOrder.code}
+        />
+        <WorkOrderOperatorUploadsDialog
+          workOrderId={Number(workOrderId)}
+          workOrderCode={workOrderData.workOrder.code}
+        />
       </div>
     </PageWrapper>
   );

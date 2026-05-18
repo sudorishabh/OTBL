@@ -7,8 +7,7 @@ import useHandleParams from "@/hooks/useHandleParams";
 import SiteDetailsCard from "./site-details-card";
 import SiteActivities from "./site-activities";
 import SiteExpensesSection from "./site-expenses-section";
-import CustomButton from "@/components/shared/btn";
-import { FolderOpen, TrendingUp, TrendingDown, Minus, AlertTriangle } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, AlertTriangle } from "lucide-react";
 import { SiteOperatorUploadsDialog } from "./site-operator-uploads-dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
@@ -145,7 +144,6 @@ const SiteDetailDialog = () => {
     );
 
   const operatorUploadsCount = operatorUploadsQuery.data?.length ?? 0;
-  const showOperatorUploadsBtn = operatorUploadsCount > 0;
 
   return (
     <DialogWindow
@@ -158,17 +156,13 @@ const SiteDetailDialog = () => {
       onToggleFullScreen={() => setIsFullScreen((v) => !v)}
       isLoading={siteDetailsQuery.isLoading}>
       <div className='space-y-5 py-3'>
-        {showOperatorUploadsBtn && (
-          <div className='flex justify-end'>
-            <CustomButton
-              text={`Operator uploads (${operatorUploadsCount})`}
-              variant='outline'
-              Icon={FolderOpen}
-              onClick={() => setParam("site-dialog", "operator-uploads")}
-            />
-          </div>
-        )}
-        <SiteDetailsCard siteDetails={siteDetails} />
+        <SiteDetailsCard
+          siteDetails={siteDetails}
+          operatorUploadsCount={operatorUploadsCount}
+          onOpenOperatorUploads={() =>
+            setParam("site-dialog", "operator-uploads")
+          }
+        />
 
         <Tabs defaultValue='estimate'>
           <TabsList className='w-full grid grid-cols-3 h-9'>
@@ -232,8 +226,9 @@ const SiteDetailDialog = () => {
 
       {isOpenDialog && woSiteId > 0 && (
         <SiteOperatorUploadsDialog
-          workOrderSiteId={woSiteId}
           siteName={siteDetails?.site?.name}
+          uploads={operatorUploadsQuery.data ?? []}
+          isLoading={operatorUploadsQuery.isLoading}
         />
       )}
     </DialogWindow>
